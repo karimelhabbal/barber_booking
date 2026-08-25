@@ -1,0 +1,12 @@
+{
+  "appTitle": "Barber Booking",
+  "login": "Login",
+  "register": "Register",
+  "bookNow": "Book Now",
+  "dashboard": "Dashboard",
+  "settings": "Settings",
+  "language": "Language",
+  "theme": "Theme",
+  "light": "Light",
+  "dark": "Dark"
+}
