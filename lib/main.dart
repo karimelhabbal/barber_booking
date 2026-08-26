@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:barber_booking/core/l10n/app_localizations.dart';
 import 'package:barber_booking/core/services/firebase_service.dart';
 import 'package:barber_booking/features/auth/auth_cubit.dart';
 import 'package:barber_booking/features/settings/settings_cubit.dart';
@@ -26,7 +26,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   final AuthCubit authCubit;
   final SettingsCubit settingsCubit;
-  const MyApp({Key? key, required this.authCubit, required this.settingsCubit}) : super(key: key);
+  const MyApp({super.key, required this.authCubit, required this.settingsCubit});
 
   @override
   Widget build(BuildContext context) {

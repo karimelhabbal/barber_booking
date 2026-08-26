@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:barber_booking/core/l10n/app_localizations.dart';
 
 class BookingPage extends StatelessWidget {
-  const BookingPage({Key? key}) : super(key: key);
+  const BookingPage({super.key});
 
   @override
   Widget build(BuildContext context) {
