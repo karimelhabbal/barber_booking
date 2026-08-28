@@ -11,6 +11,12 @@ class AuthInitial extends AuthState {}
 class AuthLoading extends AuthState {}
 class AuthAuthenticated extends AuthState {}
 class AuthUnauthenticated extends AuthState {}
+class AuthCodeSent extends AuthState {
+  const AuthCodeSent(this.phoneNumber);
+  final String phoneNumber;
+  @override
+  List<Object?> get props => [phoneNumber];
+}
 class AuthError extends AuthState {
   final String message;
   const AuthError(this.message);
