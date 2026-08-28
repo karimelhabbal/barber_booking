@@ -8,5 +8,12 @@
   "language": "اللغة",
   "theme": "الثيم",
   "light": "فاتح",
-  "dark": "داكن"
+  "dark": "داكن",
+  "phoneNumber": "رقم الجوال",
+  "sendCode": "ارسال الكود",
+  "otpSentTo": "تم ارسال الكود الى",
+  "otpCode": "رمز التحقق",
+  "confirm": "تأكيد",
+  "welcomeBarberSaas": "اهلا بيك في Barber SaaS",
+  "logout": "تسجيل الخروج"
 }

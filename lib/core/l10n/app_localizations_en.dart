@@ -38,4 +38,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dark => 'Dark';
+
+  @override
+  String get phoneNumber => 'Phone number';
+
+  @override
+  String get sendCode => 'Send code';
+
+  @override
+  String get otpSentTo => 'Code sent to';
+
+  @override
+  String get otpCode => 'Verification code';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get welcomeBarberSaas => 'Welcome to Barber SaaS';
+
+  @override
+  String get logout => 'Logout';
 }

@@ -38,4 +38,25 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get dark => 'داكن';
+
+  @override
+  String get phoneNumber => 'رقم الجوال';
+
+  @override
+  String get sendCode => 'ارسال الكود';
+
+  @override
+  String get otpSentTo => 'تم ارسال الكود الى';
+
+  @override
+  String get otpCode => 'رمز التحقق';
+
+  @override
+  String get confirm => 'تأكيد';
+
+  @override
+  String get welcomeBarberSaas => 'اهلا بيك في Barber SaaS';
+
+  @override
+  String get logout => 'تسجيل الخروج';
 }

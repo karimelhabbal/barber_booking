@@ -157,6 +157,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get dark;
+
+  /// No description provided for @phoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number'**
+  String get phoneNumber;
+
+  /// No description provided for @sendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send code'**
+  String get sendCode;
+
+  /// No description provided for @otpSentTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Code sent to'**
+  String get otpSentTo;
+
+  /// No description provided for @otpCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code'**
+  String get otpCode;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @welcomeBarberSaas.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Barber SaaS'**
+  String get welcomeBarberSaas;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get logout;
 }
 
 class _AppLocalizationsDelegate

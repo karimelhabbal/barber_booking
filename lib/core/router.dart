@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import 'package:barber_booking/features/auth/auth_cubit.dart';
-import 'package:barber_booking/features/dashboard/views/dashboard_page.dart';
 import 'package:barber_booking/features/auth/views/login_page.dart';
-import 'package:barber_booking/features/settings/views/settings_page.dart';
-import 'package:barber_booking/features/booking/views/booking_page.dart';
+import 'package:barber_booking/features/auth/views/otp_page.dart';
+import 'package:barber_booking/features/dashboard/views/dashboard_page.dart';
 
 class AppRouter {
   static GoRouter createRouter(AuthCubit authCubit) {
@@ -15,27 +15,48 @@ class AppRouter {
       debugLogDiagnostics: false,
       refreshListenable: GoRouterRefreshStream(authCubit.stream),
       redirect: (context, state) {
-        final loggedIn = authCubit.state is AuthAuthenticated;
-        final loggingIn = state.matchedLocation == '/login';
-        if (!loggedIn && !loggingIn) return '/login';
-        if (loggedIn && loggingIn) return '/';
+        final isAuthenticated = authCubit.state is AuthAuthenticated;
+        final isAuthRoute = state.matchedLocation == '/login' || state.matchedLocation == '/otp';
+
+        if (state.matchedLocation == '/' && isAuthenticated) {
+          return '/dashboard';
+        }
+        if (state.matchedLocation == '/' && !isAuthenticated) {
+          return '/login';
+        }
+        if (!isAuthenticated && !isAuthRoute) {
+          return '/login';
+        }
+        if (isAuthenticated && state.matchedLocation == '/login') {
+          return '/dashboard';
+        }
+        if (isAuthenticated && state.matchedLocation == '/otp') {
+          return '/dashboard';
+        }
         return null;
       },
       routes: [
-        GoRoute(path: '/', builder: (c, s) => const DashboardPage()),
-        GoRoute(path: '/login', builder: (c, s) => const LoginPage()),
-        GoRoute(path: '/settings', builder: (c, s) => const SettingsPage()),
-        GoRoute(path: '/booking', builder: (c, s) => const BookingPage()),
+        GoRoute(path: '/', builder: (context, state) => const LoginPage()),
+        GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+        GoRoute(
+          path: '/otp',
+          builder: (context, state) {
+            final phoneNumber =
+                state.uri.queryParameters['phone'] ?? authCubit.phoneNumber ?? '';
+            return OtpPage(phoneNumber: phoneNumber);
+          },
+        ),
+        GoRoute(path: '/dashboard', builder: (context, state) => const DashboardPage()),
       ],
     );
   }
 }
 
-/// Helper to convert a Stream to a Listenable for GoRouter refresh.
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     _sub = stream.asBroadcastStream().listen((_) => notifyListeners());
   }
+
   late final StreamSubscription<dynamic> _sub;
 
   @override

@@ -8,5 +8,12 @@
   "language": "Language",
   "theme": "Theme",
   "light": "Light",
-  "dark": "Dark"
+  "dark": "Dark",
+  "phoneNumber": "Phone number",
+  "sendCode": "Send code",
+  "otpSentTo": "Code sent to",
+  "otpCode": "Verification code",
+  "confirm": "Confirm",
+  "welcomeBarberSaas": "Welcome to Barber SaaS",
+  "logout": "Logout"
 }
