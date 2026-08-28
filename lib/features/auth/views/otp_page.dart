@@ -51,39 +51,50 @@ class _OtpPageState extends State<OtpPage> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(loc.login)),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('${loc.otpSentTo} ${widget.phoneNumber}'),
-            const SizedBox(height: 24),
-            PinCodeTextField(
-              appContext: context,
-              length: 6,
-              controller: _otpController,
-              keyboardType: TextInputType.number,
-              onCompleted: (value) => _verifyOtp(),
-              pinTheme: PinTheme(
-                shape: PinCodeFieldShape.underline,
-                activeColor: Theme.of(context).colorScheme.primary,
-                selectedColor: Theme.of(context).colorScheme.primary,
-                inactiveColor: Theme.of(context).colorScheme.outline,
-                fieldHeight: 56,
-                fieldWidth: 42,
+    return BlocListener<AuthCubit, AuthState>(
+      listener: (context, state) {
+        if (state is AuthAuthenticated) {
+          context.go('/dashboard');
+        } else if (state is AuthError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(title: Text(loc.login)),
+        body: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('${loc.otpSentTo} ${widget.phoneNumber}'),
+              const SizedBox(height: 24),
+              PinCodeTextField(
+                appContext: context,
+                length: 6,
+                controller: _otpController,
+                keyboardType: TextInputType.number,
+                onCompleted: (value) => _verifyOtp(),
+                pinTheme: PinTheme(
+                  shape: PinCodeFieldShape.underline,
+                  activeColor: Theme.of(context).colorScheme.primary,
+                  selectedColor: Theme.of(context).colorScheme.primary,
+                  inactiveColor: Theme.of(context).colorScheme.outline,
+                  fieldHeight: 56,
+                  fieldWidth: 42,
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _verifyOtp,
-                child: Text(loc.confirm),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _verifyOtp,
+                  child: Text(loc.confirm),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

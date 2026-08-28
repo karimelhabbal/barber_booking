@@ -53,28 +53,48 @@ class _LoginPageState extends State<LoginPage> {
       appBar: AppBar(title: Text(loc.login)),
       body: Padding(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IntlPhoneField(
-              decoration: InputDecoration(
-                labelText: loc.phoneNumber,
-                border: const OutlineInputBorder(),
+        child: BlocListener<AuthCubit, AuthState>(
+          listener: (context, state) {
+            if (state is AuthCodeSent) {
+              // navigate to otp and include phone number
+              context.go('/otp?phone=${Uri.encodeComponent(state.phoneNumber)}');
+            } else if (state is AuthError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.message)),
+              );
+            }
+          },
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IntlPhoneField(
+                decoration: InputDecoration(
+                  labelText: loc.phoneNumber,
+                  border: const OutlineInputBorder(),
+                ),
+                initialCountryCode: 'EG',
+                onChanged: (phone) {
+                  _phoneNumber = phone.completeNumber;
+                },
               ),
-              initialCountryCode: 'SA',
-              onChanged: (phone) {
-                _phoneNumber = phone.completeNumber;
-              },
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _sendCode,
-                child: Text(loc.sendCode),
+              const SizedBox(height: 24),
+              BlocBuilder<AuthCubit, AuthState>(
+                builder: (context, state) {
+                  if (state is AuthLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  return SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _sendCode,
+                      child: Text(loc.sendCode),
+                    ),
+                  );
+                },
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

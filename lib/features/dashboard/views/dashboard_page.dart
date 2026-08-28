@@ -13,26 +13,23 @@ class DashboardPage extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(loc.dashboard),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              await context.read<AuthCubit>().logout();
-              if (context.mounted) {
-                context.go('/login');
-              }
-            },
-            child: Text(loc.logout),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text(loc.dashboard)),
       body: Center(
         child: Text(
           loc.welcomeBarberSaas,
           textAlign: TextAlign.center,
           style: const TextStyle(fontSize: 24),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await context.read<AuthCubit>().logout();
+          if (context.mounted) {
+            context.go('/login');
+          }
+        },
+        tooltip: loc.logout,
+        child: const Icon(Icons.logout),
       ),
     );
   }
