@@ -14,19 +14,25 @@ void main() async {
   final settingsCubit = SettingsCubit();
   await settingsCubit.loadSettings();
 
-  runApp(MultiBlocProvider(
-    providers: [
-      BlocProvider<AuthCubit>.value(value: authCubit),
-      BlocProvider<SettingsCubit>.value(value: settingsCubit),
-    ],
-    child: MyApp(authCubit: authCubit, settingsCubit: settingsCubit),
-  ));
+  runApp(
+    MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthCubit>.value(value: authCubit),
+        BlocProvider<SettingsCubit>.value(value: settingsCubit),
+      ],
+      child: MyApp(authCubit: authCubit, settingsCubit: settingsCubit),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   final AuthCubit authCubit;
   final SettingsCubit settingsCubit;
-  const MyApp({super.key, required this.authCubit, required this.settingsCubit});
+  const MyApp({
+    super.key,
+    required this.authCubit,
+    required this.settingsCubit,
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -1,107 +1,173 @@
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:firebase_core/firebase_core.dart' as firebase_core;
+import 'package:flutter/foundation.dart';
 
 part 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
-  AuthCubit() : super(AuthInitial()) {
-    final currentUser = _auth.currentUser;
-    if (currentUser != null) {
-      emit(AuthAuthenticated());
-    }
+  AuthCubit()
+    : super(
+        firebase_core.Firebase.apps.isNotEmpty &&
+                fb.FirebaseAuth.instance.currentUser != null
+            ? AuthAuthenticated()
+            : AuthInitial(),
+      );
 
-    _authStateSubscription = _auth.authStateChanges().listen((user) {
-      if (user != null) {
-        emit(AuthAuthenticated());
-      } else if (state is! AuthCodeSent && state is! AuthLoading) {
-        emit(AuthInitial());
-      }
-    });
-  }
+  fb.FirebaseAuth? get _auth =>
+      firebase_core.Firebase.apps.isNotEmpty ? fb.FirebaseAuth.instance : null;
 
-  final fb.FirebaseAuth _auth = fb.FirebaseAuth.instance;
-  late final StreamSubscription<fb.User?> _authStateSubscription;
+  String? _verificationId;
+  fb.ConfirmationResult? _confirmationResult;
+  int? _resendToken;
+  bool _phoneRequestInFlight = false;
 
-  String? verificationId;
-  String? phoneNumber;
-
-  @override
-  Future<void> close() {
-    _authStateSubscription.cancel();
-    return super.close();
-  }
+  Future<void> loginWithPhone({required String phone}) => sendOtp(phone);
 
   Future<void> sendOtp(String phone) async {
-    final normalizedPhone = phone.trim();
-    if (normalizedPhone.isEmpty) {
-      emit(const AuthError('Phone number is required'));
+    // Web Auth owns the invisible reCAPTCHA lifecycle. Starting a second
+    // request before the first one settles can replace its DOM container while
+    // the Google script is still using it.
+    if (_phoneRequestInFlight) return;
+
+    final auth = _auth;
+    if (auth == null) {
+      emit(
+        const AuthError('Firebase is not initialized. Please restart the app.'),
+      );
       return;
     }
 
-    phoneNumber = normalizedPhone;
+    _phoneRequestInFlight = true;
+    _confirmationResult = null;
     emit(AuthLoading());
-
     try {
-      await _auth.verifyPhoneNumber(
-        phoneNumber: normalizedPhone,
-        verificationCompleted: (fb.PhoneAuthCredential credential) async {
-          await _auth.signInWithCredential(credential);
-          emit(AuthAuthenticated());
+      if (kIsWeb) {
+        _confirmationResult = await auth.signInWithPhoneNumber(phone);
+        emit(AuthCodeSent(phone));
+        return;
+      }
+      if (defaultTargetPlatform != TargetPlatform.android &&
+          defaultTargetPlatform != TargetPlatform.iOS) {
+        emit(
+          const AuthError(
+            'Phone verification is not supported by Firebase Auth on this platform. Use Android, iOS, or the web app.',
+          ),
+        );
+        return;
+      }
+      await auth.verifyPhoneNumber(
+        phoneNumber: phone,
+        forceResendingToken: _resendToken,
+        verificationCompleted: (credential) async {
+          try {
+            await auth.signInWithCredential(credential);
+            emit(AuthAuthenticated());
+          } on fb.FirebaseAuthException catch (error) {
+            emit(AuthError(_messageFor(error)));
+          } catch (_) {
+            emit(const AuthError('Unable to complete phone verification.'));
+          }
         },
-        verificationFailed: (fb.FirebaseAuthException exception) {
-          emit(AuthError(exception.message ?? 'Unable to send OTP'));
+        verificationFailed: (error) => emit(AuthError(_messageFor(error))),
+        codeSent: (verificationId, resendToken) {
+          _verificationId = verificationId;
+          _resendToken = resendToken;
+          emit(AuthCodeSent(phone));
         },
-        codeSent: (String verificationId, int? resendToken) {
-          this.verificationId = verificationId;
-          emit(AuthCodeSent(normalizedPhone));
-        },
-        codeAutoRetrievalTimeout: (String timeoutVerificationId) {
-          verificationId = timeoutVerificationId;
-        },
+        codeAutoRetrievalTimeout: (verificationId) =>
+            _verificationId = verificationId,
       );
-    } on fb.FirebaseAuthException catch (exception) {
-      emit(AuthError(exception.message ?? 'Unable to send OTP'));
-    } catch (error) {
-      emit(AuthError(error.toString()));
+    } on fb.FirebaseAuthException catch (error) {
+      emit(AuthError(_messageFor(error)));
+    } catch (_) {
+      emit(
+        const AuthError(
+          'Unable to send the verification code. Please try again.',
+        ),
+      );
+    } finally {
+      _phoneRequestInFlight = false;
     }
   }
 
-  Future<void> verifyOtp(String smsCode) async {
-    final normalizedCode = smsCode.trim();
-    if (verificationId == null || normalizedCode.isEmpty) {
-      emit(const AuthError('Verification code is required'));
+  Future<void> verifyOtp(String code) async {
+    final auth = _auth;
+    if (auth == null) {
+      emit(
+        const AuthError('Firebase is not initialized. Please restart the app.'),
+      );
       return;
     }
-
     emit(AuthLoading());
-
     try {
-      final credential = fb.PhoneAuthProvider.credential(
-        verificationId: verificationId!,
-        smsCode: normalizedCode,
-      );
-      await _auth.signInWithCredential(credential);
+      final confirmationResult = _confirmationResult;
+      if (confirmationResult != null) {
+        await confirmationResult.confirm(code);
+      } else {
+        final verificationId = _verificationId;
+        if (verificationId == null) {
+          emit(
+            const AuthError('Request a new verification code and try again.'),
+          );
+          return;
+        }
+        await auth.signInWithCredential(
+          fb.PhoneAuthProvider.credential(
+            verificationId: verificationId,
+            smsCode: code,
+          ),
+        );
+      }
       emit(AuthAuthenticated());
-    } on fb.FirebaseAuthException catch (exception) {
-      emit(AuthError(exception.message ?? 'Invalid verification code'));
-    } catch (error) {
-      emit(AuthError(error.toString()));
+    } on fb.FirebaseAuthException catch (error) {
+      emit(AuthError(_messageFor(error)));
+    } catch (_) {
+      emit(const AuthError('Unable to verify the code. Please try again.'));
     }
   }
+
+  Future<void> register({required String name, required String phone}) =>
+      sendOtp(phone);
 
   Future<void> logout() async {
-    emit(AuthLoading());
-
+    final auth = _auth;
+    if (auth == null) {
+      emit(AuthUnauthenticated());
+      return;
+    }
     try {
-      await _auth.signOut();
-      verificationId = null;
-      phoneNumber = null;
-      emit(AuthInitial());
-    } catch (error) {
-      emit(AuthError(error.toString()));
+      await auth.signOut();
+      emit(AuthUnauthenticated());
+    } on fb.FirebaseAuthException catch (error) {
+      emit(AuthError(_messageFor(error)));
+    } catch (_) {
+      emit(const AuthError('Unable to sign out. Please try again.'));
+    }
+  }
+
+  String _messageFor(fb.FirebaseAuthException error) {
+    switch (error.code) {
+      case 'invalid-phone-number':
+        return 'Enter a valid phone number.';
+      case 'invalid-verification-code':
+        return 'The verification code is incorrect.';
+      case 'session-expired':
+        return 'This verification code has expired. Request a new one.';
+      case 'too-many-requests':
+        return 'Too many attempts. Please wait before trying again.';
+      case 'network-request-failed':
+        return 'Check your internet connection and try again.';
+      case 'operation-not-allowed':
+        return 'Phone sign-in is not enabled for this Firebase project.';
+      case 'unauthorized-domain':
+        return 'This web domain is not authorized for Firebase phone sign-in.';
+      case 'captcha-check-failed':
+      case 'missing-app-credential':
+        return 'reCAPTCHA verification failed. Please try again.';
+      default:
+        return error.message ?? 'Authentication failed. Please try again.';
     }
   }
 }

@@ -1,3 +1,4 @@
+import 'package:barber_booking/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
@@ -5,7 +6,9 @@ class FirebaseService {
   /// Initialize Firebase. Call this early in main().
   static Future<void> initFirebase() async {
     try {
-      await Firebase.initializeApp();
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
       if (kDebugMode) {
         // ignore: avoid_print
         print('Firebase initialized');
