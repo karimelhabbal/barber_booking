@@ -9,16 +9,11 @@
   "theme": "Theme",
   "light": "Light",
   "dark": "Dark",
-  "loginSubtitle": "Enter your Egyptian mobile number to receive a verification code.",
   "phoneNumber": "Phone number",
-  "egyptianPhoneHint": "10 1234 5678",
-  "invalidEgyptianPhone": "Enter a valid Egyptian mobile number.",
   "sendCode": "Send code",
-  "otpSentTo": "We sent a verification code to {phoneNumber}.",
-  "@otpSentTo": {"placeholders": {"phoneNumber": {"type": "String"}}},
-  "invalidOtpCode": "Enter the 6-digit verification code.",
+  "otpSentTo": "Code sent to",
+  "otpCode": "Verification code",
   "confirm": "Confirm",
-  "resendCode": "Resend code",
-  "welcomeMessage": "Welcome to Barber Booking",
-  "logout": "Log out"
+  "welcomeBarberSaas": "Welcome to Barber SaaS",
+  "logout": "Logout"
 }

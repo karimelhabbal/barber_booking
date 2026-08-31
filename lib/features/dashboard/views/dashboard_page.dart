@@ -14,27 +14,19 @@ class DashboardPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(loc.dashboard)),
-      body: BlocListener<AuthCubit, AuthState>(
-        listener: (context, state) {
-          if (state is AuthUnauthenticated) {
-            context.go('/login');
-          } else if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
-          }
-        },
-        child: Center(
-          child: Text(
-            loc.welcomeMessage,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 24),
-          ),
+      body: Center(
+        child: Text(
+          loc.welcomeBarberSaas,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 24),
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await context.read<AuthCubit>().logout();
+          if (context.mounted) {
+            context.go('/login');
+          }
         },
         tooltip: loc.logout,
         child: const Icon(Icons.logout),

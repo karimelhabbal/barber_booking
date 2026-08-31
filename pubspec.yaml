@@ -1,4 +1,4 @@
-﻿name: barber_booking
+name: barber_booking
 description: "A SaaS-style barber booking Flutter app"
 publish_to: 'none'
 version: 1.0.0+1
@@ -17,6 +17,8 @@ dependencies:
   firebase_auth:
   cloud_firestore:
   go_router:
+  intl_phone_field: ^3.2.0
+  pin_code_fields: ^8.0.1
   flutter_localizations:
     sdk: flutter
   intl:

@@ -40,38 +40,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dark => 'Dark';
 
   @override
-  String get loginSubtitle =>
-      'Enter your Egyptian mobile number to receive a verification code.';
-
-  @override
   String get phoneNumber => 'Phone number';
-
-  @override
-  String get egyptianPhoneHint => '10 1234 5678';
-
-  @override
-  String get invalidEgyptianPhone => 'Enter a valid Egyptian mobile number.';
 
   @override
   String get sendCode => 'Send code';
 
   @override
-  String otpSentTo(String phoneNumber) {
-    return 'We sent a verification code to $phoneNumber.';
-  }
+  String get otpSentTo => 'Code sent to';
 
   @override
-  String get invalidOtpCode => 'Enter the 6-digit verification code.';
+  String get otpCode => 'Verification code';
 
   @override
   String get confirm => 'Confirm';
 
   @override
-  String get resendCode => 'Resend code';
+  String get welcomeBarberSaas => 'Welcome to Barber SaaS';
 
   @override
-  String get welcomeMessage => 'Welcome to Barber Booking';
-
-  @override
-  String get logout => 'Log out';
+  String get logout => 'Logout';
 }

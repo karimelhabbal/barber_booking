@@ -1,158 +1,107 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
-import 'package:firebase_core/firebase_core.dart' as firebase_core;
-import 'package:flutter/foundation.dart';
 
 part 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
-  AuthCubit()
-    : super(
-        firebase_core.Firebase.apps.isNotEmpty &&
-                fb.FirebaseAuth.instance.currentUser != null
-            ? AuthAuthenticated()
-            : AuthInitial(),
-      );
+  AuthCubit() : super(AuthInitial()) {
+    final currentUser = _auth.currentUser;
+    if (currentUser != null) {
+      emit(AuthAuthenticated());
+    }
 
-  fb.FirebaseAuth? get _auth =>
-      firebase_core.Firebase.apps.isNotEmpty ? fb.FirebaseAuth.instance : null;
+    _authStateSubscription = _auth.authStateChanges().listen((user) {
+      if (user != null) {
+        emit(AuthAuthenticated());
+      } else if (state is! AuthCodeSent && state is! AuthLoading) {
+        emit(AuthInitial());
+      }
+    });
+  }
 
-  String? _verificationId;
-  fb.ConfirmationResult? _confirmationResult;
-  int? _resendToken;
+  final fb.FirebaseAuth _auth = fb.FirebaseAuth.instance;
+  late final StreamSubscription<fb.User?> _authStateSubscription;
 
-  Future<void> loginWithPhone({required String phone}) => sendOtp(phone);
+  String? verificationId;
+  String? phoneNumber;
+
+  @override
+  Future<void> close() {
+    _authStateSubscription.cancel();
+    return super.close();
+  }
 
   Future<void> sendOtp(String phone) async {
-    final auth = _auth;
-    if (auth == null) {
-      emit(
-        const AuthError('Firebase is not initialized. Please restart the app.'),
-      );
+    final normalizedPhone = phone.trim();
+    if (normalizedPhone.isEmpty) {
+      emit(const AuthError('Phone number is required'));
       return;
     }
 
+    phoneNumber = normalizedPhone;
     emit(AuthLoading());
+
     try {
-      if (kIsWeb) {
-        _confirmationResult = await auth.signInWithPhoneNumber(phone);
-        emit(AuthCodeSent(phone));
-        return;
-      }
-      if (defaultTargetPlatform != TargetPlatform.android &&
-          defaultTargetPlatform != TargetPlatform.iOS) {
-        emit(
-          const AuthError(
-            'Phone verification is not supported by Firebase Auth on this platform. Use Android, iOS, or the web app.',
-          ),
-        );
-        return;
-      }
-      await auth.verifyPhoneNumber(
-        phoneNumber: phone,
-        forceResendingToken: _resendToken,
-        verificationCompleted: (credential) async {
-          try {
-            await auth.signInWithCredential(credential);
-            emit(AuthAuthenticated());
-          } on fb.FirebaseAuthException catch (error) {
-            emit(AuthError(_messageFor(error)));
-          } catch (_) {
-            emit(const AuthError('Unable to complete phone verification.'));
-          }
+      await _auth.verifyPhoneNumber(
+        phoneNumber: normalizedPhone,
+        verificationCompleted: (fb.PhoneAuthCredential credential) async {
+          await _auth.signInWithCredential(credential);
+          emit(AuthAuthenticated());
         },
-        verificationFailed: (error) => emit(AuthError(_messageFor(error))),
-        codeSent: (verificationId, resendToken) {
-          _verificationId = verificationId;
-          _resendToken = resendToken;
-          emit(AuthCodeSent(phone));
+        verificationFailed: (fb.FirebaseAuthException exception) {
+          emit(AuthError(exception.message ?? 'Unable to send OTP'));
         },
-        codeAutoRetrievalTimeout: (verificationId) =>
-            _verificationId = verificationId,
+        codeSent: (String verificationId, int? resendToken) {
+          this.verificationId = verificationId;
+          emit(AuthCodeSent(normalizedPhone));
+        },
+        codeAutoRetrievalTimeout: (String timeoutVerificationId) {
+          verificationId = timeoutVerificationId;
+        },
       );
-    } on fb.FirebaseAuthException catch (error) {
-      emit(AuthError(_messageFor(error)));
-    } catch (_) {
-      emit(
-        const AuthError(
-          'Unable to send the verification code. Please try again.',
-        ),
-      );
+    } on fb.FirebaseAuthException catch (exception) {
+      emit(AuthError(exception.message ?? 'Unable to send OTP'));
+    } catch (error) {
+      emit(AuthError(error.toString()));
     }
   }
 
-  Future<void> verifyOtp(String code) async {
-    final auth = _auth;
-    if (auth == null) {
-      emit(
-        const AuthError('Firebase is not initialized. Please restart the app.'),
-      );
+  Future<void> verifyOtp(String smsCode) async {
+    final normalizedCode = smsCode.trim();
+    if (verificationId == null || normalizedCode.isEmpty) {
+      emit(const AuthError('Verification code is required'));
       return;
     }
+
     emit(AuthLoading());
+
     try {
-      final confirmationResult = _confirmationResult;
-      if (confirmationResult != null) {
-        await confirmationResult.confirm(code);
-      } else {
-        final verificationId = _verificationId;
-        if (verificationId == null) {
-          emit(
-            const AuthError('Request a new verification code and try again.'),
-          );
-          return;
-        }
-        await auth.signInWithCredential(
-          fb.PhoneAuthProvider.credential(
-            verificationId: verificationId,
-            smsCode: code,
-          ),
-        );
-      }
+      final credential = fb.PhoneAuthProvider.credential(
+        verificationId: verificationId!,
+        smsCode: normalizedCode,
+      );
+      await _auth.signInWithCredential(credential);
       emit(AuthAuthenticated());
-    } on fb.FirebaseAuthException catch (error) {
-      emit(AuthError(_messageFor(error)));
-    } catch (_) {
-      emit(const AuthError('Unable to verify the code. Please try again.'));
+    } on fb.FirebaseAuthException catch (exception) {
+      emit(AuthError(exception.message ?? 'Invalid verification code'));
+    } catch (error) {
+      emit(AuthError(error.toString()));
     }
   }
-
-  Future<void> register({required String name, required String phone}) =>
-      sendOtp(phone);
 
   Future<void> logout() async {
-    final auth = _auth;
-    if (auth == null) {
-      emit(AuthUnauthenticated());
-      return;
-    }
-    try {
-      await auth.signOut();
-      emit(AuthUnauthenticated());
-    } on fb.FirebaseAuthException catch (error) {
-      emit(AuthError(_messageFor(error)));
-    } catch (_) {
-      emit(const AuthError('Unable to sign out. Please try again.'));
-    }
-  }
+    emit(AuthLoading());
 
-  String _messageFor(fb.FirebaseAuthException error) {
-    switch (error.code) {
-      case 'invalid-phone-number':
-        return 'Enter a valid phone number.';
-      case 'invalid-verification-code':
-        return 'The verification code is incorrect.';
-      case 'session-expired':
-        return 'This verification code has expired. Request a new one.';
-      case 'too-many-requests':
-        return 'Too many attempts. Please wait before trying again.';
-      case 'network-request-failed':
-        return 'Check your internet connection and try again.';
-      case 'operation-not-allowed':
-        return 'Phone sign-in is not enabled for this Firebase project.';
-      default:
-        return error.message ?? 'Authentication failed. Please try again.';
+    try {
+      await _auth.signOut();
+      verificationId = null;
+      phoneNumber = null;
+      emit(AuthInitial());
+    } catch (error) {
+      emit(AuthError(error.toString()));
     }
   }
 }

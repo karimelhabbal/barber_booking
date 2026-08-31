@@ -158,29 +158,11 @@ abstract class AppLocalizations {
   /// **'Dark'**
   String get dark;
 
-  /// No description provided for @loginSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter your Egyptian mobile number to receive a verification code.'**
-  String get loginSubtitle;
-
   /// No description provided for @phoneNumber.
   ///
   /// In en, this message translates to:
   /// **'Phone number'**
   String get phoneNumber;
-
-  /// No description provided for @egyptianPhoneHint.
-  ///
-  /// In en, this message translates to:
-  /// **'10 1234 5678'**
-  String get egyptianPhoneHint;
-
-  /// No description provided for @invalidEgyptianPhone.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter a valid Egyptian mobile number.'**
-  String get invalidEgyptianPhone;
 
   /// No description provided for @sendCode.
   ///
@@ -191,14 +173,14 @@ abstract class AppLocalizations {
   /// No description provided for @otpSentTo.
   ///
   /// In en, this message translates to:
-  /// **'We sent a verification code to {phoneNumber}.'**
-  String otpSentTo(String phoneNumber);
+  /// **'Code sent to'**
+  String get otpSentTo;
 
-  /// No description provided for @invalidOtpCode.
+  /// No description provided for @otpCode.
   ///
   /// In en, this message translates to:
-  /// **'Enter the 6-digit verification code.'**
-  String get invalidOtpCode;
+  /// **'Verification code'**
+  String get otpCode;
 
   /// No description provided for @confirm.
   ///
@@ -206,22 +188,16 @@ abstract class AppLocalizations {
   /// **'Confirm'**
   String get confirm;
 
-  /// No description provided for @resendCode.
+  /// No description provided for @welcomeBarberSaas.
   ///
   /// In en, this message translates to:
-  /// **'Resend code'**
-  String get resendCode;
-
-  /// No description provided for @welcomeMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Welcome to Barber Booking'**
-  String get welcomeMessage;
+  /// **'Welcome to Barber SaaS'**
+  String get welcomeBarberSaas;
 
   /// No description provided for @logout.
   ///
   /// In en, this message translates to:
-  /// **'Log out'**
+  /// **'Logout'**
   String get logout;
 }
 

@@ -40,36 +40,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get dark => 'داكن';
 
   @override
-  String get loginSubtitle => 'أدخل رقم هاتفك المصري لإرسال رمز التحقق.';
+  String get phoneNumber => 'رقم الجوال';
 
   @override
-  String get phoneNumber => 'رقم الهاتف';
+  String get sendCode => 'ارسال الكود';
 
   @override
-  String get egyptianPhoneHint => '10 1234 5678';
+  String get otpSentTo => 'تم ارسال الكود الى';
 
   @override
-  String get invalidEgyptianPhone => 'أدخل رقم هاتف مصري صحيح.';
-
-  @override
-  String get sendCode => 'إرسال الرمز';
-
-  @override
-  String otpSentTo(String phoneNumber) {
-    return 'أرسلنا رمز التحقق إلى $phoneNumber.';
-  }
-
-  @override
-  String get invalidOtpCode => 'أدخل رمز التحقق المكون من 6 أرقام.';
+  String get otpCode => 'رمز التحقق';
 
   @override
   String get confirm => 'تأكيد';
 
   @override
-  String get resendCode => 'إعادة إرسال الرمز';
-
-  @override
-  String get welcomeMessage => 'مرحبًا بك في حجز الحلاق';
+  String get welcomeBarberSaas => 'اهلا بيك في Barber SaaS';
 
   @override
   String get logout => 'تسجيل الخروج';

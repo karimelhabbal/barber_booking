@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 
 import 'package:barber_booking/core/l10n/app_localizations.dart';
 import 'package:barber_booking/features/auth/auth_cubit.dart';
@@ -17,15 +18,33 @@ class OtpPage extends StatefulWidget {
 class _OtpPageState extends State<OtpPage> {
   final TextEditingController _otpController = TextEditingController();
 
-  void _verifyOtp() {
+  Future<void> _verifyOtp() async {
     final code = _otpController.text.trim();
-    if (!RegExp(r'^\d{6}$').hasMatch(code)) {
+    if (code.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.invalidOtpCode)),
+        SnackBar(content: Text(AppLocalizations.of(context)!.otpCode)),
       );
       return;
     }
-    context.read<AuthCubit>().verifyOtp(code);
+
+    final cubit = context.read<AuthCubit>();
+    await cubit.verifyOtp(code);
+
+    if (!mounted) {
+      return;
+    }
+
+    if (cubit.state is AuthAuthenticated) {
+      context.go('/dashboard');
+      return;
+    }
+
+    if (cubit.state is AuthError) {
+      final errorMessage = (cubit.state as AuthError).message;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
+    }
   }
 
   @override
@@ -35,7 +54,7 @@ class _OtpPageState extends State<OtpPage> {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          context.go('/');
+          context.go('/dashboard');
         } else if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
@@ -44,50 +63,37 @@ class _OtpPageState extends State<OtpPage> {
       },
       child: Scaffold(
         appBar: AppBar(title: Text(loc.login)),
-        body: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 440),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: BlocBuilder<AuthCubit, AuthState>(
-                  builder: (context, state) => Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-              Text(loc.otpSentTo(widget.phoneNumber), textAlign: TextAlign.center),
+        body: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('${loc.otpSentTo} ${widget.phoneNumber}'),
               const SizedBox(height: 24),
-              TextField(
+              PinCodeTextField(
+                appContext: context,
+                length: 6,
                 controller: _otpController,
                 keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-                maxLength: 6,
-                onSubmitted: (_) => _verifyOtp(),
-                onChanged: (value) {
-                  if (value.length == 6) _verifyOtp();
-                },
-                decoration: const InputDecoration(
-                  counterText: '',
-                  hintText: '••••••',
-                  border: OutlineInputBorder(),
+                onCompleted: (value) => _verifyOtp(),
+                pinTheme: PinTheme(
+                  shape: PinCodeFieldShape.underline,
+                  activeColor: Theme.of(context).colorScheme.primary,
+                  selectedColor: Theme.of(context).colorScheme.primary,
+                  inactiveColor: Theme.of(context).colorScheme.outline,
+                  fieldHeight: 56,
+                  fieldWidth: 42,
                 ),
               ),
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: state is AuthLoading ? null : _verifyOtp,
-                child: state is AuthLoading
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                    : Text(loc.confirm),
-              ),
-              TextButton(
-                onPressed: state is AuthLoading ? null : () => context.read<AuthCubit>().sendOtp(widget.phoneNumber),
-                child: Text(loc.resendCode),
-              ),
-            ],
-                  ),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _verifyOtp,
+                  child: Text(loc.confirm),
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ),
