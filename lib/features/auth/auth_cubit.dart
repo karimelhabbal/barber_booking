@@ -22,6 +22,7 @@ class AuthCubit extends Cubit<AuthState> {
   fb.ConfirmationResult? _confirmationResult;
   int? _resendToken;
   bool _phoneRequestInFlight = false;
+  String? phoneNumber;
 
   Future<void> loginWithPhone({required String phone}) => sendOtp(phone);
 
@@ -41,11 +42,12 @@ class AuthCubit extends Cubit<AuthState> {
 
     _phoneRequestInFlight = true;
     _confirmationResult = null;
+    phoneNumber = phone.trim();
     emit(AuthLoading());
     try {
       if (kIsWeb) {
         _confirmationResult = await auth.signInWithPhoneNumber(phone);
-        emit(AuthCodeSent(phone));
+        emit(AuthCodeSent(phoneNumber!));
         return;
       }
       if (defaultTargetPlatform != TargetPlatform.android &&
@@ -74,7 +76,7 @@ class AuthCubit extends Cubit<AuthState> {
         codeSent: (verificationId, resendToken) {
           _verificationId = verificationId;
           _resendToken = resendToken;
-          emit(AuthCodeSent(phone));
+          emit(AuthCodeSent(phoneNumber!));
         },
         codeAutoRetrievalTimeout: (verificationId) =>
             _verificationId = verificationId,
@@ -134,12 +136,13 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> logout() async {
     final auth = _auth;
     if (auth == null) {
-      emit(AuthUnauthenticated());
+      emit(AuthInitial());
       return;
     }
     try {
       await auth.signOut();
-      emit(AuthUnauthenticated());
+      phoneNumber = null;
+      emit(AuthInitial());
     } on fb.FirebaseAuthException catch (error) {
       emit(AuthError(_messageFor(error)));
     } catch (_) {
