@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "974724910275",
+    "project_id": "flash-392b3",
+    "storage_bucket": "flash-392b3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:974724910275:android:52921993a5ec6d18db2676",
+        "android_client_info": {
+          "package_name": "com.example.barber_booking"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyASgSN_XNyOaNqSzpuZP1sFaXA8ba-jsAY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:974724910275:android:c61e5b5fd61b9af3db2676",
+        "android_client_info": {
+          "package_name": "com.example.posts_app_clean_architechure"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyASgSN_XNyOaNqSzpuZP1sFaXA8ba-jsAY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

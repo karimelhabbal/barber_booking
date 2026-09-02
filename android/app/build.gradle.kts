@@ -47,6 +47,10 @@ kotlin {
     }
 }
 
+dependencies {
+    implementation("org.checkerframework:checker-qual:3.42.0")
+}
+
 flutter {
     source = "../.."
 }
