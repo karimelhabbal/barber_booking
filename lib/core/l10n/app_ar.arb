@@ -1,4 +1,5 @@
 {
+  "@@locale": "ar",
   "appTitle": "حجز الحلاقة",
   "login": "تسجيل الدخول",
   "register": "إنشاء حساب",
@@ -15,5 +16,25 @@
   "otpCode": "رمز التحقق",
   "confirm": "تأكيد",
   "welcomeBarberSaas": "اهلا بيك في Barber SaaS",
-  "logout": "تسجيل الخروج"
+  "logout": "تسجيل الخروج",
+  "invalidPhoneNumber": "رقم الهاتف غير صحيح",
+  "invalidVerificationCode": "رمز التحقق غير صحيح",
+  "sessionExpired": "انتهت صلاحية الرمز، اطلب رمزًا جديدًا",
+  "tooManyRequests": "محاولات كثيرة، يرجى الانتظار قبل المحاولة مرة أخرى",
+  "networkRequestFailed": "تحقق من اتصالك بالإنترنت وحاول مرة أخرى",
+  "operationNotAllowed": "تسجيل الدخول بالهاتف غير مفعّل لهذا المشروع",
+  "unauthorizedDomain": "هذا النطاق غير مصرح له بتسجيل الدخول بالهاتف",
+  "captchaCheckFailed": "فشل التحقق من reCAPTCHA، حاول مرة أخرى",
+  "firebaseNotInitialized": "Firebase غير مهيأ، أعد تشغيل التطبيق",
+  "unsupportedPlatform": "التحقق بالهاتف غير مدعوم على هذه المنصة",
+  "sendCodeFailed": "تعذر إرسال الرمز، حاول مرة أخرى",
+  "verifyCodeFailed": "تعذر التحقق من الرمز، حاول مرة أخرى",
+  "requestNewCode": "اطلب رمز تحقق جديد وحاول مرة أخرى",
+  "logoutFailed": "تعذر تسجيل الخروج، حاول مرة أخرى",
+  "genericAuthError": "حدث خطأ في المصادقة، حاول مرة أخرى",
+  "resendCode": "إعادة إرسال الرمز",
+  "name": "الاسم",
+  "verifyCode": "تحقق من الرمز",
+  "invalidName": "الاسم غير صحيح",
+  "verificationInProgress": "جاري التحقق..."
 }

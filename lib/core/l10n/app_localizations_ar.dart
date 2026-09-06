@@ -55,8 +55,71 @@ class AppLocalizationsAr extends AppLocalizations {
   String get confirm => 'تأكيد';
 
   @override
+  String get verifyCode => 'تحقق من الرمز';
+
+  @override
+  String get resendCode => 'إعادة إرسال الرمز';
+
+  @override
   String get welcomeBarberSaas => 'اهلا بيك في Barber SaaS';
 
   @override
   String get logout => 'تسجيل الخروج';
+
+  @override
+  String get invalidName => 'الاسم غير صحيح';
+
+  @override
+  String get invalidPhoneNumber => 'رقم الهاتف غير صحيح';
+
+  @override
+  String get invalidVerificationCode => 'رمز التحقق غير صحيح';
+
+  @override
+  String get verificationInProgress => 'جاري التحقق...';
+
+  @override
+  String get sessionExpired => 'انتهت صلاحية الرمز، اطلب رمزًا جديدًا';
+
+  @override
+  String get tooManyRequests =>
+      'محاولات كثيرة، يرجى الانتظار قبل المحاولة مرة أخرى';
+
+  @override
+  String get networkRequestFailed => 'تحقق من اتصالك بالإنترنت وحاول مرة أخرى';
+
+  @override
+  String get operationNotAllowed =>
+      'تسجيل الدخول بالهاتف غير مفعّل لهذا المشروع';
+
+  @override
+  String get unauthorizedDomain =>
+      'هذا النطاق غير مصرح له بتسجيل الدخول بالهاتف';
+
+  @override
+  String get captchaCheckFailed => 'فشل التحقق من reCAPTCHA، حاول مرة أخرى';
+
+  @override
+  String get firebaseNotInitialized => 'Firebase غير مهيأ، أعد تشغيل التطبيق';
+
+  @override
+  String get unsupportedPlatform => 'التحقق بالهاتف غير مدعوم على هذه المنصة';
+
+  @override
+  String get sendCodeFailed => 'تعذر إرسال الرمز، حاول مرة أخرى';
+
+  @override
+  String get verifyCodeFailed => 'تعذر التحقق من الرمز، حاول مرة أخرى';
+
+  @override
+  String get requestNewCode => 'اطلب رمز تحقق جديد وحاول مرة أخرى';
+
+  @override
+  String get logoutFailed => 'تعذر تسجيل الخروج، حاول مرة أخرى';
+
+  @override
+  String get genericAuthError => 'حدث خطأ في المصادقة، حاول مرة أخرى';
+
+  @override
+  String get name => 'الاسم';
 }

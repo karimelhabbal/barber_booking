@@ -23,6 +23,8 @@ dependencies:
     sdk: flutter
   intl:
   shared_preferences:
+  get_it: ^9.2.1
+  wakelock_plus: ^1.8.0
 
 dev_dependencies:
   flutter_test:

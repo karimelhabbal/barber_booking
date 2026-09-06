@@ -13,50 +13,115 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Barber Booking';
 
   @override
-  String get login => 'Login';
+  String get login => 'تسجيل الدخول';
 
   @override
-  String get register => 'Register';
+  String get register => 'إنشاء حساب';
 
   @override
-  String get bookNow => 'Book Now';
+  String get bookNow => 'احجز الآن';
 
   @override
-  String get dashboard => 'Dashboard';
+  String get dashboard => 'الرئيسية';
 
   @override
-  String get settings => 'Settings';
+  String get settings => 'الإعدادات';
 
   @override
-  String get language => 'Language';
+  String get language => 'اللغة';
 
   @override
-  String get theme => 'Theme';
+  String get theme => 'المظهر';
 
   @override
-  String get light => 'Light';
+  String get light => 'فاتح';
 
   @override
-  String get dark => 'Dark';
+  String get dark => 'داكن';
 
   @override
-  String get phoneNumber => 'Phone number';
+  String get phoneNumber => 'رقم الهاتف';
 
   @override
-  String get sendCode => 'Send code';
+  String get sendCode => 'إرسال الرمز';
 
   @override
-  String get otpSentTo => 'Code sent to';
+  String get otpSentTo => 'تم إرسال الرمز إلى';
 
   @override
-  String get otpCode => 'Verification code';
+  String get otpCode => 'رمز التحقق';
 
   @override
-  String get confirm => 'Confirm';
+  String get confirm => 'تأكيد';
 
   @override
-  String get welcomeBarberSaas => 'Welcome to Barber SaaS';
+  String get verifyCode => 'تأكيد الرمز';
 
   @override
-  String get logout => 'Logout';
+  String get resendCode => 'إعادة إرسال الرمز';
+
+  @override
+  String get welcomeBarberSaas => 'أهلًا بك في Barber SaaS';
+
+  @override
+  String get logout => 'تسجيل الخروج';
+
+  @override
+  String get invalidName => 'أدخل اسمك.';
+
+  @override
+  String get invalidPhoneNumber => 'أدخل رقم هاتف صحيح.';
+
+  @override
+  String get invalidVerificationCode => 'رمز التحقق غير صحيح.';
+
+  @override
+  String get verificationInProgress => 'عملية التحقق قيد التنفيذ بالفعل.';
+
+  @override
+  String get sessionExpired => 'انتهت صلاحية رمز التحقق. اطلب رمزًا جديدًا.';
+
+  @override
+  String get tooManyRequests =>
+      'محاولات كثيرة جدًا. يرجى الانتظار قبل المحاولة مرة أخرى.';
+
+  @override
+  String get networkRequestFailed => 'تحقق من اتصالك بالإنترنت وحاول مرة أخرى.';
+
+  @override
+  String get operationNotAllowed =>
+      'تسجيل الدخول برقم الهاتف غير مفعّل لهذا المشروع في Firebase.';
+
+  @override
+  String get unauthorizedDomain =>
+      'هذا النطاق غير مصرح له باستخدام تسجيل الدخول برقم الهاتف في Firebase.';
+
+  @override
+  String get captchaCheckFailed => 'فشل التحقق من reCAPTCHA. حاول مرة أخرى.';
+
+  @override
+  String get firebaseNotInitialized =>
+      'لم يتم تهيئة Firebase. أعد تشغيل التطبيق.';
+
+  @override
+  String get unsupportedPlatform =>
+      'التحقق برقم الهاتف غير مدعوم على هذه المنصة.';
+
+  @override
+  String get sendCodeFailed => 'تعذر إرسال رمز التحقق. حاول مرة أخرى.';
+
+  @override
+  String get verifyCodeFailed => 'تعذر التحقق من الرمز. حاول مرة أخرى.';
+
+  @override
+  String get requestNewCode => 'اطلب رمز تحقق جديدًا وحاول مرة أخرى.';
+
+  @override
+  String get logoutFailed => 'تعذر تسجيل الخروج. حاول مرة أخرى.';
+
+  @override
+  String get genericAuthError => 'فشلت المصادقة. حاول مرة أخرى.';
+
+  @override
+  String get name => 'Name';
 }

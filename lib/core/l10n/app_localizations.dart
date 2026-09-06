@@ -107,98 +107,218 @@ abstract class AppLocalizations {
   /// No description provided for @login.
   ///
   /// In en, this message translates to:
-  /// **'Login'**
+  /// **'تسجيل الدخول'**
   String get login;
 
   /// No description provided for @register.
   ///
   /// In en, this message translates to:
-  /// **'Register'**
+  /// **'إنشاء حساب'**
   String get register;
 
   /// No description provided for @bookNow.
   ///
   /// In en, this message translates to:
-  /// **'Book Now'**
+  /// **'احجز الآن'**
   String get bookNow;
 
   /// No description provided for @dashboard.
   ///
   /// In en, this message translates to:
-  /// **'Dashboard'**
+  /// **'الرئيسية'**
   String get dashboard;
 
   /// No description provided for @settings.
   ///
   /// In en, this message translates to:
-  /// **'Settings'**
+  /// **'الإعدادات'**
   String get settings;
 
   /// No description provided for @language.
   ///
   /// In en, this message translates to:
-  /// **'Language'**
+  /// **'اللغة'**
   String get language;
 
   /// No description provided for @theme.
   ///
   /// In en, this message translates to:
-  /// **'Theme'**
+  /// **'المظهر'**
   String get theme;
 
   /// No description provided for @light.
   ///
   /// In en, this message translates to:
-  /// **'Light'**
+  /// **'فاتح'**
   String get light;
 
   /// No description provided for @dark.
   ///
   /// In en, this message translates to:
-  /// **'Dark'**
+  /// **'داكن'**
   String get dark;
 
   /// No description provided for @phoneNumber.
   ///
   /// In en, this message translates to:
-  /// **'Phone number'**
+  /// **'رقم الهاتف'**
   String get phoneNumber;
 
   /// No description provided for @sendCode.
   ///
   /// In en, this message translates to:
-  /// **'Send code'**
+  /// **'إرسال الرمز'**
   String get sendCode;
 
   /// No description provided for @otpSentTo.
   ///
   /// In en, this message translates to:
-  /// **'Code sent to'**
+  /// **'تم إرسال الرمز إلى'**
   String get otpSentTo;
 
   /// No description provided for @otpCode.
   ///
   /// In en, this message translates to:
-  /// **'Verification code'**
+  /// **'رمز التحقق'**
   String get otpCode;
 
   /// No description provided for @confirm.
   ///
   /// In en, this message translates to:
-  /// **'Confirm'**
+  /// **'تأكيد'**
   String get confirm;
+
+  /// No description provided for @verifyCode.
+  ///
+  /// In en, this message translates to:
+  /// **'تأكيد الرمز'**
+  String get verifyCode;
+
+  /// No description provided for @resendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'إعادة إرسال الرمز'**
+  String get resendCode;
 
   /// No description provided for @welcomeBarberSaas.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to Barber SaaS'**
+  /// **'أهلًا بك في Barber SaaS'**
   String get welcomeBarberSaas;
 
   /// No description provided for @logout.
   ///
   /// In en, this message translates to:
-  /// **'Logout'**
+  /// **'تسجيل الخروج'**
   String get logout;
+
+  /// No description provided for @invalidName.
+  ///
+  /// In en, this message translates to:
+  /// **'أدخل اسمك.'**
+  String get invalidName;
+
+  /// No description provided for @invalidPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'أدخل رقم هاتف صحيح.'**
+  String get invalidPhoneNumber;
+
+  /// No description provided for @invalidVerificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'رمز التحقق غير صحيح.'**
+  String get invalidVerificationCode;
+
+  /// No description provided for @verificationInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'عملية التحقق قيد التنفيذ بالفعل.'**
+  String get verificationInProgress;
+
+  /// No description provided for @sessionExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'انتهت صلاحية رمز التحقق. اطلب رمزًا جديدًا.'**
+  String get sessionExpired;
+
+  /// No description provided for @tooManyRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'محاولات كثيرة جدًا. يرجى الانتظار قبل المحاولة مرة أخرى.'**
+  String get tooManyRequests;
+
+  /// No description provided for @networkRequestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'تحقق من اتصالك بالإنترنت وحاول مرة أخرى.'**
+  String get networkRequestFailed;
+
+  /// No description provided for @operationNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'تسجيل الدخول برقم الهاتف غير مفعّل لهذا المشروع في Firebase.'**
+  String get operationNotAllowed;
+
+  /// No description provided for @unauthorizedDomain.
+  ///
+  /// In en, this message translates to:
+  /// **'هذا النطاق غير مصرح له باستخدام تسجيل الدخول برقم الهاتف في Firebase.'**
+  String get unauthorizedDomain;
+
+  /// No description provided for @captchaCheckFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'فشل التحقق من reCAPTCHA. حاول مرة أخرى.'**
+  String get captchaCheckFailed;
+
+  /// No description provided for @firebaseNotInitialized.
+  ///
+  /// In en, this message translates to:
+  /// **'لم يتم تهيئة Firebase. أعد تشغيل التطبيق.'**
+  String get firebaseNotInitialized;
+
+  /// No description provided for @unsupportedPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'التحقق برقم الهاتف غير مدعوم على هذه المنصة.'**
+  String get unsupportedPlatform;
+
+  /// No description provided for @sendCodeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'تعذر إرسال رمز التحقق. حاول مرة أخرى.'**
+  String get sendCodeFailed;
+
+  /// No description provided for @verifyCodeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'تعذر التحقق من الرمز. حاول مرة أخرى.'**
+  String get verifyCodeFailed;
+
+  /// No description provided for @requestNewCode.
+  ///
+  /// In en, this message translates to:
+  /// **'اطلب رمز تحقق جديدًا وحاول مرة أخرى.'**
+  String get requestNewCode;
+
+  /// No description provided for @logoutFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'تعذر تسجيل الخروج. حاول مرة أخرى.'**
+  String get logoutFailed;
+
+  /// No description provided for @genericAuthError.
+  ///
+  /// In en, this message translates to:
+  /// **'فشلت المصادقة. حاول مرة أخرى.'**
+  String get genericAuthError;
+
+  /// No description provided for @name.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get name;
 }
 
 class _AppLocalizationsDelegate
