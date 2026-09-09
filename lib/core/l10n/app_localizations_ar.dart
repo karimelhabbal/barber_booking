@@ -122,4 +122,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get name => 'الاسم';
+
+  @override
+  String get noBarberShopsAvailable => 'لا توجد محلات حلاقة متاحة حاليًا.';
+
+  @override
+  String get customerDashboard => 'لوحة تحكم العميل';
 }

@@ -124,4 +124,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get name => 'Name';
+
+  @override
+  String get noBarberShopsAvailable => 'No barber shops available.';
+
+  @override
+  String get customerDashboard => 'Customer Dashboard';
 }

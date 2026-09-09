@@ -36,5 +36,9 @@
   "requestNewCode": "اطلب رمز تحقق جديدًا وحاول مرة أخرى.",
   "logoutFailed": "تعذر تسجيل الخروج. حاول مرة أخرى.",
   "genericAuthError": "فشلت المصادقة. حاول مرة أخرى.",
-  "name": "Name"
+  "name": "Name",
+ 
+  "noBarberShopsAvailable": "No barber shops available.",
+  "customerDashboard": "Customer Dashboard"
+
 }

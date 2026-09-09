@@ -36,5 +36,7 @@
   "name": "الاسم",
   "verifyCode": "تحقق من الرمز",
   "invalidName": "الاسم غير صحيح",
-  "verificationInProgress": "جاري التحقق..."
+  "verificationInProgress": "جاري التحقق...",
+   "noBarberShopsAvailable": "لا توجد محلات حلاقة متاحة حاليًا.",
+  "customerDashboard": "لوحة تحكم العميل"
 }

@@ -11,6 +11,12 @@ class AuthInitial extends AuthState {
   const AuthInitial();
 }
 
+/// حالة فحص جلسة Firebase عند تشغيل التطبيق.
+class AuthCheckingSession extends AuthState {
+  const AuthCheckingSession();
+}
+
+/// حالة تنفيذ عملية مثل إرسال OTP أو التحقق أو تسجيل الخروج.
 class AuthLoading extends AuthState {
   const AuthLoading();
 }

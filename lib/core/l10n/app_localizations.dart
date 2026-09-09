@@ -319,6 +319,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Name'**
   String get name;
+
+  /// No description provided for @noBarberShopsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No barber shops available.'**
+  String get noBarberShopsAvailable;
+
+  /// No description provided for @customerDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Dashboard'**
+  String get customerDashboard;
 }
 
 class _AppLocalizationsDelegate
