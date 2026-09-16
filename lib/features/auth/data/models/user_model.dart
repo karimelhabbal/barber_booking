@@ -41,6 +41,7 @@ class UserModel extends User {
 
   Map<String, dynamic> toFirestore() {
     return {
+      'id': id,
       'name': name,
       'phone': phone,
       'role': _roleToString(role),

@@ -83,14 +83,20 @@ class _LoginPageState extends State<LoginPage> {
                   );
                 },
               ),
-
               const SizedBox(height: 16),
-
               TextButton(
                 onPressed: () {
                   context.go('/register');
                 },
                 child: Text(loc.register),
+              ),
+              const SizedBox(height: 8),
+              TextButton.icon(
+                onPressed: () {
+                  context.go('/barber-login');
+                },
+                icon: const Icon(Icons.content_cut),
+                label: const Text('دخول الحلاق'),
               ),
             ],
           ),

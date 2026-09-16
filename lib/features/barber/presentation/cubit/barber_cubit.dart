@@ -12,6 +12,42 @@ class BarberCubit extends Cubit<BarberState> {
 
   final BarberRepository _repository;
 
+  Future<void> loadCurrentBarber({
+    required String userId,
+    required String barberShopId,
+  }) async {
+    final trimmedUserId = userId.trim();
+    final trimmedShopId = barberShopId.trim();
+
+    if (trimmedUserId.isEmpty) {
+      emit(const BarberError('Barber user ID cannot be empty.'));
+      return;
+    }
+
+    if (trimmedShopId.isEmpty) {
+      emit(const BarberError('Barber shop ID cannot be empty.'));
+      return;
+    }
+
+    emit(const BarberProfileLoading());
+
+    try {
+      final barber = await _repository.getBarberByUserAndShop(
+        userId: trimmedUserId,
+        barberShopId: trimmedShopId,
+      );
+
+      if (barber == null) {
+        emit(const BarberError('Barber profile not found.'));
+        return;
+      }
+
+      emit(BarberProfileLoaded(barber));
+    } on Object catch (error) {
+      emit(BarberError(error.toString()));
+    }
+  }
+
   Future<void> loadBarberCandidates() async {
     if (state is BarberCandidatesLoading) {
       return;

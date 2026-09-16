@@ -8,6 +8,8 @@ abstract interface class BookingRepository {
 
   Future<List<Booking>> getCustomerBookings({required String customerId});
 
+  Future<List<Booking>> getOwnerBookings({required String shopId});
+
   Future<List<Booking>> getBarberBookings({required String barberId});
 
   Future<Booking?> getBooking({required String bookingId});
@@ -15,4 +17,9 @@ abstract interface class BookingRepository {
   Future<Booking> createBooking({required Booking booking});
 
   Future<void> cancelBooking({required String bookingId});
+
+  Future<void> updateBookingStatus({
+    required String bookingId,
+    required BookingStatus status,
+  });
 }

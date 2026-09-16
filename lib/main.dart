@@ -6,6 +6,7 @@ import 'package:barber_booking/core/di/injection.dart';
 import 'package:barber_booking/core/l10n/app_localizations.dart';
 import 'package:barber_booking/core/router.dart';
 import 'package:barber_booking/core/services/firebase_service.dart';
+import 'package:barber_booking/core/theme/app_theme.dart';
 import 'package:barber_booking/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:barber_booking/features/settings/settings_cubit.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -74,8 +75,8 @@ class _MyAppState extends State<MyApp> {
           ],
           supportedLocales: const [Locale('en'), Locale('ar')],
           locale: settingsState.locale,
-          theme: ThemeData.light(),
-          darkTheme: ThemeData.dark(),
+          theme: AppTheme.light(),
+          darkTheme: AppTheme.dark(),
           themeMode: settingsState.themeMode,
         );
       },

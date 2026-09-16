@@ -38,6 +38,27 @@ class BookingCubit extends Cubit<BookingState> {
     }
   }
 
+  Future<void> loadOwnerBookings({required String shopId}) async {
+    final trimmedShopId = shopId.trim();
+
+    if (trimmedShopId.isEmpty) {
+      emit(const BookingError('Barber shop ID cannot be empty.'));
+      return;
+    }
+
+    emit(const BookingLoading());
+
+    try {
+      final bookings = await _repository.getOwnerBookings(
+        shopId: trimmedShopId,
+      );
+
+      emit(BookingLoaded(bookings));
+    } catch (e) {
+      emit(BookingError(_mapError(e)));
+    }
+  }
+
   Future<void> loadBarberBookings({required String barberId}) async {
     final trimmedBarberId = barberId.trim();
 
@@ -187,6 +208,56 @@ class BookingCubit extends Cubit<BookingState> {
       await _repository.cancelBooking(bookingId: trimmedBookingId);
 
       emit(BookingCancelled(trimmedBookingId));
+    } catch (e) {
+      emit(BookingError(_mapError(e)));
+    }
+  }
+
+  Future<void> confirmBooking({required String bookingId}) {
+    return _updateBarberBookingStatus(
+      bookingId: bookingId,
+      status: BookingStatus.confirmed,
+    );
+  }
+
+  Future<void> rejectBooking({required String bookingId}) {
+    return cancelBooking(bookingId: bookingId);
+  }
+
+  Future<void> completeBooking({required String bookingId}) {
+    return _updateBarberBookingStatus(
+      bookingId: bookingId,
+      status: BookingStatus.completed,
+    );
+  }
+
+  Future<void> markNoShow({required String bookingId}) {
+    return _updateBarberBookingStatus(
+      bookingId: bookingId,
+      status: BookingStatus.noShow,
+    );
+  }
+
+  Future<void> _updateBarberBookingStatus({
+    required String bookingId,
+    required BookingStatus status,
+  }) async {
+    final trimmedBookingId = bookingId.trim();
+
+    if (trimmedBookingId.isEmpty) {
+      emit(const BookingError('Booking ID cannot be empty.'));
+      return;
+    }
+
+    emit(BookingStatusUpdating(bookingId: trimmedBookingId, status: status));
+
+    try {
+      await _repository.updateBookingStatus(
+        bookingId: trimmedBookingId,
+        status: status,
+      );
+
+      emit(BookingStatusUpdated(bookingId: trimmedBookingId, status: status));
     } catch (e) {
       emit(BookingError(_mapError(e)));
     }

@@ -11,6 +11,19 @@ class BarberInitial extends BarberState {
   const BarberInitial();
 }
 
+class BarberProfileLoading extends BarberState {
+  const BarberProfileLoading();
+}
+
+class BarberProfileLoaded extends BarberState {
+  const BarberProfileLoaded(this.barber);
+
+  final Barber barber;
+
+  @override
+  List<Object?> get props => [barber];
+}
+
 class BarberLoading extends BarberState {
   const BarberLoading();
 }

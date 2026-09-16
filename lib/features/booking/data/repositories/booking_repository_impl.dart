@@ -25,6 +25,11 @@ class BookingRepositoryImpl implements BookingRepository {
   }
 
   @override
+  Future<List<Booking>> getOwnerBookings({required String shopId}) {
+    return _remoteDataSource.getOwnerBookings(shopId: shopId);
+  }
+
+  @override
   Future<List<Booking>> getBarberBookings({required String barberId}) {
     return _remoteDataSource.getBarberBookings(barberId: barberId);
   }
@@ -44,5 +49,16 @@ class BookingRepositoryImpl implements BookingRepository {
   @override
   Future<void> cancelBooking({required String bookingId}) {
     return _remoteDataSource.cancelBooking(bookingId: bookingId);
+  }
+
+  @override
+  Future<void> updateBookingStatus({
+    required String bookingId,
+    required BookingStatus status,
+  }) {
+    return _remoteDataSource.updateBookingStatus(
+      bookingId: bookingId,
+      status: status,
+    );
   }
 }

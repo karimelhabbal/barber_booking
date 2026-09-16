@@ -84,7 +84,7 @@ class BookingModel extends Booking {
       'bookingDate': Timestamp.fromDate(bookingDate),
       'startTime': startTime,
       'endTime': endTime,
-      'status': _statusToString(status),
+      'status': statusToFirestore(status),
       'serviceName': serviceName,
       'serviceDurationMinutes': serviceDurationMinutes,
       'servicePrice': servicePrice,
@@ -117,12 +117,15 @@ class BookingModel extends Booking {
       case 'cancelled':
         return BookingStatus.cancelled;
 
+      case 'noShow':
+        return BookingStatus.noShow;
+
       default:
         throw StateError('Unknown booking status: $value');
     }
   }
 
-  static String _statusToString(BookingStatus status) {
+  static String statusToFirestore(BookingStatus status) {
     switch (status) {
       case BookingStatus.pending:
         return 'pending';
@@ -135,6 +138,9 @@ class BookingModel extends Booking {
 
       case BookingStatus.cancelled:
         return 'cancelled';
+
+      case BookingStatus.noShow:
+        return 'noShow';
     }
   }
 }

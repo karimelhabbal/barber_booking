@@ -1,6 +1,7 @@
 import 'package:barber_booking/core/di/injection.dart';
 import 'package:barber_booking/features/barber/domain/entities/barber.dart';
 import 'package:barber_booking/features/barber_shop/domain/entities/barber_shop.dart';
+import 'package:barber_booking/features/booking/views/booking_page.dart';
 import 'package:barber_booking/features/service/domain/entities/service.dart';
 import 'package:barber_booking/features/service/presentation/cubit/service_cubit.dart';
 import 'package:barber_booking/features/service/presentation/cubit/service_state.dart';
@@ -83,7 +84,7 @@ class _ServicesList extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: services.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final service = services[index];
 
@@ -98,21 +99,11 @@ class _ServicesList extends StatelessWidget {
   }
 
   void _selectService(BuildContext context, Service service) {
-    /*
-     * The next booking step will use:
-     *
-     * shop.id
-     * barber.id
-     * service.id
-     * service.durationMinutes
-     * service.price
-     *
-     * We intentionally stop here until the customer booking-date/slot
-     * page is connected.
-     */
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${service.name} selected for ${barber.name}.')),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) =>
+            BookingPage(shop: shop, barber: barber, service: service),
+      ),
     );
   }
 }

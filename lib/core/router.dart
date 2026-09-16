@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:barber_booking/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:barber_booking/features/auth/presentation/pages/barber_login_page.dart';
 import 'package:barber_booking/features/auth/presentation/pages/login_page.dart';
 import 'package:barber_booking/features/auth/presentation/pages/otp_page.dart';
 import 'package:barber_booking/features/auth/presentation/pages/register_page.dart';
@@ -25,28 +26,30 @@ class AppRouter {
             return _authProvider(const SplashPage());
           },
         ),
-
         GoRoute(
           path: '/',
           builder: (context, state) {
             return _authProvider(const LoginPage());
           },
         ),
-
         GoRoute(
           path: '/login',
           builder: (context, state) {
             return _authProvider(const LoginPage());
           },
         ),
-
+        GoRoute(
+          path: '/barber-login',
+          builder: (context, state) {
+            return _authProvider(const BarberLoginPage());
+          },
+        ),
         GoRoute(
           path: '/register',
           builder: (context, state) {
             return _authProvider(const RegisterPage());
           },
         ),
-
         GoRoute(
           path: '/otp',
           builder: (context, state) {
@@ -55,7 +58,6 @@ class AppRouter {
             return _authProvider(OtpPage(phoneNumber: phoneNumber));
           },
         ),
-
         GoRoute(
           path: '/dashboard',
           builder: (context, state) {
@@ -95,16 +97,10 @@ class AppRouter {
     final isAuthRoute =
         location == '/' ||
         location == '/login' ||
+        location == '/barber-login' ||
         location == '/register' ||
         location == '/otp';
 
-    // ------------------------------------------------------------
-    // 1. Initial session check
-    // ------------------------------------------------------------
-    //
-    // Keep the user on Splash until Firebase session restoration
-    // has completed.
-    //
     if (isCheckingSession) {
       if (location == '/splash') {
         return null;
@@ -113,12 +109,6 @@ class AppRouter {
       return '/splash';
     }
 
-    // ------------------------------------------------------------
-    // 2. Authenticated user
-    // ------------------------------------------------------------
-    //
-    // Authenticated users should not access login/register/OTP.
-    //
     if (isAuthenticated) {
       if (isAuthRoute || location == '/splash') {
         return '/dashboard';
@@ -127,12 +117,6 @@ class AppRouter {
       return null;
     }
 
-    // ------------------------------------------------------------
-    // 3. OTP flow
-    // ------------------------------------------------------------
-    //
-    // After successfully requesting an OTP, stay on the OTP page.
-    //
     if (isCodeSent) {
       if (location == '/otp') {
         return null;
@@ -141,59 +125,22 @@ class AppRouter {
       return '/otp?phone=${Uri.encodeComponent(authState.phoneNumber)}';
     }
 
-    // ------------------------------------------------------------
-    // 4. Authentication operation in progress
-    // ------------------------------------------------------------
-    //
-    // This includes:
-    // - Sending OTP
-    // - Verifying OTP
-    // - Resending OTP
-    // - Logging out
-    //
-    // Do not redirect while the operation is running.
-    //
     if (isLoading) {
       return null;
     }
 
-    // ------------------------------------------------------------
-    // 5. Splash after session check
-    // ------------------------------------------------------------
-    //
-    // Session check is finished and the user is not authenticated.
-    //
     if (location == '/splash') {
       return '/login';
     }
 
-    // ------------------------------------------------------------
-    // 6. OTP is no longer valid
-    // ------------------------------------------------------------
-    //
-    // Prevent manually opening /otp without an active OTP session.
-    //
     if (location == '/otp') {
       return '/login';
     }
 
-    // ------------------------------------------------------------
-    // 7. Root
-    // ------------------------------------------------------------
-    //
-    // Redirect "/" to "/login".
-    //
     if (location == '/') {
       return '/login';
     }
 
-    // ------------------------------------------------------------
-    // 8. Protect application routes
-    // ------------------------------------------------------------
-    //
-    // Any non-authenticated route that is not an auth route
-    // goes back to login.
-    //
     if (!isAuthRoute) {
       return '/login';
     }

@@ -1,6 +1,7 @@
 import '../../domain/entities/service.dart';
 import '../../domain/repositories/service_repository.dart';
 import '../datasources/service_remote_data_source.dart';
+import '../models/service_model.dart';
 
 class ServiceRepositoryImpl implements ServiceRepository {
   ServiceRepositoryImpl({required this._remoteDataSource});
@@ -33,15 +34,28 @@ class ServiceRepositoryImpl implements ServiceRepository {
     required int durationMinutes,
     required double price,
   }) {
-    throw UnimplementedError(
-      'Creating a service requires Owner authorization.',
+    return _remoteDataSource.createService(
+      shopId: shopId,
+      name: name,
+      description: description,
+      durationMinutes: durationMinutes,
+      price: price,
     );
   }
 
   @override
   Future<void> updateService(Service service) {
-    throw UnimplementedError(
-      'Updating a service requires Owner authorization.',
+    return _remoteDataSource.updateService(ServiceModel.fromEntity(service));
+  }
+
+  @override
+  Future<void> deleteService({
+    required String shopId,
+    required String serviceId,
+  }) {
+    return _remoteDataSource.deleteService(
+      shopId: shopId,
+      serviceId: serviceId,
     );
   }
 }

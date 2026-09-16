@@ -19,4 +19,9 @@ abstract interface class ServiceRepository {
   });
 
   Future<void> updateService(Service service);
+
+  Future<void> deleteService({
+    required String shopId,
+    required String serviceId,
+  });
 }

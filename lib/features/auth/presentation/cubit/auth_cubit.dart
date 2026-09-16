@@ -45,6 +45,28 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  Future<void> loginWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    if (state is AuthLoading) {
+      return;
+    }
+
+    emit(const AuthLoading());
+
+    try {
+      final user = await _authRepository.loginWithEmail(
+        email: email,
+        password: password,
+      );
+
+      emit(AuthAuthenticated(user));
+    } on Object catch (error) {
+      emit(AuthError(_mapError(error)));
+    }
+  }
+
   Future<void> register({required String name, required String phone}) async {
     if (state is AuthLoading) {
       return;

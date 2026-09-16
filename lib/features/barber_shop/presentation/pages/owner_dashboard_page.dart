@@ -1,15 +1,21 @@
 import 'package:barber_booking/core/di/injection.dart';
 import 'package:barber_booking/features/auth/domain/entities/user.dart';
 import 'package:barber_booking/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:barber_booking/features/barber/presentation/pages/owner_barbers_page.dart';
 import 'package:barber_booking/features/barber_shop/domain/entities/barber_shop.dart';
 import 'package:barber_booking/features/barber_shop/presentation/cubit/barber_shop_cubit.dart';
 import 'package:barber_booking/features/barber_shop/presentation/pages/owner_create_shop_page.dart';
+import 'package:barber_booking/features/booking/views/owner_bookings_page.dart';
+import 'package:barber_booking/features/service/presentation/pages/owner_services_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:barber_booking/features/barber/presentation/pages/owner_barbers_page.dart';
 
 class OwnerDashboardPage extends StatelessWidget {
   const OwnerDashboardPage({super.key});
+
+  Future<void> _logout(BuildContext context) async {
+    await context.read<AuthCubit>().logout();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +34,16 @@ class OwnerDashboardPage extends StatelessWidget {
     return BlocProvider(
       create: (_) => getIt<BarberShopCubit>()..loadOwnerShop(ownerId: user.id),
       child: Scaffold(
-        appBar: AppBar(title: const Text('Owner Dashboard')),
+        appBar: AppBar(
+          title: const Text('Owner Dashboard'),
+          actions: [
+            IconButton(
+              onPressed: () => _logout(context),
+              icon: const Icon(Icons.logout),
+              tooltip: 'Logout',
+            ),
+          ],
+        ),
         body: BlocBuilder<BarberShopCubit, BarberShopState>(
           builder: (context, state) {
             if (state is BarberShopOwnerLoading) {
@@ -95,6 +110,28 @@ class OwnerDashboardPage extends StatelessWidget {
                         );
                       },
                       child: const Text('Manage Barbers'),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => OwnerBookingsPage(shopId: shop.id),
+                          ),
+                        );
+                      },
+                      child: const Text('Manage Bookings'),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => OwnerServicesPage(shopId: shop.id),
+                          ),
+                        );
+                      },
+                      child: const Text('Manage Services'),
                     ),
                   ],
                 ),

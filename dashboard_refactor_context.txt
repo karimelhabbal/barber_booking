@@ -1,0 +1,1984 @@
+﻿===== DASHBOARD REFACTOR CONTEXT =====
+
+===== FILE: lib/features/dashboard/views/dashboard_page.dart =====
+
+import 'package:barber_booking/core/di/injection.dart';
+import 'package:barber_booking/features/barber/presentation/cubit/barber_cubit.dart';
+import 'package:barber_booking/features/barber_shop/domain/entities/barber_shop.dart';
+import 'package:barber_booking/features/barber_shop/presentation/cubit/barber_shop_cubit.dart';
+import 'package:barber_booking/features/barber_shop/presentation/pages/owner_dashboard_page.dart';
+import 'package:barber_booking/features/service/presentation/pages/customer_services_page.dart';
+
+import '../../../core/l10n/app_localizations.dart';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../auth/domain/entities/user.dart';
+import '../../auth/presentation/cubit/auth_cubit.dart';
+
+class DashboardPage extends StatelessWidget {
+  const DashboardPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final authState = context.watch<AuthCubit>().state;
+
+    if (authState is! AuthAuthenticated) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (authState.user.role == UserRole.customer) {
+      return const CustomerDashboardPage();
+    }
+
+    if (authState.user.role == UserRole.owner) {
+      return const OwnerDashboardPage();
+    }
+
+    return const Scaffold(
+      body: Center(child: Text('Barber dashboard not implemented yet.')),
+    );
+  }
+}
+
+class CustomerDashboardPage extends StatelessWidget {
+  const CustomerDashboardPage({super.key});
+
+  Future<void> _logout(BuildContext context) async {
+    await context.read<AuthCubit>().logout();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
+    return BlocProvider(
+      create: (_) => getIt<BarberShopCubit>()..loadActiveShops(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(loc.customerDashboard),
+          actions: [
+            IconButton(
+              onPressed: () => _logout(context),
+              icon: const Icon(Icons.logout),
+              tooltip: 'Logout',
+            ),
+          ],
+        ),
+        body: BlocBuilder<BarberShopCubit, BarberShopState>(
+          builder: (context, state) {
+            if (state is BarberShopLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (state is BarberShopError) {
+              return Center(child: Text(state.message));
+            }
+
+            if (state is BarberShopLoaded) {
+              if (state.shops.isEmpty) {
+                return Center(
+                  child: Text(
+                    loc.noBarberShopsAvailable,
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: state.shops.length,
+                itemBuilder: (context, index) {
+                  final shop = state.shops[index];
+
+                  return Card(
+                    child: ListTile(
+                      title: Text(shop.name),
+                      subtitle: Text(shop.address ?? ''),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => CustomerShopPage(shop: shop),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              );
+            }
+
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class CustomerShopPage extends StatelessWidget {
+  const CustomerShopPage({super.key, required this.shop});
+
+  final BarberShop shop;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) =>
+          getIt<BarberCubit>()..loadShopBarbers(barberShopId: shop.id),
+      child: Scaffold(
+        appBar: AppBar(title: Text(shop.name)),
+        body: BlocBuilder<BarberCubit, BarberState>(
+          builder: (context, state) {
+            if (state is BarberLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (state is BarberError) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(state.message, textAlign: TextAlign.center),
+                ),
+              );
+            }
+
+            if (state is BarberLoaded) {
+              if (state.barbers.isEmpty) {
+                return const Center(
+                  child: Text(
+                    'No barbers are currently available.',
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: state.barbers.length,
+                itemBuilder: (context, index) {
+                  final barber = state.barbers[index];
+
+                  return Card(
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage:
+                            barber.imageUrl != null &&
+                                barber.imageUrl!.trim().isNotEmpty
+                            ? NetworkImage(barber.imageUrl!)
+                            : null,
+                        child:
+                            barber.imageUrl == null ||
+                                barber.imageUrl!.trim().isEmpty
+                            ? const Icon(Icons.person)
+                            : null,
+                      ),
+                      title: Text(barber.name),
+                      subtitle: Text(barber.phone ?? ''),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => CustomerServicesPage(
+                              shop: shop,
+                              barber: barber,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              );
+            }
+
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
+  }
+}
+
+
+===== FILE: lib/features/barber/presentation/cubit/barber_cubit.dart =====
+
+import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
+
+import '../../domain/entities/barber.dart';
+import '../../domain/entities/barber_candidate.dart';
+import '../../domain/repositories/barber_repository.dart';
+
+part 'barber_state.dart';
+
+class BarberCubit extends Cubit<BarberState> {
+  BarberCubit({required this._repository}) : super(const BarberInitial());
+
+  final BarberRepository _repository;
+
+  Future<void> loadCurrentBarber({
+    required String userId,
+    required String barberShopId,
+  }) async {
+    final trimmedUserId = userId.trim();
+    final trimmedShopId = barberShopId.trim();
+
+    if (trimmedUserId.isEmpty) {
+      emit(const BarberError('Barber user ID cannot be empty.'));
+      return;
+    }
+
+    if (trimmedShopId.isEmpty) {
+      emit(const BarberError('Barber shop ID cannot be empty.'));
+      return;
+    }
+
+    emit(const BarberProfileLoading());
+
+    try {
+      final barber = await _repository.getBarberByUserAndShop(
+        userId: trimmedUserId,
+        barberShopId: trimmedShopId,
+      );
+
+      if (barber == null) {
+        emit(const BarberError('Barber profile not found.'));
+        return;
+      }
+
+      emit(BarberProfileLoaded(barber));
+    } on Object catch (error) {
+      emit(BarberError(error.toString()));
+    }
+  }
+
+  Future<void> loadBarberCandidates() async {
+    if (state is BarberCandidatesLoading) {
+      return;
+    }
+
+    emit(const BarberCandidatesLoading());
+
+    try {
+      final candidates = await _repository.getBarberCandidates();
+
+      emit(BarberCandidatesLoaded(candidates));
+    } on Object catch (error) {
+      emit(BarberError(error.toString()));
+    }
+  }
+
+  Future<void> loadShopBarbers({required String barberShopId}) async {
+    if (state is BarberLoading) {
+      return;
+    }
+
+    final shopId = barberShopId.trim();
+
+    if (shopId.isEmpty) {
+      emit(const BarberError('Barber shop ID cannot be empty.'));
+      return;
+    }
+
+    emit(const BarberLoading());
+
+    try {
+      final barbers = await _repository.getShopBarbers(barberShopId: shopId);
+
+      emit(BarberLoaded(barbers));
+    } on Object catch (error) {
+      emit(BarberError(error.toString()));
+    }
+  }
+
+  Future<void> createBarber({
+    required String userId,
+    required String barberShopId,
+    required String name,
+    String? phone,
+    String? imageUrl,
+  }) async {
+    final trimmedUserId = userId.trim();
+    final trimmedShopId = barberShopId.trim();
+    final trimmedName = name.trim();
+
+    if (trimmedUserId.isEmpty) {
+      emit(const BarberError('Barber user ID cannot be empty.'));
+      return;
+    }
+
+    if (trimmedShopId.isEmpty) {
+      emit(const BarberError('Barber shop ID cannot be empty.'));
+      return;
+    }
+
+    if (trimmedName.isEmpty) {
+      emit(const BarberError('Barber name cannot be empty.'));
+      return;
+    }
+
+    emit(const BarberCreating());
+
+    try {
+      final existingBarber = await _repository.getBarberByUserAndShop(
+        userId: trimmedUserId,
+        barberShopId: trimmedShopId,
+      );
+
+      if (existingBarber != null) {
+        emit(
+          const BarberError('This barber is already assigned to this shop.'),
+        );
+        return;
+      }
+
+      final barber = await _repository.createBarber(
+        userId: trimmedUserId,
+        barberShopId: trimmedShopId,
+        name: trimmedName,
+        phone: phone,
+        imageUrl: imageUrl,
+      );
+
+      emit(BarberCreated(barber));
+    } on Object catch (error) {
+      emit(BarberError(error.toString()));
+    }
+  }
+
+  Future<void> updateBarber(Barber barber) async {
+    if (barber.id.trim().isEmpty) {
+      emit(const BarberError('Barber ID cannot be empty.'));
+      return;
+    }
+
+    final currentState = state;
+
+    try {
+      await _repository.updateBarber(barber);
+
+      if (currentState is BarberLoaded) {
+        final updatedBarbers = currentState.barbers.map((item) {
+          if (item.id == barber.id) {
+            return barber;
+          }
+
+          return item;
+        }).toList();
+
+        emit(BarberLoaded(updatedBarbers));
+        return;
+      }
+
+      emit(BarberUpdated(barber));
+    } on Object catch (error) {
+      emit(BarberError(error.toString()));
+    }
+  }
+}
+
+
+===== FILE: lib/features/barber/presentation/cubit/barber_state.dart =====
+
+part of 'barber_cubit.dart';
+
+abstract class BarberState extends Equatable {
+  const BarberState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class BarberInitial extends BarberState {
+  const BarberInitial();
+}
+
+class BarberProfileLoading extends BarberState {
+  const BarberProfileLoading();
+}
+
+class BarberProfileLoaded extends BarberState {
+  const BarberProfileLoaded(this.barber);
+
+  final Barber barber;
+
+  @override
+  List<Object?> get props => [barber];
+}
+
+class BarberLoading extends BarberState {
+  const BarberLoading();
+}
+
+class BarberLoaded extends BarberState {
+  const BarberLoaded(this.barbers);
+
+  final List<Barber> barbers;
+
+  @override
+  List<Object?> get props => [barbers];
+}
+
+class BarberCreating extends BarberState {
+  const BarberCreating();
+}
+
+class BarberCreated extends BarberState {
+  const BarberCreated(this.barber);
+
+  final Barber barber;
+
+  @override
+  List<Object?> get props => [barber];
+}
+
+class BarberUpdating extends BarberState {
+  const BarberUpdating();
+}
+
+class BarberUpdated extends BarberState {
+  const BarberUpdated(this.barber);
+
+  final Barber barber;
+
+  @override
+  List<Object?> get props => [barber];
+}
+
+class BarberError extends BarberState {
+  const BarberError(this.message);
+
+  final String message;
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class BarberCandidatesLoading extends BarberState {
+  const BarberCandidatesLoading();
+}
+
+class BarberCandidatesLoaded extends BarberState {
+  const BarberCandidatesLoaded(this.candidates);
+
+  final List<BarberCandidate> candidates;
+
+  @override
+  List<Object?> get props => [candidates];
+}
+
+
+===== FILE: lib/features/barber_shop/presentation/cubit/barber_shop_cubit.dart =====
+
+import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
+
+import '../../domain/entities/barber_shop.dart';
+import '../../domain/repositories/barber_shop_repository.dart';
+
+part 'barber_shop_state.dart';
+
+class BarberShopCubit extends Cubit<BarberShopState> {
+  BarberShopCubit({required this._repository})
+    : super(const BarberShopInitial());
+
+  final BarberShopRepository _repository;
+
+  Future<void> loadShop({required String shopId}) async {
+    final trimmedShopId = shopId.trim();
+
+    if (trimmedShopId.isEmpty) {
+      emit(const BarberShopError('Barber shop ID cannot be empty.'));
+      return;
+    }
+
+    emit(const BarberShopShopLoading());
+
+    try {
+      final shop = await _repository.getShop(shopId: trimmedShopId);
+
+      if (shop == null) {
+        emit(const BarberShopError('Barber shop not found.'));
+        return;
+      }
+
+      emit(BarberShopShopLoaded(shop));
+    } on Object catch (error) {
+      emit(BarberShopError(error.toString()));
+    }
+  }
+
+  Future<void> loadActiveShops() async {
+    if (state is BarberShopLoading) {
+      return;
+    }
+
+    emit(const BarberShopLoading());
+
+    try {
+      final shops = await _repository.getActiveShops();
+
+      emit(BarberShopLoaded(shops));
+    } on Object catch (error) {
+      emit(BarberShopError(error.toString()));
+    }
+  }
+
+  Future<void> loadOwnerShop({required String ownerId}) async {
+    emit(const BarberShopOwnerLoading());
+
+    try {
+      final shop = await _repository.getOwnerShop(ownerId: ownerId);
+
+      emit(BarberShopOwnerLoaded(shop));
+    } on Object catch (error) {
+      emit(BarberShopError(error.toString()));
+    }
+  }
+
+  Future<void> createShop({
+    required String ownerId,
+    required String name,
+    String? phone,
+    String? address,
+    String? description,
+    String? imageUrl,
+    String timezone = 'Africa/Cairo',
+  }) async {
+    final trimmedName = name.trim();
+
+    if (trimmedName.isEmpty) {
+      emit(const BarberShopError('Barber shop name cannot be empty.'));
+      return;
+    }
+
+    emit(const BarberShopCreating());
+
+    try {
+      final shop = await _repository.createShop(
+        ownerId: ownerId,
+        name: trimmedName,
+        phone: phone,
+        address: address,
+        description: description,
+        imageUrl: imageUrl,
+        timezone: timezone,
+      );
+
+      emit(BarberShopCreated(shop));
+    } on Object catch (error) {
+      emit(BarberShopError(error.toString()));
+    }
+  }
+}
+
+
+===== FILE: lib/features/barber_shop/presentation/cubit/barber_shop_state.dart =====
+
+part of 'barber_shop_cubit.dart';
+
+abstract class BarberShopState extends Equatable {
+  const BarberShopState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class BarberShopInitial extends BarberShopState {
+  const BarberShopInitial();
+}
+
+class BarberShopLoading extends BarberShopState {
+  const BarberShopLoading();
+}
+
+class BarberShopLoaded extends BarberShopState {
+  const BarberShopLoaded(this.shops);
+
+  final List<BarberShop> shops;
+
+  @override
+  List<Object?> get props => [shops];
+}
+
+class BarberShopShopLoading extends BarberShopState {
+  const BarberShopShopLoading();
+}
+
+class BarberShopShopLoaded extends BarberShopState {
+  const BarberShopShopLoaded(this.shop);
+
+  final BarberShop shop;
+
+  @override
+  List<Object?> get props => [shop];
+}
+
+class BarberShopOwnerLoading extends BarberShopState {
+  const BarberShopOwnerLoading();
+}
+
+class BarberShopOwnerLoaded extends BarberShopState {
+  const BarberShopOwnerLoaded(this.shop);
+
+  final BarberShop? shop;
+
+  @override
+  List<Object?> get props => [shop];
+}
+
+class BarberShopCreating extends BarberShopState {
+  const BarberShopCreating();
+}
+
+class BarberShopCreated extends BarberShopState {
+  const BarberShopCreated(this.shop);
+
+  final BarberShop shop;
+
+  @override
+  List<Object?> get props => [shop];
+}
+
+class BarberShopError extends BarberShopState {
+  const BarberShopError(this.message);
+
+  final String message;
+
+  @override
+  List<Object?> get props => [message];
+}
+
+
+===== FILE: lib/features/booking/presentation/cubit/booking_cubit.dart =====
+
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../domain/entities/booking.dart';
+import '../../domain/repositories/booking_repository.dart';
+import '../../domain/usecases/create_booking.dart';
+import '../../domain/usecases/get_available_slots.dart';
+import 'booking_state.dart';
+
+class BookingCubit extends Cubit<BookingState> {
+  BookingCubit({
+    required this._repository,
+    required this._getAvailableSlots,
+    required this._createBooking,
+  }) : super(const BookingInitial());
+
+  final BookingRepository _repository;
+  final GetAvailableSlots _getAvailableSlots;
+  final CreateBooking _createBooking;
+
+  Future<void> loadCustomerBookings({required String customerId}) async {
+    final trimmedCustomerId = customerId.trim();
+
+    if (trimmedCustomerId.isEmpty) {
+      emit(const BookingError('Customer ID cannot be empty.'));
+      return;
+    }
+
+    emit(const BookingLoading());
+
+    try {
+      final bookings = await _repository.getCustomerBookings(
+        customerId: trimmedCustomerId,
+      );
+
+      emit(BookingLoaded(bookings));
+    } catch (e) {
+      emit(BookingError(_mapError(e)));
+    }
+  }
+
+  Future<void> loadBarberBookings({required String barberId}) async {
+    final trimmedBarberId = barberId.trim();
+
+    if (trimmedBarberId.isEmpty) {
+      emit(const BookingError('Barber ID cannot be empty.'));
+      return;
+    }
+
+    emit(const BookingLoading());
+
+    try {
+      final bookings = await _repository.getBarberBookings(
+        barberId: trimmedBarberId,
+      );
+
+      emit(BookingLoaded(bookings));
+    } catch (e) {
+      emit(BookingError(_mapError(e)));
+    }
+  }
+
+  Future<void> loadBarberBookingsForDate({
+    required String barberId,
+    required DateTime date,
+  }) async {
+    final trimmedBarberId = barberId.trim();
+
+    if (trimmedBarberId.isEmpty) {
+      emit(const BookingError('Barber ID cannot be empty.'));
+      return;
+    }
+
+    emit(const BookingLoading());
+
+    try {
+      final bookings = await _repository.getBarberBookingsForDate(
+        barberId: trimmedBarberId,
+        date: date,
+      );
+
+      emit(BookingLoaded(bookings));
+    } catch (e) {
+      emit(BookingError(_mapError(e)));
+    }
+  }
+
+  Future<void> loadAvailableSlots({
+    required String barberId,
+    required DateTime date,
+    required int serviceDurationMinutes,
+  }) async {
+    final trimmedBarberId = barberId.trim();
+
+    if (trimmedBarberId.isEmpty) {
+      emit(const BookingError('Barber ID cannot be empty.'));
+      return;
+    }
+
+    if (serviceDurationMinutes <= 0) {
+      emit(const BookingError('Service duration must be greater than zero.'));
+      return;
+    }
+
+    if (serviceDurationMinutes % 5 != 0) {
+      emit(
+        const BookingError('Service duration must be a multiple of 5 minutes.'),
+      );
+      return;
+    }
+
+    emit(const AvailabilityLoading());
+
+    try {
+      final slots = await _getAvailableSlots(
+        barberId: trimmedBarberId,
+        date: date,
+        serviceDurationMinutes: serviceDurationMinutes,
+      );
+
+      emit(
+        AvailabilityLoaded(
+          date: DateTime(date.year, date.month, date.day),
+          barberId: trimmedBarberId,
+          serviceDurationMinutes: serviceDurationMinutes,
+          slots: slots,
+        ),
+      );
+    } catch (e) {
+      emit(BookingError(_mapError(e)));
+    }
+  }
+
+  Future<void> loadBooking({required String bookingId}) async {
+    final trimmedBookingId = bookingId.trim();
+
+    if (trimmedBookingId.isEmpty) {
+      emit(const BookingError('Booking ID cannot be empty.'));
+      return;
+    }
+
+    emit(const BookingLoading());
+
+    try {
+      final booking = await _repository.getBooking(bookingId: trimmedBookingId);
+
+      if (booking == null) {
+        emit(const BookingError('Booking not found.'));
+        return;
+      }
+
+      emit(BookingLoaded([booking]));
+    } catch (e) {
+      emit(BookingError(_mapError(e)));
+    }
+  }
+
+  Future<void> createBooking({required Booking booking}) async {
+    final validationError = _validateBooking(booking);
+
+    if (validationError != null) {
+      emit(BookingError(validationError));
+      return;
+    }
+
+    emit(const BookingCreating());
+
+    try {
+      final createdBooking = await _createBooking(booking: booking);
+
+      emit(BookingCreated(createdBooking));
+    } catch (e) {
+      emit(BookingError(_mapError(e)));
+    }
+  }
+
+  Future<void> cancelBooking({required String bookingId}) async {
+    final trimmedBookingId = bookingId.trim();
+
+    if (trimmedBookingId.isEmpty) {
+      emit(const BookingError('Booking ID cannot be empty.'));
+      return;
+    }
+
+    emit(BookingCancelling(trimmedBookingId));
+
+    try {
+      await _repository.cancelBooking(bookingId: trimmedBookingId);
+
+      emit(BookingCancelled(trimmedBookingId));
+    } catch (e) {
+      emit(BookingError(_mapError(e)));
+    }
+  }
+
+  String? _validateBooking(Booking booking) {
+    if (booking.customerId.trim().isEmpty) {
+      return 'Customer ID cannot be empty.';
+    }
+
+    if (booking.shopId.trim().isEmpty) {
+      return 'Shop ID cannot be empty.';
+    }
+
+    if (booking.barberId.trim().isEmpty) {
+      return 'Barber ID cannot be empty.';
+    }
+
+    if (booking.serviceId.trim().isEmpty) {
+      return 'Service ID cannot be empty.';
+    }
+
+    if (booking.serviceName.trim().isEmpty) {
+      return 'Service name cannot be empty.';
+    }
+
+    if (booking.customerName.trim().isEmpty) {
+      return 'Customer name cannot be empty.';
+    }
+
+    if (booking.barberName.trim().isEmpty) {
+      return 'Barber name cannot be empty.';
+    }
+
+    if (booking.serviceDurationMinutes <= 0) {
+      return 'Service duration must be greater than zero.';
+    }
+
+    if (booking.serviceDurationMinutes % 5 != 0) {
+      return 'Service duration must be a multiple of 5 minutes.';
+    }
+
+    if (booking.servicePrice < 0) {
+      return 'Service price cannot be negative.';
+    }
+
+    if (!_isValidTime(booking.startTime)) {
+      return 'Invalid booking start time.';
+    }
+
+    if (!_isValidTime(booking.endTime)) {
+      return 'Invalid booking end time.';
+    }
+
+    final startMinutes = _timeToMinutes(booking.startTime);
+
+    final endMinutes = _timeToMinutes(booking.endTime);
+
+    if (startMinutes % 5 != 0) {
+      return 'Booking start time must be on a 5-minute interval.';
+    }
+
+    if (endMinutes <= startMinutes) {
+      return 'Booking end time must be after start time.';
+    }
+
+    final actualDuration = endMinutes - startMinutes;
+
+    if (actualDuration != booking.serviceDurationMinutes) {
+      return 'Booking duration does not match service duration.';
+    }
+
+    return null;
+  }
+
+  bool _isValidTime(String value) {
+    return RegExp(r'^(?:[01]\d|2[0-3]):[0-5]\d$').hasMatch(value);
+  }
+
+  int _timeToMinutes(String value) {
+    final parts = value.split(':');
+
+    if (parts.length != 2) {
+      throw ArgumentError('Invalid time format: $value');
+    }
+
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+
+    if (hour == null ||
+        minute == null ||
+        hour < 0 ||
+        hour > 23 ||
+        minute < 0 ||
+        minute > 59) {
+      throw ArgumentError('Invalid time value: $value');
+    }
+
+    return (hour * 60) + minute;
+  }
+
+  String _mapError(Object error) {
+    if (error is ArgumentError) {
+      return error.message?.toString() ?? 'Invalid booking data.';
+    }
+
+    if (error is StateError) {
+      return error.message;
+    }
+
+    final message = error.toString();
+
+    if (message.contains('permission-denied')) {
+      return 'You do not have permission to perform this action.';
+    }
+
+    if (message.contains('FAILED_PRECONDITION')) {
+      return 'A required Firestore index may be missing.';
+    }
+
+    if (message.toLowerCase().contains('network')) {
+      return 'Network error. Please check your internet connection.';
+    }
+
+    return 'Something went wrong. Please try again.';
+  }
+}
+
+
+===== FILE: lib/features/booking/presentation/cubit/booking_state.dart =====
+
+import 'package:equatable/equatable.dart';
+
+import '../../domain/entities/available_slot.dart';
+import '../../domain/entities/booking.dart';
+
+abstract class BookingState extends Equatable {
+  const BookingState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+// ============================================================
+// INITIAL
+// ============================================================
+
+class BookingInitial extends BookingState {
+  const BookingInitial();
+}
+
+// ============================================================
+// GENERAL LOADING
+// ============================================================
+
+class BookingLoading extends BookingState {
+  const BookingLoading();
+}
+
+// ============================================================
+// BOOKINGS LOADED
+// ============================================================
+
+class BookingLoaded extends BookingState {
+  const BookingLoaded(this.bookings);
+
+  final List<Booking> bookings;
+
+  @override
+  List<Object?> get props => [bookings];
+}
+
+// ============================================================
+// CREATE BOOKING
+// ============================================================
+
+class BookingCreating extends BookingState {
+  const BookingCreating();
+}
+
+class BookingCreated extends BookingState {
+  const BookingCreated(this.booking);
+
+  final Booking booking;
+
+  @override
+  List<Object?> get props => [booking];
+}
+
+// ============================================================
+// CANCEL BOOKING
+// ============================================================
+
+class BookingCancelling extends BookingState {
+  const BookingCancelling(this.bookingId);
+
+  final String bookingId;
+
+  @override
+  List<Object?> get props => [bookingId];
+}
+
+class BookingCancelled extends BookingState {
+  const BookingCancelled(this.bookingId);
+
+  final String bookingId;
+
+  @override
+  List<Object?> get props => [bookingId];
+}
+
+// ============================================================
+// AVAILABILITY
+// ============================================================
+
+class AvailabilityLoading extends BookingState {
+  const AvailabilityLoading();
+}
+
+class AvailabilityLoaded extends BookingState {
+  const AvailabilityLoaded({
+    required this.date,
+    required this.barberId,
+    required this.serviceDurationMinutes,
+    required this.slots,
+  });
+
+  final DateTime date;
+  final String barberId;
+  final int serviceDurationMinutes;
+  final List<AvailableSlot> slots;
+
+  @override
+  List<Object?> get props => [date, barberId, serviceDurationMinutes, slots];
+}
+
+// ============================================================
+// ERROR
+// ============================================================
+
+class BookingError extends BookingState {
+  const BookingError(this.message);
+
+  final String message;
+
+  @override
+  List<Object?> get props => [message];
+}
+
+
+===== FILE: lib/features/booking/domain/entities/booking.dart =====
+
+import 'package:equatable/equatable.dart';
+
+enum BookingStatus { pending, confirmed, completed, cancelled }
+
+class Booking extends Equatable {
+  final String id;
+  final String customerId;
+  final String shopId;
+  final String barberId;
+  final String serviceId;
+
+  final DateTime bookingDate;
+  final String startTime;
+  final String endTime;
+
+  final BookingStatus status;
+
+  final String serviceName;
+  final int serviceDurationMinutes;
+  final double servicePrice;
+
+  final String customerName;
+  final String barberName;
+
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  const Booking({
+    required this.id,
+    required this.customerId,
+    required this.shopId,
+    required this.barberId,
+    required this.serviceId,
+    required this.bookingDate,
+    required this.startTime,
+    required this.endTime,
+    required this.status,
+    required this.serviceName,
+    required this.serviceDurationMinutes,
+    required this.servicePrice,
+    required this.customerName,
+    required this.barberName,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  Booking copyWith({
+    String? id,
+    String? customerId,
+    String? shopId,
+    String? barberId,
+    String? serviceId,
+    DateTime? bookingDate,
+    String? startTime,
+    String? endTime,
+    BookingStatus? status,
+    String? serviceName,
+    int? serviceDurationMinutes,
+    double? servicePrice,
+    String? customerName,
+    String? barberName,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Booking(
+      id: id ?? this.id,
+      customerId: customerId ?? this.customerId,
+      shopId: shopId ?? this.shopId,
+      barberId: barberId ?? this.barberId,
+      serviceId: serviceId ?? this.serviceId,
+      bookingDate: bookingDate ?? this.bookingDate,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      status: status ?? this.status,
+      serviceName: serviceName ?? this.serviceName,
+      serviceDurationMinutes:
+          serviceDurationMinutes ?? this.serviceDurationMinutes,
+      servicePrice: servicePrice ?? this.servicePrice,
+      customerName: customerName ?? this.customerName,
+      barberName: barberName ?? this.barberName,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+    id,
+    customerId,
+    shopId,
+    barberId,
+    serviceId,
+    bookingDate,
+    startTime,
+    endTime,
+    status,
+    serviceName,
+    serviceDurationMinutes,
+    servicePrice,
+    customerName,
+    barberName,
+    createdAt,
+    updatedAt,
+  ];
+}
+
+
+===== FILE: lib/features/barber_shop/domain/entities/barber_shop.dart =====
+
+import 'package:equatable/equatable.dart';
+
+class BarberShop extends Equatable {
+  final String id;
+  final String name;
+  final String ownerId;
+  final String? phone;
+  final String? address;
+  final String? description;
+  final String? imageUrl;
+  final String timezone;
+  final bool isActive;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  const BarberShop({
+    required this.id,
+    required this.name,
+    required this.ownerId,
+    this.phone,
+    this.address,
+    this.description,
+    this.imageUrl,
+    required this.timezone,
+    required this.isActive,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  @override
+  List<Object?> get props => [
+    id,
+    name,
+    ownerId,
+    phone,
+    address,
+    description,
+    imageUrl,
+    timezone,
+    isActive,
+    createdAt,
+    updatedAt,
+  ];
+}
+
+
+===== FILE: lib/features/barber_shop/presentation/pages/owner_dashboard_page.dart =====
+
+import 'package:barber_booking/core/di/injection.dart';
+import 'package:barber_booking/features/auth/domain/entities/user.dart';
+import 'package:barber_booking/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:barber_booking/features/barber/presentation/pages/owner_barbers_page.dart';
+import 'package:barber_booking/features/barber_shop/domain/entities/barber_shop.dart';
+import 'package:barber_booking/features/barber_shop/presentation/cubit/barber_shop_cubit.dart';
+import 'package:barber_booking/features/barber_shop/presentation/pages/owner_create_shop_page.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+class OwnerDashboardPage extends StatelessWidget {
+  const OwnerDashboardPage({super.key});
+
+  Future<void> _logout(BuildContext context) async {
+    await context.read<AuthCubit>().logout();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final authState = context.watch<AuthCubit>().state;
+
+    if (authState is! AuthAuthenticated) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final user = authState.user;
+
+    if (user.role != UserRole.owner) {
+      return const Scaffold(body: Center(child: Text('Access denied.')));
+    }
+
+    return BlocProvider(
+      create: (_) => getIt<BarberShopCubit>()..loadOwnerShop(ownerId: user.id),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Owner Dashboard'),
+          actions: [
+            IconButton(
+              onPressed: () => _logout(context),
+              icon: const Icon(Icons.logout),
+              tooltip: 'Logout',
+            ),
+          ],
+        ),
+        body: BlocBuilder<BarberShopCubit, BarberShopState>(
+          builder: (context, state) {
+            if (state is BarberShopOwnerLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (state is BarberShopError) {
+              return Center(child: Text(state.message));
+            }
+
+            if (state is BarberShopOwnerLoaded) {
+              final shop = state.shop;
+
+              if (shop == null) {
+                return Center(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      final authCubit = context.read<AuthCubit>();
+
+                      final createdShop = await Navigator.of(context)
+                          .push<BarberShop>(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  OwnerCreateShopPage(authCubit: authCubit),
+                            ),
+                          );
+
+                      if (!context.mounted) {
+                        return;
+                      }
+
+                      if (createdShop != null) {
+                        context.read<BarberShopCubit>().loadOwnerShop(
+                          ownerId: user.id,
+                        );
+                      }
+                    },
+                    child: const Text('Create Barber Shop'),
+                  ),
+                );
+              }
+
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      shop.name,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(shop.address ?? 'No address'),
+                    const SizedBox(height: 8),
+                    Text(shop.phone ?? 'No phone'),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                OwnerBarbersPage(barberShopId: shop.id),
+                          ),
+                        );
+                      },
+                      child: const Text('Manage Barbers'),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
+  }
+}
+
+
+===== FILE: lib/features/service/presentation/pages/customer_services_page.dart =====
+
+import 'package:barber_booking/core/di/injection.dart';
+import 'package:barber_booking/features/barber/domain/entities/barber.dart';
+import 'package:barber_booking/features/barber_shop/domain/entities/barber_shop.dart';
+import 'package:barber_booking/features/service/domain/entities/service.dart';
+import 'package:barber_booking/features/service/presentation/cubit/service_cubit.dart';
+import 'package:barber_booking/features/service/presentation/cubit/service_state.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+class CustomerServicesPage extends StatelessWidget {
+  const CustomerServicesPage({
+    super.key,
+    required this.shop,
+    required this.barber,
+  });
+
+  final BarberShop shop;
+  final Barber barber;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) =>
+          getIt<ServiceCubit>()..loadActiveShopServices(shopId: shop.id),
+      child: Scaffold(
+        appBar: AppBar(title: Text(shop.name)),
+        body: BlocBuilder<ServiceCubit, ServiceState>(
+          builder: (context, state) {
+            if (state is ServiceLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (state is ServiceError) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(state.message, textAlign: TextAlign.center),
+                ),
+              );
+            }
+
+            if (state is ServiceLoaded) {
+              if (state.services.isEmpty) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text(
+                      'No services are currently available.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              }
+
+              return _ServicesList(
+                shop: shop,
+                barber: barber,
+                services: state.services,
+              );
+            }
+
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _ServicesList extends StatelessWidget {
+  const _ServicesList({
+    required this.shop,
+    required this.barber,
+    required this.services,
+  });
+
+  final BarberShop shop;
+  final Barber barber;
+  final List<Service> services;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: services.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final service = services[index];
+
+        return _ServiceCard(
+          service: service,
+          onTap: () {
+            _selectService(context, service);
+          },
+        );
+      },
+    );
+  }
+
+  void _selectService(BuildContext context, Service service) {
+    /*
+     * The next booking step will use:
+     *
+     * shop.id
+     * barber.id
+     * service.id
+     * service.durationMinutes
+     * service.price
+     *
+     * We intentionally stop here until the customer booking-date/slot
+     * page is connected.
+     */
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${service.name} selected for ${barber.name}.')),
+    );
+  }
+}
+
+class _ServiceCard extends StatelessWidget {
+  const _ServiceCard({required this.service, required this.onTap});
+
+  final Service service;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      service.name,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    '${service.price.toStringAsFixed(2)} EGP',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              if (service.description != null &&
+                  service.description!.trim().isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(service.description!, style: theme.textTheme.bodyMedium),
+              ],
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(Icons.schedule_outlined, size: 18),
+                  const SizedBox(width: 6),
+                  Text(_formatDuration(service.durationMinutes)),
+                  const Spacer(),
+                  const Icon(Icons.arrow_forward_ios, size: 16),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatDuration(int minutes) {
+    if (minutes < 60) {
+      return '$minutes min';
+    }
+
+    final hours = minutes ~/ 60;
+    final remainingMinutes = minutes % 60;
+
+    if (remainingMinutes == 0) {
+      return hours == 1 ? '1 hour' : '$hours hours';
+    }
+
+    return '${hours}h ${remainingMinutes}min';
+  }
+}
+
+
+===== FILE: lib/features/auth/domain/entities/user.dart =====
+
+import 'package:equatable/equatable.dart';
+
+enum UserRole { owner, barber, customer }
+
+class User extends Equatable {
+  final String id;
+  final String? name;
+  final String? phone;
+  final UserRole role;
+  final String? barberShopId;
+
+  const User({
+    required this.id,
+    this.name,
+    this.phone,
+    this.role = UserRole.customer,
+    this.barberShopId,
+  });
+
+  @override
+  List<Object?> get props => [id, name, phone, role, barberShopId];
+}
+
+
+===== FILE: lib/features/auth/presentation/cubit/auth_cubit.dart =====
+
+import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
+
+import '../../data/repositories/auth_repository_impl.dart';
+import '../../domain/entities/user.dart';
+import '../../domain/repositories/auth_repository.dart';
+
+part 'auth_state.dart';
+
+class AuthCubit extends Cubit<AuthState> {
+  AuthCubit({required this._authRepository})
+    : super(const AuthCheckingSession()) {
+    _restoreSession();
+  }
+
+  final AuthRepository _authRepository;
+
+  Future<void> _restoreSession() async {
+    try {
+      final user = await _authRepository.getCurrentUser();
+
+      if (user != null) {
+        emit(AuthAuthenticated(user));
+      } else {
+        emit(const AuthUnauthenticated());
+      }
+    } on Object catch (error) {
+      emit(AuthError(_mapError(error)));
+    }
+  }
+
+  Future<void> loginWithPhone({required String phone}) async {
+    if (state is AuthLoading) {
+      return;
+    }
+
+    emit(const AuthLoading());
+
+    try {
+      await _authRepository.sendLoginOtp(phone: phone);
+
+      emit(AuthCodeSent(phone.trim()));
+    } on Object catch (error) {
+      emit(AuthError(_mapError(error)));
+    }
+  }
+
+  Future<void> loginWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    if (state is AuthLoading) {
+      return;
+    }
+
+    emit(const AuthLoading());
+
+    try {
+      final user = await _authRepository.loginWithEmail(
+        email: email,
+        password: password,
+      );
+
+      emit(AuthAuthenticated(user));
+    } on Object catch (error) {
+      emit(AuthError(_mapError(error)));
+    }
+  }
+
+  Future<void> register({required String name, required String phone}) async {
+    if (state is AuthLoading) {
+      return;
+    }
+
+    emit(const AuthLoading());
+
+    try {
+      await _authRepository.sendRegistrationOtp(name: name, phone: phone);
+
+      emit(AuthCodeSent(phone.trim()));
+    } on Object catch (error) {
+      emit(AuthError(_mapError(error)));
+    }
+  }
+
+  Future<void> resendOtp() async {
+    if (state is AuthLoading) {
+      return;
+    }
+
+    final previousState = state;
+
+    if (previousState is! AuthCodeSent) {
+      emit(const AuthError('request-new-code'));
+      return;
+    }
+
+    final phoneNumber = previousState.phoneNumber;
+
+    emit(const AuthLoading());
+
+    try {
+      await _authRepository.resendOtp();
+
+      emit(AuthCodeSent(phoneNumber));
+    } on Object catch (error) {
+      emit(AuthError(_mapError(error)));
+    }
+  }
+
+  Future<void> verifyOtp({required String code}) async {
+    if (state is AuthLoading) {
+      return;
+    }
+
+    emit(const AuthLoading());
+
+    try {
+      final user = await _authRepository.verifyOtp(code: code);
+
+      emit(AuthAuthenticated(user));
+    } on Object catch (error) {
+      emit(AuthError(_mapError(error)));
+    }
+  }
+
+  Future<void> logout() async {
+    if (state is AuthLoading) {
+      return;
+    }
+
+    emit(const AuthLoading());
+
+    try {
+      await _authRepository.logout();
+
+      emit(const AuthUnauthenticated());
+    } on Object catch (error) {
+      emit(AuthError(_mapError(error)));
+    }
+  }
+
+  String _mapError(Object error) {
+    if (error is AuthRepositoryException) {
+      return error.code;
+    }
+
+    return 'generic-auth-error';
+  }
+}
+
+
+===== FILE: lib/core/di/injection.dart =====
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:get_it/get_it.dart';
+
+import '../../features/auth/data/datasources/auth_remote_data_source.dart';
+import '../../features/auth/data/datasources/user_remote_data_source.dart';
+import '../../features/auth/data/repositories/auth_repository_impl.dart';
+import '../../features/auth/domain/repositories/auth_repository.dart';
+import '../../features/auth/presentation/cubit/auth_cubit.dart';
+
+import '../../features/barber_shop/data/datasources/barber_shop_remote_data_source.dart';
+import '../../features/barber_shop/data/repositories/barber_shop_repository_impl.dart';
+import '../../features/barber_shop/domain/repositories/barber_shop_repository.dart';
+import '../../features/barber_shop/presentation/cubit/barber_shop_cubit.dart';
+
+import '../../features/barber/data/datasources/barber_remote_data_source.dart';
+import '../../features/barber/data/repositories/barber_repository_impl.dart';
+import '../../features/barber/domain/repositories/barber_repository.dart';
+import '../../features/barber/presentation/cubit/barber_cubit.dart';
+
+import '../../features/schedule/data/datasources/schedule_remote_data_source.dart';
+import '../../features/schedule/data/repositories/schedule_repository_impl.dart';
+import '../../features/schedule/domain/repositories/schedule_repository.dart';
+import '../../features/schedule/presentation/cubit/schedule_cubit.dart';
+
+import '../../features/service/data/datasources/service_remote_data_source.dart';
+import '../../features/service/data/repositories/service_repository_impl.dart';
+import '../../features/service/domain/repositories/service_repository.dart';
+import '../../features/service/presentation/cubit/service_cubit.dart';
+
+import '../../features/booking/data/datasources/booking_remote_data_source.dart';
+import '../../features/booking/data/repositories/booking_repository_impl.dart';
+import '../../features/booking/domain/repositories/booking_repository.dart';
+import '../../features/booking/domain/services/availability_service.dart';
+import '../../features/booking/domain/usecases/create_booking.dart';
+import '../../features/booking/domain/usecases/get_available_slots.dart';
+import '../../features/booking/presentation/cubit/booking_cubit.dart';
+
+final GetIt getIt = GetIt.instance;
+
+void configureDependencies() {
+  getIt.registerLazySingleton<fb.FirebaseAuth>(() => fb.FirebaseAuth.instance);
+
+  getIt.registerLazySingleton<FirebaseFirestore>(
+    () => FirebaseFirestore.instance,
+  );
+
+  // ---------------------------------------------------------------------------
+  // Auth
+  // ---------------------------------------------------------------------------
+
+  getIt.registerLazySingleton<AuthRemoteDataSource>(
+    () => AuthRemoteDataSourceImpl(firebaseAuth: getIt<fb.FirebaseAuth>()),
+  );
+
+  getIt.registerLazySingleton<UserRemoteDataSource>(
+    () => UserRemoteDataSourceImpl(firestore: getIt<FirebaseFirestore>()),
+  );
+
+  getIt.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(
+      authRemoteDataSource: getIt<AuthRemoteDataSource>(),
+      userRemoteDataSource: getIt<UserRemoteDataSource>(),
+    ),
+  );
+
+  getIt.registerFactory<AuthCubit>(
+    () => AuthCubit(authRepository: getIt<AuthRepository>()),
+  );
+
+  // ---------------------------------------------------------------------------
+  // Barber Shop
+  // ---------------------------------------------------------------------------
+
+  getIt.registerLazySingleton<BarberShopRemoteDataSource>(
+    () => BarberShopRemoteDataSourceImpl(firestore: getIt<FirebaseFirestore>()),
+  );
+
+  getIt.registerLazySingleton<BarberShopRepository>(
+    () => BarberShopRepositoryImpl(
+      remoteDataSource: getIt<BarberShopRemoteDataSource>(),
+    ),
+  );
+
+  getIt.registerFactory<BarberShopCubit>(
+    () => BarberShopCubit(repository: getIt<BarberShopRepository>()),
+  );
+
+  // ---------------------------------------------------------------------------
+  // Barber
+  // ---------------------------------------------------------------------------
+
+  getIt.registerLazySingleton<BarberRemoteDataSource>(
+    () => BarberRemoteDataSourceImpl(firestore: getIt<FirebaseFirestore>()),
+  );
+
+  getIt.registerLazySingleton<BarberRepository>(
+    () =>
+        BarberRepositoryImpl(remoteDataSource: getIt<BarberRemoteDataSource>()),
+  );
+
+  getIt.registerFactory<BarberCubit>(
+    () => BarberCubit(repository: getIt<BarberRepository>()),
+  );
+
+  // ---------------------------------------------------------------------------
+  // Schedule
+  // ---------------------------------------------------------------------------
+
+  getIt.registerLazySingleton<ScheduleRemoteDataSource>(
+    () => ScheduleRemoteDataSourceImpl(firestore: getIt<FirebaseFirestore>()),
+  );
+
+  getIt.registerLazySingleton<ScheduleRepository>(
+    () => ScheduleRepositoryImpl(
+      remoteDataSource: getIt<ScheduleRemoteDataSource>(),
+    ),
+  );
+
+  getIt.registerFactory<ScheduleCubit>(
+    () => ScheduleCubit(repository: getIt<ScheduleRepository>()),
+  );
+
+  // ---------------------------------------------------------------------------
+  // Service
+  // ---------------------------------------------------------------------------
+
+  getIt.registerLazySingleton<ServiceRemoteDataSource>(
+    () => ServiceRemoteDataSourceImpl(firestore: getIt<FirebaseFirestore>()),
+  );
+
+  getIt.registerLazySingleton<ServiceRepository>(
+    () => ServiceRepositoryImpl(
+      remoteDataSource: getIt<ServiceRemoteDataSource>(),
+    ),
+  );
+
+  getIt.registerFactory<ServiceCubit>(
+    () => ServiceCubit(repository: getIt<ServiceRepository>()),
+  );
+
+  // ---------------------------------------------------------------------------
+  // Booking
+  // ---------------------------------------------------------------------------
+
+  getIt.registerLazySingleton<BookingRemoteDataSource>(
+    () => BookingRemoteDataSourceImpl(firestore: getIt<FirebaseFirestore>()),
+  );
+
+  getIt.registerLazySingleton<BookingRepository>(
+    () => BookingRepositoryImpl(
+      remoteDataSource: getIt<BookingRemoteDataSource>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<AvailabilityService>(
+    () => const AvailabilityService(),
+  );
+
+  getIt.registerLazySingleton<GetAvailableSlots>(
+    () => GetAvailableSlots(
+      scheduleRepository: getIt<ScheduleRepository>(),
+      bookingRepository: getIt<BookingRepository>(),
+      availabilityService: getIt<AvailabilityService>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<CreateBooking>(
+    () => CreateBooking(
+      bookingRepository: getIt<BookingRepository>(),
+      getAvailableSlots: getIt<GetAvailableSlots>(),
+    ),
+  );
+
+  getIt.registerFactory<BookingCubit>(
+    () => BookingCubit(
+      repository: getIt<BookingRepository>(),
+      getAvailableSlots: getIt<GetAvailableSlots>(),
+      createBooking: getIt<CreateBooking>(),
+    ),
+  );
+}
+
+
+===== PUBSPEC =====
+
+name: barber_booking
+description: "A SaaS-style barber booking Flutter app"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.13.1 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons:
+  bloc:
+  equatable:
+  flutter_bloc:
+  firebase_core: ^4.14.0
+  firebase_auth: ^6.5.0
+  cloud_firestore: ^6.8.0
+  go_router:
+  intl_phone_field: ^3.2.0
+  pin_code_fields: ^8.0.1
+  flutter_localizations:
+    sdk: flutter
+  intl:
+  shared_preferences:
+  get_it: ^9.2.1
+  wakelock_plus: ^1.8.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints:
+
+flutter:
+  uses-material-design: true
+  generate: true
+

@@ -78,6 +78,26 @@ class BookingCancelled extends BookingState {
   List<Object?> get props => [bookingId];
 }
 
+class BookingStatusUpdating extends BookingState {
+  const BookingStatusUpdating({required this.bookingId, required this.status});
+
+  final String bookingId;
+  final BookingStatus status;
+
+  @override
+  List<Object?> get props => [bookingId, status];
+}
+
+class BookingStatusUpdated extends BookingState {
+  const BookingStatusUpdated({required this.bookingId, required this.status});
+
+  final String bookingId;
+  final BookingStatus status;
+
+  @override
+  List<Object?> get props => [bookingId, status];
+}
+
 // ============================================================
 // AVAILABILITY
 // ============================================================

@@ -1,10 +1,11 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
     // ============================================================
-    // COMMON HELPERS
+    // Helpers
     // ============================================================
 
     function signedIn() {
@@ -21,50 +22,11 @@ service cloud.firestore {
       return userDoc().role;
     }
 
-    function userShopId() {
-      return userDoc().barberShopId;
-    }
-
     function barberDoc(barberId) {
       return get(
         /databases/$(database)/documents/barbers/$(barberId)
       ).data;
     }
-
-    function bookingDoc(bookingId) {
-      return get(
-        /databases/$(database)/documents/bookings/$(bookingId)
-      ).data;
-    }
-
-    function afterBookingDoc(bookingId) {
-      return getAfter(
-        /databases/$(database)/documents/bookings/$(bookingId)
-      ).data;
-    }
-
-    function isOwner() {
-      return signedIn()
-        && userRole() == 'owner';
-    }
-
-    function isBarber() {
-      return signedIn()
-        && userRole() == 'barber';
-    }
-
-    function isCustomer() {
-      return signedIn()
-        && userRole() == 'customer';
-    }
-
-    // ============================================================
-    // OWNER SHOP OWNERSHIP
-    //
-    // Authorization is based on the Shop document itself.
-    // This allows an owner to create the first Shop without
-    // requiring a client-side users/{uid}.barberShopId update.
-    // ============================================================
 
     function ownsShop(shopId) {
       return signedIn()
@@ -77,30 +39,30 @@ service cloud.firestore {
         ).data.ownerId == request.auth.uid;
     }
 
+
     // ============================================================
-    // USERS
+    // Users
     // ============================================================
 
     match /users/{userId} {
 
-      // User can read his own profile.
+      // User can read his own document.
       allow read: if signedIn()
         && request.auth.uid == userId;
 
-      // Owner can read provisioned barber users.
-      // Used when assigning a barber to a shop.
+      // Owner can read barber user documents.
       allow read: if signedIn()
         && userRole() == 'owner'
         && resource.data.role == 'barber';
 
-      // Public registration can create only customer profiles.
+      // Customer registration/profile creation.
       allow create: if signedIn()
         && request.auth.uid == userId
         && request.resource.data.role == 'customer'
         && request.resource.data.id == userId
         && request.resource.data.barberShopId == null;
 
-      // User cannot change role or shop assignment himself.
+      // User cannot change his role or shop assignment himself.
       allow update: if signedIn()
         && request.auth.uid == userId
         && request.resource.data.role == resource.data.role
@@ -108,17 +70,17 @@ service cloud.firestore {
             == resource.data.barberShopId
         && request.resource.data.id == resource.data.id;
 
-      // Client-side deletion is disabled.
       allow delete: if false;
     }
 
+
     // ============================================================
-    // BARBER SHOPS
+    // Barber Shops
     // ============================================================
 
     match /barberShops/{shopId} {
 
-      // Customers can see active shops only.
+      // Customers can browse active shops.
       allow read: if signedIn()
         && userRole() == 'customer'
         && resource.data.isActive == true;
@@ -128,7 +90,7 @@ service cloud.firestore {
         && userRole() == 'owner'
         && resource.data.ownerId == request.auth.uid;
 
-      // Barber can read active shops.
+      // Barbers can browse active shops.
       allow read: if signedIn()
         && userRole() == 'barber'
         && resource.data.isActive == true;
@@ -145,40 +107,38 @@ service cloud.firestore {
         && request.resource.data.createdAt is timestamp
         && request.resource.data.updatedAt is timestamp;
 
-      // Owner can update only his own shop.
-      // ownerId cannot be changed.
+      // Owner can update his own shop but cannot transfer ownership.
       allow update: if ownsShop(shopId)
         && request.resource.data.ownerId
             == resource.data.ownerId;
 
-      // Client-side deletion is disabled.
-      allow delete: if false;
+      allow delete: if ownsShop(shopId);
     }
 
+
     // ============================================================
-    // BARBERS
+    // Barbers
     // ============================================================
 
     match /barbers/{barberId} {
 
-      // Owner can read barbers belonging to his own shop.
+      // Owner can read barbers belonging to his shop.
       allow read: if signedIn()
         && userRole() == 'owner'
         && resource.data.barberShopId is string
         && ownsShop(resource.data.barberShopId);
 
-      // Barber can read his own profile.
+      // Barber can read his own barber profile.
       allow read: if signedIn()
         && userRole() == 'barber'
         && resource.data.userId == request.auth.uid;
 
-      // Customer can read active barbers.
+      // Customers can browse active barbers.
       allow read: if signedIn()
         && userRole() == 'customer'
         && resource.data.isActive == true;
 
-      // Owner can create a barber profile only for a user
-      // that has already been provisioned with role = barber.
+      // Owner creates a barber for a shop he owns.
       allow create: if signedIn()
         && userRole() == 'owner'
         && request.resource.data.barberShopId is string
@@ -196,8 +156,8 @@ service cloud.firestore {
         && request.resource.data.createdAt is timestamp
         && request.resource.data.updatedAt is timestamp;
 
-      // Owner can update barbers belonging to his own shop.
-      // barberShopId and userId cannot be changed.
+      // Owner can update a barber without moving him
+      // to another shop or changing the linked user.
       allow update: if signedIn()
         && userRole() == 'owner'
         && resource.data.barberShopId is string
@@ -207,22 +167,21 @@ service cloud.firestore {
         && request.resource.data.userId
             == resource.data.userId;
 
-      // Client-side deletion is disabled.
       allow delete: if false;
     }
 
+
     // ============================================================
-    // WEEKLY SCHEDULE
+    // Weekly Schedule
     // ============================================================
 
     match /barbers/{barberId}/weeklySchedule/{dayId} {
 
-      // Customers need schedule information to calculate
-      // available booking slots.
+      // Customers can read schedules.
       allow read: if signedIn()
         && userRole() == 'customer';
 
-      // Owner manages schedules for barbers in his shop.
+      // Owner manages schedules of barbers in his shop.
       allow read, create, update: if signedIn()
         && userRole() == 'owner'
         && exists(
@@ -240,21 +199,21 @@ service cloud.firestore {
         )
         && barberDoc(barberId).userId == request.auth.uid;
 
-      // Schedule documents are never deleted from the client.
       allow delete: if false;
     }
 
+
     // ============================================================
-    // SCHEDULE EXCEPTIONS
+    // Schedule Exceptions
     // ============================================================
 
     match /barbers/{barberId}/scheduleExceptions/{exceptionId} {
 
-      // Customers need exceptions to calculate availability.
+      // Customers can read schedule exceptions.
       allow read: if signedIn()
         && userRole() == 'customer';
 
-      // Owner manages exceptions for his shop's barbers.
+      // Owner manages exceptions for barbers in his shop.
       allow read, create, update, delete: if signedIn()
         && userRole() == 'owner'
         && exists(
@@ -273,72 +232,80 @@ service cloud.firestore {
         && barberDoc(barberId).userId == request.auth.uid;
     }
 
+
     // ============================================================
-    // SERVICES
+    // Services
+    //
+    // IMPORTANT:
+    // Services exist ONLY under:
+    //
+    // barberShops/{shopId}/services/{serviceId}
+    //
+    // There is NO top-level /services/{serviceId} path.
     // ============================================================
 
-    match /services/{serviceId} {
+    match /barberShops/{shopId}/services/{serviceId} {
 
-      // Customers can see active services only.
+      // Customer can read active services.
       allow read: if signedIn()
         && userRole() == 'customer'
         && resource.data.isActive == true;
 
-      // Owner can read services belonging to his shop.
-      allow read: if ownsShop(resource.data.shopId);
+      // Owner can read all services of his shop.
+      allow read: if ownsShop(shopId);
 
       // Barber can read active services.
       allow read: if signedIn()
         && userRole() == 'barber'
         && resource.data.isActive == true;
 
-      // Owner creates services for his shop.
-      allow create: if signedIn()
-        && userRole() == 'owner'
-        && ownsShop(request.resource.data.shopId)
+      // Owner creates services for his own shop.
+      allow create: if ownsShop(shopId)
+        && request.resource.data.barberShopId == shopId
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.durationMinutes is int
+        && request.resource.data.durationMinutes > 0
+        && request.resource.data.durationMinutes % 5 == 0
+        && request.resource.data.price is number
+        && request.resource.data.price >= 0
         && request.resource.data.isActive == true
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+
+      // Owner updates services without moving them to another shop
+      // or changing their original creation timestamp.
+      allow update: if ownsShop(shopId)
+        && request.resource.data.barberShopId
+            == resource.data.barberShopId
+        && request.resource.data.barberShopId == shopId
+        && request.resource.data.createdAt
+            == resource.data.createdAt
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
         && request.resource.data.durationMinutes is int
         && request.resource.data.durationMinutes > 0
         && request.resource.data.durationMinutes % 5 == 0
         && request.resource.data.price is number
-        && request.resource.data.price >= 0;
+        && request.resource.data.price >= 0
+        && request.resource.data.updatedAt is timestamp;
 
-      // Owner updates services belonging to his shop.
-      allow update: if ownsShop(resource.data.shopId)
-        && request.resource.data.shopId
-            == resource.data.shopId
-        && request.resource.data.name is string
-        && request.resource.data.name.size() > 0
-        && request.resource.data.durationMinutes is int
-        && request.resource.data.durationMinutes > 0
-        && request.resource.data.durationMinutes % 5 == 0
-        && request.resource.data.price is number
-        && request.resource.data.price >= 0;
-
-      // Client-side deletion is disabled.
-      allow delete: if false;
+      allow delete: if ownsShop(shopId);
     }
 
+
     // ============================================================
-    // BOOKINGS
+    // Bookings
     // ============================================================
 
     match /bookings/{bookingId} {
 
-      // ----------------------------------------------------------
-      // READ - CUSTOMER
-      // ----------------------------------------------------------
-
+      // Customer can read his own bookings.
       allow read: if signedIn()
         && userRole() == 'customer'
         && resource.data.customerId == request.auth.uid;
 
-      // ----------------------------------------------------------
-      // READ - BARBER
-      // ----------------------------------------------------------
-
+      // Barber can read bookings assigned to him.
       allow read: if signedIn()
         && userRole() == 'barber'
         && resource.data.barberId is string
@@ -348,156 +315,100 @@ service cloud.firestore {
         && barberDoc(resource.data.barberId).userId
             == request.auth.uid;
 
-      // ----------------------------------------------------------
-      // READ - OWNER
-      // ----------------------------------------------------------
-
+      // Owner can read bookings belonging to his shop.
       allow read: if signedIn()
         && userRole() == 'owner'
         && resource.data.shopId is string
         && ownsShop(resource.data.shopId);
 
-      // ----------------------------------------------------------
-      // CREATE - CUSTOMER
-      //
       // Customer creates a pending booking.
-      // The Booking Transaction must also create the corresponding
-      // bookingLocks documents.
-      // ----------------------------------------------------------
-
       allow create: if signedIn()
         && userRole() == 'customer'
-
-        // Customer identity.
         && request.resource.data.customerId
             == request.auth.uid
-
-        // Initial booking state.
         && request.resource.data.status == 'pending'
-
-        // Required IDs.
         && request.resource.data.customerId is string
         && request.resource.data.shopId is string
         && request.resource.data.barberId is string
         && request.resource.data.serviceId is string
-
-        // Booking date/time.
         && request.resource.data.bookingDate is timestamp
         && request.resource.data.startTime is string
         && request.resource.data.endTime is string
-
-        // Service snapshot.
         && request.resource.data.serviceName is string
         && request.resource.data.serviceDurationMinutes is int
         && request.resource.data.serviceDurationMinutes > 0
         && request.resource.data.serviceDurationMinutes % 5 == 0
         && request.resource.data.servicePrice is number
         && request.resource.data.servicePrice >= 0
-
-        // Customer/barber snapshots.
         && request.resource.data.customerName is string
         && request.resource.data.barberName is string
-
-        // Audit timestamps.
         && request.resource.data.createdAt is timestamp
         && request.resource.data.updatedAt is timestamp
 
-        // --------------------------------------------------------
-        // CUSTOMER VALIDATION
-        // --------------------------------------------------------
-
+        // Customer name must match his user document.
         && request.resource.data.customerName
             == userDoc().name
 
-        // --------------------------------------------------------
-        // SHOP VALIDATION
-        // --------------------------------------------------------
-
+        // Shop must exist and be active.
         && exists(
           /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)
         )
-
         && get(
           /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)
         ).data.isActive == true
 
-        // --------------------------------------------------------
-        // BARBER VALIDATION
-        // --------------------------------------------------------
-
+        // Barber must exist, be active, and belong to the selected shop.
         && exists(
           /databases/$(database)/documents/barbers/$(request.resource.data.barberId)
         )
-
         && get(
           /databases/$(database)/documents/barbers/$(request.resource.data.barberId)
         ).data.isActive == true
-
         && get(
           /databases/$(database)/documents/barbers/$(request.resource.data.barberId)
         ).data.barberShopId
             == request.resource.data.shopId
 
-        // --------------------------------------------------------
-        // SERVICE VALIDATION
-        // --------------------------------------------------------
-
+        // IMPORTANT:
+        // Service is nested under barberShops/{shopId}/services/{serviceId}.
         && exists(
-          /databases/$(database)/documents/services/$(request.resource.data.serviceId)
+          /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)/services/$(request.resource.data.serviceId)
         )
-
         && get(
-          /databases/$(database)/documents/services/$(request.resource.data.serviceId)
+          /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)/services/$(request.resource.data.serviceId)
         ).data.isActive == true
-
         && get(
-          /databases/$(database)/documents/services/$(request.resource.data.serviceId)
-        ).data.shopId
+          /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)/services/$(request.resource.data.serviceId)
+        ).data.barberShopId
             == request.resource.data.shopId
 
-        // --------------------------------------------------------
-        // SERVICE SNAPSHOT VALIDATION
-        // --------------------------------------------------------
-
+        // Booking snapshot must match the service document.
         && request.resource.data.serviceName
             == get(
-              /databases/$(database)/documents/services/$(request.resource.data.serviceId)
+              /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)/services/$(request.resource.data.serviceId)
             ).data.name
-
         && request.resource.data.serviceDurationMinutes
             == get(
-              /databases/$(database)/documents/services/$(request.resource.data.serviceId)
+              /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)/services/$(request.resource.data.serviceId)
             ).data.durationMinutes
-
         && request.resource.data.servicePrice
             == get(
-              /databases/$(database)/documents/services/$(request.resource.data.serviceId)
+              /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)/services/$(request.resource.data.serviceId)
             ).data.price
 
-        // --------------------------------------------------------
-        // BARBER SNAPSHOT VALIDATION
-        // --------------------------------------------------------
-
+        // Booking snapshot must match the barber document.
         && request.resource.data.barberName
             == get(
               /databases/$(database)/documents/barbers/$(request.resource.data.barberId)
             ).data.name;
 
 
-      // ----------------------------------------------------------
-      // UPDATE - CUSTOMER
-      //
-      // Customer can only cancel his own pending booking.
-      // ----------------------------------------------------------
-
+      // Customer can cancel his own pending booking.
       allow update: if signedIn()
         && userRole() == 'customer'
-
         && resource.data.customerId == request.auth.uid
         && resource.data.status == 'pending'
         && request.resource.data.status == 'cancelled'
-
-        // Immutable booking data.
         && request.resource.data.customerId
             == resource.data.customerId
         && request.resource.data.shopId
@@ -527,28 +438,15 @@ service cloud.firestore {
         && request.resource.data.updatedAt is timestamp;
 
 
-      // ----------------------------------------------------------
-      // UPDATE - BARBER
-      //
-      // Barber can move:
-      // pending -> confirmed
-      // pending -> cancelled
-      // confirmed -> completed
-      // confirmed -> noShow
-      // confirmed -> cancelled
-      // ----------------------------------------------------------
-
+      // Barber can update booking status according to the allowed flow.
       allow update: if signedIn()
         && userRole() == 'barber'
-
         && resource.data.barberId is string
         && exists(
           /databases/$(database)/documents/barbers/$(resource.data.barberId)
         )
         && barberDoc(resource.data.barberId).userId
             == request.auth.uid
-
-        // Immutable booking data.
         && request.resource.data.customerId
             == resource.data.customerId
         && request.resource.data.shopId
@@ -576,8 +474,6 @@ service cloud.firestore {
         && request.resource.data.createdAt
             == resource.data.createdAt
         && request.resource.data.updatedAt is timestamp
-
-        // Allowed status transitions.
         && (
           (
             resource.data.status == 'pending'
@@ -598,15 +494,8 @@ service cloud.firestore {
         );
 
 
-      // ----------------------------------------------------------
-      // UPDATE - OWNER
-      //
-      // Owner can manage bookings belonging to his shop.
-      // ----------------------------------------------------------
-
+      // Owner can update booking status for his shop.
       allow update: if ownsShop(resource.data.shopId)
-
-        // Immutable booking data.
         && request.resource.data.customerId
             == resource.data.customerId
         && request.resource.data.shopId
@@ -634,8 +523,6 @@ service cloud.firestore {
         && request.resource.data.createdAt
             == resource.data.createdAt
         && request.resource.data.updatedAt is timestamp
-
-        // Allowed status transitions.
         && (
           (
             resource.data.status == 'pending'
@@ -655,86 +542,68 @@ service cloud.firestore {
           )
         );
 
-      // Bookings are never physically deleted.
       allow delete: if false;
     }
 
+
     // ============================================================
-    // BOOKING LOCKS
+    // Booking Locks
     // ============================================================
 
     match /barbers/{barberId}/bookingLocks/{lockId} {
 
-      // Lock documents are internal concurrency-control records.
-      // Clients must NOT read them directly.
+      // Locks are never directly readable.
       allow read: if false;
 
-      // ----------------------------------------------------------
-      // CREATE LOCK
-      //
-      // A customer can create a lock only when the corresponding
-      // booking exists in the same transaction.
-      // ----------------------------------------------------------
-
+      // Customer creates a lock as part of the booking transaction.
       allow create: if signedIn()
         && userRole() == 'customer'
-
         && request.resource.data.bookingId is string
         && request.resource.data.customerId is string
         && request.resource.data.shopId is string
         && request.resource.data.barberId == barberId
-        && request.resource.data.bookingDate is timestamp
+        && request.resource.data.date is timestamp
         && request.resource.data.startTime is string
         && request.resource.data.endTime is string
         && request.resource.data.createdAt is timestamp
 
-        // The final Booking state must exist in this transaction.
+        // The booking created in the same transaction must belong
+        // to the authenticated customer.
         && getAfter(
           /databases/$(database)/documents/bookings/$(request.resource.data.bookingId)
         ).customerId == request.auth.uid
 
+        // The lock must belong to the same barber.
         && getAfter(
           /databases/$(database)/documents/bookings/$(request.resource.data.bookingId)
         ).barberId == barberId
 
+        // The lock shop must match the booking shop.
         && getAfter(
           /databases/$(database)/documents/bookings/$(request.resource.data.bookingId)
         ).shopId == request.resource.data.shopId
 
+        // Booking must still be pending.
         && getAfter(
           /databases/$(database)/documents/bookings/$(request.resource.data.bookingId)
         ).status == 'pending';
 
-      // Locks cannot be modified.
       allow update: if false;
 
-      // ----------------------------------------------------------
-      // DELETE LOCK
-      //
-      // A lock can be deleted only as part of a booking
-      // cancellation transaction.
-      // ----------------------------------------------------------
-
+      // Lock can only be deleted after its booking is cancelled.
       allow delete: if signedIn()
-
         && resource.data.bookingId is string
-
         && getAfter(
           /databases/$(database)/documents/bookings/$(resource.data.bookingId)
         ).status == 'cancelled'
-
         && (
-          // Customer owns the booking.
           (
             userRole() == 'customer'
             && getAfter(
               /databases/$(database)/documents/bookings/$(resource.data.bookingId)
             ).customerId == request.auth.uid
           )
-
           ||
-
-          // Barber owns the barber profile.
           (
             userRole() == 'barber'
             && exists(
@@ -745,10 +614,7 @@ service cloud.firestore {
               /databases/$(database)/documents/bookings/$(resource.data.bookingId)
             ).barberId == barberId
           )
-
           ||
-
-          // Owner owns the booking's shop.
           (
             userRole() == 'owner'
             && ownsShop(
@@ -760,8 +626,9 @@ service cloud.firestore {
         );
     }
 
+
     // ============================================================
-    // DEFAULT DENY
+    // Default Deny
     // ============================================================
 
     match /{document=**} {
@@ -769,3 +636,4 @@ service cloud.firestore {
     }
   }
 }
+

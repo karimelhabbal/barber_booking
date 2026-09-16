@@ -27,6 +27,10 @@ class CreateBooking {
 
     final selectedEnd = _combineDateAndTime(normalizedDate, booking.endTime);
 
+    if (selectedStart.isBefore(DateTime.now())) {
+      throw StateError('The booking date and time must be in the future.');
+    }
+
     final availableSlots = await _getAvailableSlots(
       barberId: booking.barberId,
       date: normalizedDate,

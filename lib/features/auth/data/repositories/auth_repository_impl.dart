@@ -16,6 +16,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   String? _pendingRegistrationName;
   String? _pendingRegistrationPhone;
+
   @override
   Future<User?> getCurrentUser() async {
     final firebaseUser = _authRemoteDataSource.currentUser;
@@ -75,15 +76,6 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> resendOtp() async {
-    try {
-      await _authRemoteDataSource.resendOtp();
-    } on Object catch (error) {
-      throw _mapAuthError(error);
-    }
-  }
-
-  @override
   Future<User> verifyOtp({required String code}) async {
     try {
       final firebaseUser = await _authRemoteDataSource.verifyOtp(code: code);
@@ -116,6 +108,46 @@ class AuthRepositoryImpl implements AuthRepository {
         name: '',
         phone: firebaseUser.phoneNumber ?? '',
       );
+    } on Object catch (error) {
+      throw _mapAuthError(error);
+    }
+  }
+
+  @override
+  Future<User> loginWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final firebaseUser = await _authRemoteDataSource
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      final user = await _userRemoteDataSource.getUser(
+        userId: firebaseUser.uid,
+      );
+
+      if (user == null) {
+        await _authRemoteDataSource.logout();
+
+        throw const AuthRepositoryException(code: 'user-profile-not-found');
+      }
+
+      if (user.role != UserRole.barber) {
+        await _authRemoteDataSource.logout();
+
+        throw const AuthRepositoryException(code: 'barber-access-denied');
+      }
+
+      return user;
+    } on Object catch (error) {
+      throw _mapAuthError(error);
+    }
+  }
+
+  @override
+  Future<void> resendOtp() async {
+    try {
+      await _authRemoteDataSource.resendOtp();
     } on Object catch (error) {
       throw _mapAuthError(error);
     }
@@ -179,6 +211,23 @@ class AuthRepositoryImpl implements AuthRepository {
 
       case 'unsupported-platform':
         return 'unsupported-platform';
+
+      case 'invalid-email':
+        return 'invalid-email';
+
+      case 'invalid-password':
+        return 'invalid-password';
+
+      case 'invalid-credential':
+      case 'user-not-found':
+      case 'wrong-password':
+        return 'invalid-credentials';
+
+      case 'user-disabled':
+        return 'user-disabled';
+
+      case 'authentication-failed':
+        return 'authentication-failed';
 
       default:
         return 'generic-auth-error';

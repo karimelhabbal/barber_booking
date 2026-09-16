@@ -11,6 +11,8 @@ abstract interface class BookingRemoteDataSource {
 
   Future<List<BookingModel>> getCustomerBookings({required String customerId});
 
+  Future<List<BookingModel>> getOwnerBookings({required String shopId});
+
   Future<List<BookingModel>> getBarberBookings({required String barberId});
 
   Future<BookingModel?> getBooking({required String bookingId});
@@ -18,6 +20,11 @@ abstract interface class BookingRemoteDataSource {
   Future<BookingModel> createBooking({required BookingModel booking});
 
   Future<void> cancelBooking({required String bookingId});
+
+  Future<void> updateBookingStatus({
+    required String bookingId,
+    required BookingStatus status,
+  });
 }
 
 class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
@@ -79,6 +86,22 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
 
     final snapshot = await _bookingsCollection
         .where('customerId', isEqualTo: trimmedCustomerId)
+        .orderBy('bookingDate', descending: true)
+        .get();
+
+    return snapshot.docs.map(BookingModel.fromFirestore).toList();
+  }
+
+  @override
+  Future<List<BookingModel>> getOwnerBookings({required String shopId}) async {
+    final trimmedShopId = shopId.trim();
+
+    if (trimmedShopId.isEmpty) {
+      throw ArgumentError('Barber shop ID cannot be empty.');
+    }
+
+    final snapshot = await _bookingsCollection
+        .where('shopId', isEqualTo: trimmedShopId)
         .orderBy('bookingDate', descending: true)
         .get();
 
@@ -297,6 +320,46 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
           transaction.delete(lockReferences[index]);
         }
       }
+    });
+  }
+
+  @override
+  Future<void> updateBookingStatus({
+    required String bookingId,
+    required BookingStatus status,
+  }) async {
+    final trimmedBookingId = bookingId.trim();
+
+    if (trimmedBookingId.isEmpty) {
+      throw ArgumentError('Booking ID cannot be empty.');
+    }
+
+    final bookingReference = _bookingsCollection.doc(trimmedBookingId);
+
+    await _firestore.runTransaction((transaction) async {
+      final bookingSnapshot = await transaction.get(bookingReference);
+
+      if (!bookingSnapshot.exists) {
+        throw StateError('Booking $trimmedBookingId does not exist.');
+      }
+
+      final booking = BookingModel.fromFirestore(bookingSnapshot);
+
+      final isAllowed = switch (booking.status) {
+        BookingStatus.pending => status == BookingStatus.confirmed,
+        BookingStatus.confirmed =>
+          status == BookingStatus.completed || status == BookingStatus.noShow,
+        _ => false,
+      };
+
+      if (!isAllowed) {
+        throw StateError('Booking status transition is not allowed.');
+      }
+
+      transaction.update(bookingReference, {
+        'status': BookingModel.statusToFirestore(status),
+        'updatedAt': Timestamp.fromDate(DateTime.now()),
+      });
     });
   }
 

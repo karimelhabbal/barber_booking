@@ -26,6 +26,14 @@ class AvailabilityService {
       exception: exception,
     );
 
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final selectedDate = DateTime(date.year, date.month, date.day);
+
+    if (selectedDate.isBefore(today)) {
+      return const [];
+    }
+
     if (!effectiveSchedule.isWorking) {
       return const [];
     }
@@ -67,6 +75,12 @@ class AvailabilityService {
 
     var cursor = workingStart;
 
+    if (_isSameDate(selectedDate, today)) {
+      while (cursor.isBefore(now)) {
+        cursor = cursor.add(const Duration(minutes: 5));
+      }
+    }
+
     while (cursor.add(slotDuration).isBefore(workingEnd) ||
         cursor.add(slotDuration).isAtSameMomentAs(workingEnd)) {
       final slotEnd = cursor.add(slotDuration);
@@ -83,6 +97,12 @@ class AvailabilityService {
     }
 
     return slots;
+  }
+
+  bool _isSameDate(DateTime first, DateTime second) {
+    return first.year == second.year &&
+        first.month == second.month &&
+        first.day == second.day;
   }
 
   WeeklySchedule _resolveEffectiveSchedule({

@@ -21,6 +21,11 @@ abstract interface class ServiceRemoteDataSource {
   });
 
   Future<void> updateService(ServiceModel service);
+
+  Future<void> deleteService({
+    required String shopId,
+    required String serviceId,
+  });
 }
 
 class ServiceRemoteDataSourceImpl implements ServiceRemoteDataSource {
@@ -100,5 +105,13 @@ class ServiceRemoteDataSourceImpl implements ServiceRemoteDataSource {
     await _servicesCollection(service.barberShopId)
         .doc(service.id)
         .set(service.toFirestore(), SetOptions(merge: true));
+  }
+
+  @override
+  Future<void> deleteService({
+    required String shopId,
+    required String serviceId,
+  }) {
+    return _servicesCollection(shopId).doc(serviceId).delete();
   }
 }

@@ -50,6 +50,20 @@ class ServiceModel extends Service {
     };
   }
 
+  factory ServiceModel.fromEntity(Service service) {
+    return ServiceModel(
+      id: service.id,
+      barberShopId: service.barberShopId,
+      name: service.name,
+      description: service.description,
+      durationMinutes: service.durationMinutes,
+      price: service.price,
+      isActive: service.isActive,
+      createdAt: service.createdAt,
+      updatedAt: service.updatedAt,
+    );
+  }
+
   static DateTime _timestampToDateTime(Object? value) {
     if (value is Timestamp) {
       return value.toDate();

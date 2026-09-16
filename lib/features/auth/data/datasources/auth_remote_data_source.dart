@@ -17,6 +17,11 @@ abstract interface class AuthRemoteDataSource {
 
   Future<fb.User> verifyOtp({required String code});
 
+  Future<fb.User> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  });
+
   Future<void> logout();
 }
 
@@ -71,6 +76,35 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       forceResendingToken: _resendToken,
       isResend: true,
     );
+  }
+
+  @override
+  Future<fb.User> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    final normalizedEmail = email.trim();
+
+    if (normalizedEmail.isEmpty) {
+      throw fb.FirebaseAuthException(code: 'invalid-email');
+    }
+
+    if (password.isEmpty) {
+      throw fb.FirebaseAuthException(code: 'invalid-password');
+    }
+
+    final credential = await _firebaseAuth.signInWithEmailAndPassword(
+      email: normalizedEmail,
+      password: password,
+    );
+
+    final user = credential.user;
+
+    if (user == null) {
+      throw fb.FirebaseAuthException(code: 'authentication-failed');
+    }
+
+    return user;
   }
 
   Future<void> _sendOtp({

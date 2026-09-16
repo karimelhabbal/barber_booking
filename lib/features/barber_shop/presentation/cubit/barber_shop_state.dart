@@ -24,6 +24,19 @@ class BarberShopLoaded extends BarberShopState {
   List<Object?> get props => [shops];
 }
 
+class BarberShopShopLoading extends BarberShopState {
+  const BarberShopShopLoading();
+}
+
+class BarberShopShopLoaded extends BarberShopState {
+  const BarberShopShopLoaded(this.shop);
+
+  final BarberShop shop;
+
+  @override
+  List<Object?> get props => [shop];
+}
+
 class BarberShopOwnerLoading extends BarberShopState {
   const BarberShopOwnerLoading();
 }

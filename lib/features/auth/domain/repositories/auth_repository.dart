@@ -14,5 +14,10 @@ abstract interface class AuthRepository {
 
   Future<User> verifyOtp({required String code});
 
+  Future<User> loginWithEmail({
+    required String email,
+    required String password,
+  });
+
   Future<void> logout();
 }
