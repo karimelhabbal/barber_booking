@@ -1,4 +1,5 @@
 import 'package:barber_booking/core/di/injection.dart';
+import 'package:barber_booking/core/l10n/app_localizations.dart';
 import 'package:barber_booking/core/theme/app_theme.dart';
 import 'package:barber_booking/core/widgets/app_card.dart';
 import 'package:barber_booking/core/widgets/empty_view.dart';
@@ -32,24 +33,23 @@ class _CustomerBookingsView extends StatelessWidget {
   final String customerId;
 
   Future<void> _cancelBooking(BuildContext context, Booking booking) async {
+    final loc = AppLocalizations.of(context)!;
     final shouldCancel = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Cancel booking?'),
-          content: const Text('This booking will be cancelled.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Keep'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Cancel'),
-            ),
-          ],
-        );
-      },
+      builder: (dialogContext) => AlertDialog(
+        title: Text(loc.cancelBookingQuestion),
+        content: Text(loc.bookingCancelledMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(loc.keep),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(loc.cancel),
+          ),
+        ],
+      ),
     );
 
     if (shouldCancel == true && context.mounted) {
@@ -65,10 +65,12 @@ class _CustomerBookingsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('My bookings'),
+        title: Text(loc.myBookings),
         backgroundColor: AppColors.background,
       ),
       body: BlocConsumer<BookingCubit, BookingState>(
@@ -79,7 +81,7 @@ class _CustomerBookingsView extends StatelessWidget {
         },
         builder: (context, state) {
           if (state is BookingLoading || state is BookingCancelling) {
-            return const LoadingView(message: 'Loading bookings...');
+            return LoadingView(message: loc.loadingBookings);
           }
 
           if (state is BookingError) {
@@ -91,9 +93,10 @@ class _CustomerBookingsView extends StatelessWidget {
                 children: [
                   const SizedBox(height: 80),
                   ErrorView(
-                    title: 'Unable to load bookings.',
+                    title: loc.loadBookingsError,
                     message: state.message,
                     onRetry: () => _refresh(context),
+                    retryLabel: loc.retry,
                   ),
                 ],
               ),
@@ -102,9 +105,8 @@ class _CustomerBookingsView extends StatelessWidget {
 
           if (state is BookingLoaded) {
             final upcomingBookings = state.bookings
-                .where((booking) => _isUpcomingBooking(booking))
+                .where(_isUpcomingBooking)
                 .toList();
-
             final historyBookings = state.bookings
                 .where(
                   (booking) =>
@@ -120,12 +122,11 @@ class _CustomerBookingsView extends StatelessWidget {
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(16),
-                  children: const [
-                    SizedBox(height: 120),
+                  children: [
+                    const SizedBox(height: 120),
                     EmptyView(
-                      title: 'No bookings yet.',
-                      message:
-                          'Your upcoming and past bookings will appear here.',
+                      title: loc.noBookingsYet,
+                      message: loc.bookingsEmptyMessage,
                       icon: Icons.event_note_outlined,
                     ),
                   ],
@@ -140,17 +141,17 @@ class _CustomerBookingsView extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 children: [
                   Text(
-                    'Upcoming',
+                    loc.upcoming,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 12),
                   if (upcomingBookings.isEmpty)
-                    const EmptyView(
-                      title: 'No upcoming bookings.',
-                      message: 'There are no upcoming appointments right now.',
+                    EmptyView(
+                      title: loc.noUpcomingBookings,
+                      message: loc.noUpcomingAppointments,
                       icon: Icons.calendar_today_outlined,
                     )
-                  else ...[
+                  else
                     ...upcomingBookings.map(
                       (booking) => Padding(
                         padding: const EdgeInsets.only(bottom: 12),
@@ -162,27 +163,25 @@ class _CustomerBookingsView extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ],
                   const SizedBox(height: 24),
                   Text(
-                    'History',
+                    loc.history,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 12),
                   if (historyBookings.isEmpty)
-                    const EmptyView(
-                      title: 'No booking history.',
-                      message: 'Past appointments will appear here.',
+                    EmptyView(
+                      title: loc.noBookingHistory,
+                      message: loc.pastAppointments,
                       icon: Icons.history_outlined,
                     )
-                  else ...[
+                  else
                     ...historyBookings.map(
                       (booking) => Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: _BookingHistoryCard(booking: booking),
                       ),
                     ),
-                  ],
                 ],
               ),
             );
@@ -201,16 +200,11 @@ class _CustomerBookingsView extends StatelessWidget {
     }
 
     final timeParts = booking.startTime.split(':');
-    if (timeParts.length != 2) {
-      return false;
-    }
+    if (timeParts.length != 2) return false;
 
     final hour = int.tryParse(timeParts[0]);
     final minute = int.tryParse(timeParts[1]);
-
-    if (hour == null || minute == null) {
-      return false;
-    }
+    if (hour == null || minute == null) return false;
 
     final scheduledDateTime = DateTime(
       booking.bookingDate.year,
@@ -232,6 +226,8 @@ class _BookingHistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return AppCard(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -247,22 +243,22 @@ class _BookingHistoryCard extends StatelessWidget {
               ),
               StatusChip(
                 status: booking.status.name,
-                label: _statusText(booking.status),
+                label: _statusText(booking.status, loc),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          _InfoRow(label: 'Barber', value: booking.barberName),
+          _InfoRow(label: loc.barber, value: booking.barberName),
           const SizedBox(height: 8),
-          _InfoRow(label: 'Date', value: _formatDate(booking.bookingDate)),
+          _InfoRow(label: loc.date, value: _formatDate(booking.bookingDate)),
           const SizedBox(height: 8),
           _InfoRow(
-            label: 'Time',
+            label: loc.time,
             value: '${booking.startTime} - ${booking.endTime}',
           ),
           const SizedBox(height: 8),
           _InfoRow(
-            label: 'Price',
+            label: loc.price,
             value: '${booking.servicePrice.toStringAsFixed(2)} EGP',
           ),
           if (onCancel != null) ...[
@@ -270,7 +266,7 @@ class _BookingHistoryCard extends StatelessWidget {
             TextButton.icon(
               onPressed: onCancel,
               icon: const Icon(Icons.cancel_outlined),
-              label: const Text('Cancel booking'),
+              label: Text(loc.cancelBooking),
             ),
           ],
         ],
@@ -278,24 +274,23 @@ class _BookingHistoryCard extends StatelessWidget {
     );
   }
 
-  String _statusText(BookingStatus status) {
+  String _statusText(BookingStatus status, AppLocalizations loc) {
     switch (status) {
       case BookingStatus.pending:
-        return 'Pending';
+        return loc.pending;
       case BookingStatus.confirmed:
-        return 'Confirmed';
+        return loc.confirmed;
       case BookingStatus.completed:
-        return 'Completed';
+        return loc.completed;
       case BookingStatus.cancelled:
-        return 'Cancelled';
+        return loc.cancelled;
       case BookingStatus.noShow:
-        return 'No-show';
+        return loc.noShow;
     }
   }
 
   String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/'
-        '${date.month.toString().padLeft(2, '0')}/${date.year}';
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 }
 

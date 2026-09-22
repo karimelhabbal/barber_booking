@@ -50,7 +50,10 @@ class GetAvailableSlots {
         from: normalizedDate,
         to: normalizedDate,
       ),
-      _bookingRepository.getBarberBookingsForDate(
+      // Customer availability reads booked time ranges through the secure
+      // `getBarberAvailability` Cloud Function instead of querying the
+      // top-level bookings collection directly.
+      _bookingRepository.getBookedTimeRangesForDate(
         barberId: trimmedBarberId,
         date: normalizedDate,
       ),

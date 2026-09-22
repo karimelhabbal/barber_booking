@@ -1,0 +1,108 @@
+﻿  @override
+  Future<BookingModel> createBooking({required BookingModel booking}) async {
+    _validateBooking(booking);
+
+    final customerId = booking.customerId.trim();
+    final shopId = booking.shopId.trim();
+    final barberId = booking.barberId.trim();
+    final serviceId = booking.serviceId.trim();
+
+    final normalizedDate = DateTime(
+      booking.bookingDate.year,
+      booking.bookingDate.month,
+      booking.bookingDate.day,
+    );
+
+    final startMinutes = _timeToMinutes(booking.startTime);
+
+    final endMinutes = _timeToMinutes(booking.endTime);
+
+    if (endMinutes <= startMinutes) {
+      throw ArgumentError('Booking end time must be after start time.');
+    }
+
+    final actualDuration = endMinutes - startMinutes;
+
+    if (actualDuration != booking.serviceDurationMinutes) {
+      throw ArgumentError('Booking duration does not match service duration.');
+    }
+
+    final bookingReference = _bookingsCollection.doc();
+
+    final now = DateTime.now();
+
+    final createdBooking = BookingModel(
+      id: bookingReference.id,
+      customerId: customerId,
+      shopId: shopId,
+      barberId: barberId,
+      serviceId: serviceId,
+      bookingDate: normalizedDate,
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+
+      // A newly created booking starts as pending.
+      // Barber/owner can confirm it later.
+      status: BookingStatus.pending,
+
+      serviceName: booking.serviceName.trim(),
+      serviceDurationMinutes: booking.serviceDurationMinutes,
+      servicePrice: booking.servicePrice,
+      customerName: booking.customerName.trim(),
+      barberName: booking.barberName.trim(),
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    final lockReferences = <DocumentReference<Map<String, dynamic>>>[];
+
+    for (var minutes = startMinutes; minutes < endMinutes; minutes += 5) {
+      final lockId = _buildLockId(
+        date: normalizedDate,
+        minutesFromMidnight: minutes,
+      );
+
+      lockReferences.add(_bookingLocksCollection(barberId).doc(lockId));
+    }
+
+    await _firestore.runTransaction((transaction) async {
+      final lockSnapshots = <DocumentSnapshot<Map<String, dynamic>>>[];
+
+      // All reads must happen before writes in a Firestore
+      // transaction.
+      for (final lockReference in lockReferences) {
+        final snapshot = await transaction.get(lockReference);
+
+        lockSnapshots.add(snapshot);
+      }
+
+      for (final snapshot in lockSnapshots) {
+        if (snapshot.exists) {
+          throw StateError('The selected time slot is no longer available.');
+        }
+      }
+
+      transaction.set(bookingReference, createdBooking.toFirestore());
+
+      for (var index = 0; index < lockReferences.length; index++) {
+        final lockReference = lockReferences[index];
+
+        final minutes = startMinutes + (index * 5);
+
+        transaction.set(lockReference, {
+          'bookingId': createdBooking.id,
+          'customerId': createdBooking.customerId,
+          'shopId': createdBooking.shopId,
+          'barberId': createdBooking.barberId,
+          'date': Timestamp.fromDate(normalizedDate),
+          'startTime': _minutesToTime(minutes),
+          'endTime': _minutesToTime(minutes + 5),
+          'createdAt': Timestamp.fromDate(now),
+        });
+      }
+    });
+
+    return createdBooking;
+  }
+
+  @override

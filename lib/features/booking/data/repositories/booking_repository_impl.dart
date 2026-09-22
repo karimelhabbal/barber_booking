@@ -20,6 +20,17 @@ class BookingRepositoryImpl implements BookingRepository {
   }
 
   @override
+  Future<List<Booking>> getBookedTimeRangesForDate({
+    required String barberId,
+    required DateTime date,
+  }) {
+    return _remoteDataSource.getBookedTimeRangesForDate(
+      barberId: barberId,
+      date: date,
+    );
+  }
+
+  @override
   Future<List<Booking>> getCustomerBookings({required String customerId}) {
     return _remoteDataSource.getCustomerBookings(customerId: customerId);
   }

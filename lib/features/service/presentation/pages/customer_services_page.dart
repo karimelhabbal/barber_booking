@@ -1,4 +1,6 @@
 import 'package:barber_booking/core/di/injection.dart';
+import 'package:barber_booking/core/l10n/app_localizations.dart';
+import 'package:barber_booking/core/widgets/error_view.dart';
 import 'package:barber_booking/features/barber/domain/entities/barber.dart';
 import 'package:barber_booking/features/barber_shop/domain/entities/barber_shop.dart';
 import 'package:barber_booking/features/booking/views/booking_page.dart';
@@ -20,6 +22,8 @@ class CustomerServicesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return BlocProvider(
       create: (_) =>
           getIt<ServiceCubit>()..loadActiveShopServices(shopId: shop.id),
@@ -32,21 +36,23 @@ class CustomerServicesPage extends StatelessWidget {
             }
 
             if (state is ServiceError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(state.message, textAlign: TextAlign.center),
-                ),
+              return ErrorView(
+                title: loc.loadServicesError,
+                message: state.message,
+                onRetry: () => context
+                    .read<ServiceCubit>()
+                    .loadActiveShopServices(shopId: shop.id),
+                retryLabel: loc.retry,
               );
             }
 
             if (state is ServiceLoaded) {
               if (state.services.isEmpty) {
-                return const Center(
+                return Center(
                   child: Padding(
-                    padding: EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(24),
                     child: Text(
-                      'No services are currently available.',
+                      loc.noServicesCurrentlyAvailable,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -81,20 +87,38 @@ class _ServicesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      padding: const EdgeInsets.all(16),
-      itemCount: services.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final service = services[index];
+    final loc = AppLocalizations.of(context)!;
 
-        return _ServiceCard(
-          service: service,
-          onTap: () {
-            _selectService(context, service);
-          },
-        );
-      },
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Row(
+            children: [
+              const Icon(Icons.person_outline, size: 18),
+              const SizedBox(width: 6),
+              Text(loc.barber),
+              const SizedBox(width: 8),
+              Expanded(child: Text(barber.name)),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: services.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final service = services[index];
+
+              return _ServiceCard(
+                service: service,
+                onTap: () => _selectService(context, service),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -117,6 +141,7 @@ class _ServiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return Card(
       child: InkWell(
@@ -157,7 +182,7 @@ class _ServiceCard extends StatelessWidget {
                 children: [
                   const Icon(Icons.schedule_outlined, size: 18),
                   const SizedBox(width: 6),
-                  Text(_formatDuration(service.durationMinutes)),
+                  Text(_formatDuration(service.durationMinutes, loc)),
                   const Spacer(),
                   const Icon(Icons.arrow_forward_ios, size: 16),
                 ],
@@ -169,18 +194,18 @@ class _ServiceCard extends StatelessWidget {
     );
   }
 
-  String _formatDuration(int minutes) {
+  String _formatDuration(int minutes, AppLocalizations loc) {
     if (minutes < 60) {
-      return '$minutes min';
+      return '$minutes ${loc.minutes}';
     }
 
     final hours = minutes ~/ 60;
     final remainingMinutes = minutes % 60;
 
     if (remainingMinutes == 0) {
-      return hours == 1 ? '1 hour' : '$hours hours';
+      return hours == 1 ? '1 ${loc.hour}' : '$hours ${loc.hours}';
     }
 
-    return '${hours}h ${remainingMinutes}min';
+    return '$hours${loc.hourShort} $remainingMinutes ${loc.minutes}';
   }
 }

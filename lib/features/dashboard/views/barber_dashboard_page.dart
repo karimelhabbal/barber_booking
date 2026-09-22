@@ -95,7 +95,24 @@ class BarberDashboardPage extends StatelessWidget {
               body: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
-                  child: Text(barberState.message, textAlign: TextAlign.center),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        barberState.message,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      ElevatedButton(
+                        onPressed: () =>
+                            context.read<BarberCubit>().loadCurrentBarber(
+                              userId: user.id,
+                              barberShopId: shopId,
+                            ),
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -133,9 +150,21 @@ class BarberDashboardPage extends StatelessWidget {
                   body: Center(
                     child: Padding(
                       padding: const EdgeInsets.all(24),
-                      child: Text(
-                        shopState.message,
-                        textAlign: TextAlign.center,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            shopState.message,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          ElevatedButton(
+                            onPressed: () => context
+                                .read<BarberShopCubit>()
+                                .loadShop(shopId: shopId),
+                            child: const Text('Retry'),
+                          ),
+                        ],
                       ),
                     ),
                   ),

@@ -1,639 +1,587 @@
-
 rules_version = '2';
 
 service cloud.firestore {
-  match /databases/{database}/documents {
+match /databases/{database}/documents {
 
-    // ============================================================
-    // Helpers
-    // ============================================================
+// ============================================================
+// Helpers
+// ============================================================
 
-    function signedIn() {
-      return request.auth != null;
-    }
-
-    function userDoc() {
-      return get(
-        /databases/$(database)/documents/users/$(request.auth.uid)
-      ).data;
-    }
-
-    function userRole() {
-      return userDoc().role;
-    }
-
-    function barberDoc(barberId) {
-      return get(
-        /databases/$(database)/documents/barbers/$(barberId)
-      ).data;
-    }
-
-    function ownsShop(shopId) {
-      return signedIn()
-        && userRole() == 'owner'
-        && exists(
-          /databases/$(database)/documents/barberShops/$(shopId)
-        )
-        && get(
-          /databases/$(database)/documents/barberShops/$(shopId)
-        ).data.ownerId == request.auth.uid;
-    }
-
-
-    // ============================================================
-    // Users
-    // ============================================================
-
-    match /users/{userId} {
-
-      // User can read his own document.
-      allow read: if signedIn()
-        && request.auth.uid == userId;
-
-      // Owner can read barber user documents.
-      allow read: if signedIn()
-        && userRole() == 'owner'
-        && resource.data.role == 'barber';
-
-      // Customer registration/profile creation.
-      allow create: if signedIn()
-        && request.auth.uid == userId
-        && request.resource.data.role == 'customer'
-        && request.resource.data.id == userId
-        && request.resource.data.barberShopId == null;
-
-      // User cannot change his role or shop assignment himself.
-      allow update: if signedIn()
-        && request.auth.uid == userId
-        && request.resource.data.role == resource.data.role
-        && request.resource.data.barberShopId
-            == resource.data.barberShopId
-        && request.resource.data.id == resource.data.id;
-
-      allow delete: if false;
-    }
-
-
-    // ============================================================
-    // Barber Shops
-    // ============================================================
-
-    match /barberShops/{shopId} {
-
-      // Customers can browse active shops.
-      allow read: if signedIn()
-        && userRole() == 'customer'
-        && resource.data.isActive == true;
-
-      // Owner can read his own shop.
-      allow read: if signedIn()
-        && userRole() == 'owner'
-        && resource.data.ownerId == request.auth.uid;
-
-      // Barbers can browse active shops.
-      allow read: if signedIn()
-        && userRole() == 'barber'
-        && resource.data.isActive == true;
-
-      // Owner creates his own shop.
-      allow create: if signedIn()
-        && userRole() == 'owner'
-        && request.resource.data.ownerId == request.auth.uid
-        && request.resource.data.name is string
-        && request.resource.data.name.size() > 0
-        && request.resource.data.timezone is string
-        && request.resource.data.timezone.size() > 0
-        && request.resource.data.isActive == true
-        && request.resource.data.createdAt is timestamp
-        && request.resource.data.updatedAt is timestamp;
-
-      // Owner can update his own shop but cannot transfer ownership.
-      allow update: if ownsShop(shopId)
-        && request.resource.data.ownerId
-            == resource.data.ownerId;
-
-      allow delete: if ownsShop(shopId);
-    }
-
-
-    // ============================================================
-    // Barbers
-    // ============================================================
-
-    match /barbers/{barberId} {
-
-      // Owner can read barbers belonging to his shop.
-      allow read: if signedIn()
-        && userRole() == 'owner'
-        && resource.data.barberShopId is string
-        && ownsShop(resource.data.barberShopId);
-
-      // Barber can read his own barber profile.
-      allow read: if signedIn()
-        && userRole() == 'barber'
-        && resource.data.userId == request.auth.uid;
-
-      // Customers can browse active barbers.
-      allow read: if signedIn()
-        && userRole() == 'customer'
-        && resource.data.isActive == true;
-
-      // Owner creates a barber for a shop he owns.
-      allow create: if signedIn()
-        && userRole() == 'owner'
-        && request.resource.data.barberShopId is string
-        && ownsShop(request.resource.data.barberShopId)
-        && request.resource.data.userId is string
-        && exists(
-          /databases/$(database)/documents/users/$(request.resource.data.userId)
-        )
-        && get(
-          /databases/$(database)/documents/users/$(request.resource.data.userId)
-        ).data.role == 'barber'
-        && request.resource.data.name is string
-        && request.resource.data.name.size() > 0
-        && request.resource.data.isActive == true
-        && request.resource.data.createdAt is timestamp
-        && request.resource.data.updatedAt is timestamp;
-
-      // Owner can update a barber without moving him
-      // to another shop or changing the linked user.
-      allow update: if signedIn()
-        && userRole() == 'owner'
-        && resource.data.barberShopId is string
-        && ownsShop(resource.data.barberShopId)
-        && request.resource.data.barberShopId
-            == resource.data.barberShopId
-        && request.resource.data.userId
-            == resource.data.userId;
-
-      allow delete: if false;
-    }
-
-
-    // ============================================================
-    // Weekly Schedule
-    // ============================================================
-
-    match /barbers/{barberId}/weeklySchedule/{dayId} {
-
-      // Customers can read schedules.
-      allow read: if signedIn()
-        && userRole() == 'customer';
-
-      // Owner manages schedules of barbers in his shop.
-      allow read, create, update: if signedIn()
-        && userRole() == 'owner'
-        && exists(
-          /databases/$(database)/documents/barbers/$(barberId)
-        )
-        && ownsShop(
-          barberDoc(barberId).barberShopId
-        );
-
-      // Barber manages his own schedule.
-      allow read, create, update: if signedIn()
-        && userRole() == 'barber'
-        && exists(
-          /databases/$(database)/documents/barbers/$(barberId)
-        )
-        && barberDoc(barberId).userId == request.auth.uid;
-
-      allow delete: if false;
-    }
-
-
-    // ============================================================
-    // Schedule Exceptions
-    // ============================================================
-
-    match /barbers/{barberId}/scheduleExceptions/{exceptionId} {
-
-      // Customers can read schedule exceptions.
-      allow read: if signedIn()
-        && userRole() == 'customer';
-
-      // Owner manages exceptions for barbers in his shop.
-      allow read, create, update, delete: if signedIn()
-        && userRole() == 'owner'
-        && exists(
-          /databases/$(database)/documents/barbers/$(barberId)
-        )
-        && ownsShop(
-          barberDoc(barberId).barberShopId
-        );
-
-      // Barber manages his own exceptions.
-      allow read, create, update, delete: if signedIn()
-        && userRole() == 'barber'
-        && exists(
-          /databases/$(database)/documents/barbers/$(barberId)
-        )
-        && barberDoc(barberId).userId == request.auth.uid;
-    }
-
-
-    // ============================================================
-    // Services
-    //
-    // IMPORTANT:
-    // Services exist ONLY under:
-    //
-    // barberShops/{shopId}/services/{serviceId}
-    //
-    // There is NO top-level /services/{serviceId} path.
-    // ============================================================
-
-    match /barberShops/{shopId}/services/{serviceId} {
-
-      // Customer can read active services.
-      allow read: if signedIn()
-        && userRole() == 'customer'
-        && resource.data.isActive == true;
-
-      // Owner can read all services of his shop.
-      allow read: if ownsShop(shopId);
-
-      // Barber can read active services.
-      allow read: if signedIn()
-        && userRole() == 'barber'
-        && resource.data.isActive == true;
-
-      // Owner creates services for his own shop.
-      allow create: if ownsShop(shopId)
-        && request.resource.data.barberShopId == shopId
-        && request.resource.data.name is string
-        && request.resource.data.name.size() > 0
-        && request.resource.data.durationMinutes is int
-        && request.resource.data.durationMinutes > 0
-        && request.resource.data.durationMinutes % 5 == 0
-        && request.resource.data.price is number
-        && request.resource.data.price >= 0
-        && request.resource.data.isActive == true
-        && request.resource.data.createdAt is timestamp
-        && request.resource.data.updatedAt is timestamp;
-
-      // Owner updates services without moving them to another shop
-      // or changing their original creation timestamp.
-      allow update: if ownsShop(shopId)
-        && request.resource.data.barberShopId
-            == resource.data.barberShopId
-        && request.resource.data.barberShopId == shopId
-        && request.resource.data.createdAt
-            == resource.data.createdAt
-        && request.resource.data.name is string
-        && request.resource.data.name.size() > 0
-        && request.resource.data.durationMinutes is int
-        && request.resource.data.durationMinutes > 0
-        && request.resource.data.durationMinutes % 5 == 0
-        && request.resource.data.price is number
-        && request.resource.data.price >= 0
-        && request.resource.data.updatedAt is timestamp;
-
-      allow delete: if ownsShop(shopId);
-    }
-
-
-    // ============================================================
-    // Bookings
-    // ============================================================
-
-    match /bookings/{bookingId} {
-
-      // Customer can read his own bookings.
-      allow read: if signedIn()
-        && userRole() == 'customer'
-        && resource.data.customerId == request.auth.uid;
-
-      // Barber can read bookings assigned to him.
-      allow read: if signedIn()
-        && userRole() == 'barber'
-        && resource.data.barberId is string
-        && exists(
-          /databases/$(database)/documents/barbers/$(resource.data.barberId)
-        )
-        && barberDoc(resource.data.barberId).userId
-            == request.auth.uid;
-
-      // Owner can read bookings belonging to his shop.
-      allow read: if signedIn()
-        && userRole() == 'owner'
-        && resource.data.shopId is string
-        && ownsShop(resource.data.shopId);
-
-      // Customer creates a pending booking.
-      allow create: if signedIn()
-        && userRole() == 'customer'
-        && request.resource.data.customerId
-            == request.auth.uid
-        && request.resource.data.status == 'pending'
-        && request.resource.data.customerId is string
-        && request.resource.data.shopId is string
-        && request.resource.data.barberId is string
-        && request.resource.data.serviceId is string
-        && request.resource.data.bookingDate is timestamp
-        && request.resource.data.startTime is string
-        && request.resource.data.endTime is string
-        && request.resource.data.serviceName is string
-        && request.resource.data.serviceDurationMinutes is int
-        && request.resource.data.serviceDurationMinutes > 0
-        && request.resource.data.serviceDurationMinutes % 5 == 0
-        && request.resource.data.servicePrice is number
-        && request.resource.data.servicePrice >= 0
-        && request.resource.data.customerName is string
-        && request.resource.data.barberName is string
-        && request.resource.data.createdAt is timestamp
-        && request.resource.data.updatedAt is timestamp
-
-        // Customer name must match his user document.
-        && request.resource.data.customerName
-            == userDoc().name
-
-        // Shop must exist and be active.
-        && exists(
-          /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)
-        )
-        && get(
-          /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)
-        ).data.isActive == true
-
-        // Barber must exist, be active, and belong to the selected shop.
-        && exists(
-          /databases/$(database)/documents/barbers/$(request.resource.data.barberId)
-        )
-        && get(
-          /databases/$(database)/documents/barbers/$(request.resource.data.barberId)
-        ).data.isActive == true
-        && get(
-          /databases/$(database)/documents/barbers/$(request.resource.data.barberId)
-        ).data.barberShopId
-            == request.resource.data.shopId
-
-        // IMPORTANT:
-        // Service is nested under barberShops/{shopId}/services/{serviceId}.
-        && exists(
-          /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)/services/$(request.resource.data.serviceId)
-        )
-        && get(
-          /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)/services/$(request.resource.data.serviceId)
-        ).data.isActive == true
-        && get(
-          /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)/services/$(request.resource.data.serviceId)
-        ).data.barberShopId
-            == request.resource.data.shopId
-
-        // Booking snapshot must match the service document.
-        && request.resource.data.serviceName
-            == get(
-              /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)/services/$(request.resource.data.serviceId)
-            ).data.name
-        && request.resource.data.serviceDurationMinutes
-            == get(
-              /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)/services/$(request.resource.data.serviceId)
-            ).data.durationMinutes
-        && request.resource.data.servicePrice
-            == get(
-              /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)/services/$(request.resource.data.serviceId)
-            ).data.price
-
-        // Booking snapshot must match the barber document.
-        && request.resource.data.barberName
-            == get(
-              /databases/$(database)/documents/barbers/$(request.resource.data.barberId)
-            ).data.name;
-
-
-      // Customer can cancel his own pending booking.
-      allow update: if signedIn()
-        && userRole() == 'customer'
-        && resource.data.customerId == request.auth.uid
-        && resource.data.status == 'pending'
-        && request.resource.data.status == 'cancelled'
-        && request.resource.data.customerId
-            == resource.data.customerId
-        && request.resource.data.shopId
-            == resource.data.shopId
-        && request.resource.data.barberId
-            == resource.data.barberId
-        && request.resource.data.serviceId
-            == resource.data.serviceId
-        && request.resource.data.bookingDate
-            == resource.data.bookingDate
-        && request.resource.data.startTime
-            == resource.data.startTime
-        && request.resource.data.endTime
-            == resource.data.endTime
-        && request.resource.data.serviceName
-            == resource.data.serviceName
-        && request.resource.data.serviceDurationMinutes
-            == resource.data.serviceDurationMinutes
-        && request.resource.data.servicePrice
-            == resource.data.servicePrice
-        && request.resource.data.customerName
-            == resource.data.customerName
-        && request.resource.data.barberName
-            == resource.data.barberName
-        && request.resource.data.createdAt
-            == resource.data.createdAt
-        && request.resource.data.updatedAt is timestamp;
-
-
-      // Barber can update booking status according to the allowed flow.
-      allow update: if signedIn()
-        && userRole() == 'barber'
-        && resource.data.barberId is string
-        && exists(
-          /databases/$(database)/documents/barbers/$(resource.data.barberId)
-        )
-        && barberDoc(resource.data.barberId).userId
-            == request.auth.uid
-        && request.resource.data.customerId
-            == resource.data.customerId
-        && request.resource.data.shopId
-            == resource.data.shopId
-        && request.resource.data.barberId
-            == resource.data.barberId
-        && request.resource.data.serviceId
-            == resource.data.serviceId
-        && request.resource.data.bookingDate
-            == resource.data.bookingDate
-        && request.resource.data.startTime
-            == resource.data.startTime
-        && request.resource.data.endTime
-            == resource.data.endTime
-        && request.resource.data.serviceName
-            == resource.data.serviceName
-        && request.resource.data.serviceDurationMinutes
-            == resource.data.serviceDurationMinutes
-        && request.resource.data.servicePrice
-            == resource.data.servicePrice
-        && request.resource.data.customerName
-            == resource.data.customerName
-        && request.resource.data.barberName
-            == resource.data.barberName
-        && request.resource.data.createdAt
-            == resource.data.createdAt
-        && request.resource.data.updatedAt is timestamp
-        && (
-          (
-            resource.data.status == 'pending'
-            && (
-              request.resource.data.status == 'confirmed'
-              || request.resource.data.status == 'cancelled'
-            )
-          )
-          ||
-          (
-            resource.data.status == 'confirmed'
-            && (
-              request.resource.data.status == 'completed'
-              || request.resource.data.status == 'noShow'
-              || request.resource.data.status == 'cancelled'
-            )
-          )
-        );
-
-
-      // Owner can update booking status for his shop.
-      allow update: if ownsShop(resource.data.shopId)
-        && request.resource.data.customerId
-            == resource.data.customerId
-        && request.resource.data.shopId
-            == resource.data.shopId
-        && request.resource.data.barberId
-            == resource.data.barberId
-        && request.resource.data.serviceId
-            == resource.data.serviceId
-        && request.resource.data.bookingDate
-            == resource.data.bookingDate
-        && request.resource.data.startTime
-            == resource.data.startTime
-        && request.resource.data.endTime
-            == resource.data.endTime
-        && request.resource.data.serviceName
-            == resource.data.serviceName
-        && request.resource.data.serviceDurationMinutes
-            == resource.data.serviceDurationMinutes
-        && request.resource.data.servicePrice
-            == resource.data.servicePrice
-        && request.resource.data.customerName
-            == resource.data.customerName
-        && request.resource.data.barberName
-            == resource.data.barberName
-        && request.resource.data.createdAt
-            == resource.data.createdAt
-        && request.resource.data.updatedAt is timestamp
-        && (
-          (
-            resource.data.status == 'pending'
-            && (
-              request.resource.data.status == 'confirmed'
-              || request.resource.data.status == 'cancelled'
-            )
-          )
-          ||
-          (
-            resource.data.status == 'confirmed'
-            && (
-              request.resource.data.status == 'completed'
-              || request.resource.data.status == 'noShow'
-              || request.resource.data.status == 'cancelled'
-            )
-          )
-        );
-
-      allow delete: if false;
-    }
-
-
-    // ============================================================
-    // Booking Locks
-    // ============================================================
-
-    match /barbers/{barberId}/bookingLocks/{lockId} {
-
-      // Locks are never directly readable.
-      allow read: if false;
-
-      // Customer creates a lock as part of the booking transaction.
-      allow create: if signedIn()
-        && userRole() == 'customer'
-        && request.resource.data.bookingId is string
-        && request.resource.data.customerId is string
-        && request.resource.data.shopId is string
-        && request.resource.data.barberId == barberId
-        && request.resource.data.date is timestamp
-        && request.resource.data.startTime is string
-        && request.resource.data.endTime is string
-        && request.resource.data.createdAt is timestamp
-
-        // The booking created in the same transaction must belong
-        // to the authenticated customer.
-        && getAfter(
-          /databases/$(database)/documents/bookings/$(request.resource.data.bookingId)
-        ).customerId == request.auth.uid
-
-        // The lock must belong to the same barber.
-        && getAfter(
-          /databases/$(database)/documents/bookings/$(request.resource.data.bookingId)
-        ).barberId == barberId
-
-        // The lock shop must match the booking shop.
-        && getAfter(
-          /databases/$(database)/documents/bookings/$(request.resource.data.bookingId)
-        ).shopId == request.resource.data.shopId
-
-        // Booking must still be pending.
-        && getAfter(
-          /databases/$(database)/documents/bookings/$(request.resource.data.bookingId)
-        ).status == 'pending';
-
-      allow update: if false;
-
-      // Lock can only be deleted after its booking is cancelled.
-      allow delete: if signedIn()
-        && resource.data.bookingId is string
-        && getAfter(
-          /databases/$(database)/documents/bookings/$(resource.data.bookingId)
-        ).status == 'cancelled'
-        && (
-          (
-            userRole() == 'customer'
-            && getAfter(
-              /databases/$(database)/documents/bookings/$(resource.data.bookingId)
-            ).customerId == request.auth.uid
-          )
-          ||
-          (
-            userRole() == 'barber'
-            && exists(
-              /databases/$(database)/documents/barbers/$(barberId)
-            )
-            && barberDoc(barberId).userId == request.auth.uid
-            && getAfter(
-              /databases/$(database)/documents/bookings/$(resource.data.bookingId)
-            ).barberId == barberId
-          )
-          ||
-          (
-            userRole() == 'owner'
-            && ownsShop(
-              getAfter(
-                /databases/$(database)/documents/bookings/$(resource.data.bookingId)
-              ).shopId
-            )
-          )
-        );
-    }
-
-
-    // ============================================================
-    // Default Deny
-    // ============================================================
-
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
+function signedIn() {
+  return request.auth != null;
 }
 
+function userDoc() {
+  return get(
+    /databases/$(database)/documents/users/$(request.auth.uid)
+  ).data;
+}
+
+function userRole() {
+  return userDoc().role;
+}
+
+function barberDoc(barberId) {
+  return get(
+    /databases/$(database)/documents/barbers/$(barberId)
+  ).data;
+}
+
+function ownsShop(shopId) {
+  return signedIn()
+    && userRole() == 'owner'
+    && exists(
+      /databases/$(database)/documents/barberShops/$(shopId)
+    )
+    && get(
+      /databases/$(database)/documents/barberShops/$(shopId)
+    ).data.ownerId == request.auth.uid;
+}
+
+
+// ============================================================
+// Users
+// ============================================================
+
+match /users/{userId} {
+
+  allow read: if signedIn()
+    && request.auth.uid == userId;
+
+  allow read: if signedIn()
+    && userRole() == 'owner'
+    && resource.data.role == 'barber';
+
+  allow create: if signedIn()
+    && request.auth.uid == userId
+    && request.resource.data.role == 'customer'
+    && request.resource.data.id == userId
+    && request.resource.data.barberShopId == null;
+
+  allow update: if signedIn()
+    && request.auth.uid == userId
+    && request.resource.data.role == resource.data.role
+    && request.resource.data.barberShopId
+        == resource.data.barberShopId
+    && request.resource.data.id == resource.data.id;
+
+  allow delete: if false;
+}
+
+
+// ============================================================
+// Barber Shops
+// ============================================================
+
+match /barberShops/{shopId} {
+
+  allow read: if signedIn()
+    && userRole() == 'customer'
+    && resource.data.isActive == true;
+
+  allow read: if signedIn()
+    && userRole() == 'owner'
+    && resource.data.ownerId == request.auth.uid;
+
+  allow read: if signedIn()
+    && userRole() == 'barber'
+    && resource.data.isActive == true;
+
+  allow create: if signedIn()
+    && userRole() == 'owner'
+    && request.resource.data.ownerId == request.auth.uid
+    && request.resource.data.name is string
+    && request.resource.data.name.size() > 0
+    && request.resource.data.timezone is string
+    && request.resource.data.timezone.size() > 0
+    && request.resource.data.isActive == true
+    && request.resource.data.createdAt is timestamp
+    && request.resource.data.updatedAt is timestamp;
+
+  allow update: if ownsShop(shopId)
+    && request.resource.data.ownerId
+        == resource.data.ownerId;
+
+  allow delete: if ownsShop(shopId);
+}
+
+
+// ============================================================
+// Barbers
+// ============================================================
+
+match /barbers/{barberId} {
+
+  allow read: if signedIn()
+    && userRole() == 'owner'
+    && resource.data.barberShopId is string
+    && ownsShop(resource.data.barberShopId);
+
+  allow read: if signedIn()
+    && userRole() == 'barber'
+    && resource.data.userId == request.auth.uid;
+
+  allow read: if signedIn()
+    && userRole() == 'customer'
+    && resource.data.isActive == true;
+
+  allow create: if signedIn()
+    && userRole() == 'owner'
+    && request.resource.data.barberShopId is string
+    && ownsShop(request.resource.data.barberShopId)
+    && request.resource.data.userId is string
+    && exists(
+      /databases/$(database)/documents/users/$(request.resource.data.userId)
+    )
+    && get(
+      /databases/$(database)/documents/users/$(request.resource.data.userId)
+    ).data.role == 'barber'
+    && request.resource.data.name is string
+    && request.resource.data.name.size() > 0
+    && request.resource.data.isActive == true
+    && request.resource.data.createdAt is timestamp
+    && request.resource.data.updatedAt is timestamp;
+
+  allow update: if signedIn()
+    && userRole() == 'owner'
+    && resource.data.barberShopId is string
+    && ownsShop(resource.data.barberShopId)
+    && request.resource.data.barberShopId
+        == resource.data.barberShopId
+    && request.resource.data.userId
+        == resource.data.userId;
+
+  allow delete: if false;
+}
+
+
+// ============================================================
+// Weekly Schedule
+// ============================================================
+
+match /barbers/{barberId}/weeklySchedule/{dayId} {
+
+  allow read: if signedIn()
+    && userRole() == 'customer';
+
+  allow read, create, update: if signedIn()
+    && userRole() == 'owner'
+    && exists(
+      /databases/$(database)/documents/barbers/$(barberId)
+    )
+    && ownsShop(
+      barberDoc(barberId).barberShopId
+    );
+
+  allow read, create, update: if signedIn()
+    && userRole() == 'barber'
+    && exists(
+      /databases/$(database)/documents/barbers/$(barberId)
+    )
+    && barberDoc(barberId).userId == request.auth.uid;
+
+  allow delete: if false;
+}
+
+
+// ============================================================
+// Schedule Exceptions
+// ============================================================
+
+match /barbers/{barberId}/scheduleExceptions/{exceptionId} {
+
+  allow read: if signedIn()
+    && userRole() == 'customer';
+
+  allow read, create, update, delete: if signedIn()
+    && userRole() == 'owner'
+    && exists(
+      /databases/$(database)/documents/barbers/$(barberId)
+    )
+    && ownsShop(
+      barberDoc(barberId).barberShopId
+    );
+
+  allow read, create, update, delete: if signedIn()
+    && userRole() == 'barber'
+    && exists(
+      /databases/$(database)/documents/barbers/$(barberId)
+    )
+    && barberDoc(barberId).userId == request.auth.uid;
+}
+
+
+// ============================================================
+// Services
+// ============================================================
+
+match /barberShops/{shopId}/services/{serviceId} {
+
+  allow read: if signedIn()
+    && userRole() == 'customer'
+    && resource.data.isActive == true;
+
+  allow read: if ownsShop(shopId);
+
+  allow read: if signedIn()
+    && userRole() == 'barber'
+    && resource.data.isActive == true;
+
+  allow create: if ownsShop(shopId)
+    && request.resource.data.barberShopId == shopId
+    && request.resource.data.name is string
+    && request.resource.data.name.size() > 0
+    && request.resource.data.durationMinutes is int
+    && request.resource.data.durationMinutes > 0
+    && request.resource.data.durationMinutes % 5 == 0
+    && request.resource.data.price is number
+    && request.resource.data.price >= 0
+    && request.resource.data.isActive == true
+    && request.resource.data.createdAt is timestamp
+    && request.resource.data.updatedAt is timestamp;
+
+  allow update: if ownsShop(shopId)
+    && request.resource.data.barberShopId
+        == resource.data.barberShopId
+    && request.resource.data.barberShopId == shopId
+    && request.resource.data.createdAt
+        == resource.data.createdAt
+    && request.resource.data.name is string
+    && request.resource.data.name.size() > 0
+    && request.resource.data.durationMinutes is int
+    && request.resource.data.durationMinutes > 0
+    && request.resource.data.durationMinutes % 5 == 0
+    && request.resource.data.price is number
+    && request.resource.data.price >= 0
+    && request.resource.data.updatedAt is timestamp;
+
+  allow delete: if ownsShop(shopId);
+}
+
+
+// ============================================================
+// Bookings
+// ============================================================
+
+match /bookings/{bookingId} {
+
+  // Customer reads his own bookings.
+  allow read: if signedIn()
+    && userRole() == 'customer'
+    && resource.data.customerId == request.auth.uid;
+
+  // Barber reads bookings assigned to him.
+  allow read: if signedIn()
+    && userRole() == 'barber'
+    && resource.data.barberId is string
+    && exists(
+      /databases/$(database)/documents/barbers/$(resource.data.barberId)
+    )
+    && barberDoc(resource.data.barberId).userId
+        == request.auth.uid;
+
+  // Owner reads bookings belonging to his shop.
+  allow read: if signedIn()
+    && userRole() == 'owner'
+    && resource.data.shopId is string
+    && ownsShop(resource.data.shopId);
+
+
+  // ----------------------------------------------------------
+  // Customer creates a pending booking.
+  // ----------------------------------------------------------
+
+  allow create: if signedIn()
+    && userRole() == 'customer'
+
+    && request.resource.data.customerId == request.auth.uid
+    && request.resource.data.customerId is string
+
+    && request.resource.data.status == 'pending'
+
+    && request.resource.data.shopId is string
+    && request.resource.data.barberId is string
+    && request.resource.data.serviceId is string
+
+    && request.resource.data.bookingDate is timestamp
+    && request.resource.data.startTime is string
+    && request.resource.data.endTime is string
+
+    && request.resource.data.serviceName is string
+    && request.resource.data.serviceDurationMinutes is int
+    && request.resource.data.serviceDurationMinutes > 0
+    && request.resource.data.serviceDurationMinutes % 5 == 0
+    && request.resource.data.servicePrice is number
+    && request.resource.data.servicePrice >= 0
+
+    && request.resource.data.customerName is string
+    && request.resource.data.barberName is string
+
+    && request.resource.data.createdAt is timestamp
+    && request.resource.data.updatedAt is timestamp
+
+    // Shop must exist and be active.
+    && exists(
+      /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)
+    )
+    && get(
+      /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)
+    ).data.isActive == true
+
+    // Barber must exist, be active, and belong to the shop.
+    && exists(
+      /databases/$(database)/documents/barbers/$(request.resource.data.barberId)
+    )
+    && get(
+      /databases/$(database)/documents/barbers/$(request.resource.data.barberId)
+    ).data.isActive == true
+
+    && get(
+      /databases/$(database)/documents/barbers/$(request.resource.data.barberId)
+    ).data.barberShopId
+        == request.resource.data.shopId
+
+    // Service must exist, be active, and belong to the shop.
+    && exists(
+      /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)/services/$(request.resource.data.serviceId)
+    )
+    && get(
+      /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)/services/$(request.resource.data.serviceId)
+    ).data.isActive == true
+
+    && get(
+      /databases/$(database)/documents/barberShops/$(request.resource.data.shopId)/services/$(request.resource.data.serviceId)
+    ).data.barberShopId
+        == request.resource.data.shopId;
+
+
+  // ----------------------------------------------------------
+  // Customer cancels his own pending booking.
+  // ----------------------------------------------------------
+
+  allow update: if signedIn()
+    && userRole() == 'customer'
+    && resource.data.customerId == request.auth.uid
+    && resource.data.status == 'pending'
+    && request.resource.data.status == 'cancelled'
+
+    && request.resource.data.customerId
+        == resource.data.customerId
+    && request.resource.data.shopId
+        == resource.data.shopId
+    && request.resource.data.barberId
+        == resource.data.barberId
+    && request.resource.data.serviceId
+        == resource.data.serviceId
+    && request.resource.data.bookingDate
+        == resource.data.bookingDate
+    && request.resource.data.startTime
+        == resource.data.startTime
+    && request.resource.data.endTime
+        == resource.data.endTime
+    && request.resource.data.serviceName
+        == resource.data.serviceName
+    && request.resource.data.serviceDurationMinutes
+        == resource.data.serviceDurationMinutes
+    && request.resource.data.servicePrice
+        == resource.data.servicePrice
+    && request.resource.data.customerName
+        == resource.data.customerName
+    && request.resource.data.barberName
+        == resource.data.barberName
+    && request.resource.data.createdAt
+        == resource.data.createdAt
+    && request.resource.data.updatedAt is timestamp;
+
+
+  // ----------------------------------------------------------
+  // Barber status update.
+  // ----------------------------------------------------------
+
+  allow update: if signedIn()
+    && userRole() == 'barber'
+    && resource.data.barberId is string
+    && exists(
+      /databases/$(database)/documents/barbers/$(resource.data.barberId)
+    )
+    && barberDoc(resource.data.barberId).userId
+        == request.auth.uid
+
+    && request.resource.data.customerId == resource.data.customerId
+    && request.resource.data.shopId == resource.data.shopId
+    && request.resource.data.barberId == resource.data.barberId
+    && request.resource.data.serviceId == resource.data.serviceId
+    && request.resource.data.bookingDate == resource.data.bookingDate
+    && request.resource.data.startTime == resource.data.startTime
+    && request.resource.data.endTime == resource.data.endTime
+    && request.resource.data.serviceName == resource.data.serviceName
+    && request.resource.data.serviceDurationMinutes
+        == resource.data.serviceDurationMinutes
+    && request.resource.data.servicePrice == resource.data.servicePrice
+    && request.resource.data.customerName == resource.data.customerName
+    && request.resource.data.barberName == resource.data.barberName
+    && request.resource.data.createdAt == resource.data.createdAt
+    && request.resource.data.updatedAt is timestamp
+
+    && (
+      (
+        resource.data.status == 'pending'
+        && (
+          request.resource.data.status == 'confirmed'
+          || request.resource.data.status == 'cancelled'
+        )
+      )
+      ||
+      (
+        resource.data.status == 'confirmed'
+        && (
+          request.resource.data.status == 'completed'
+          || request.resource.data.status == 'noShow'
+          || request.resource.data.status == 'cancelled'
+        )
+      )
+    );
+
+
+  // ----------------------------------------------------------
+  // Owner status update.
+  // ----------------------------------------------------------
+
+  allow update: if ownsShop(resource.data.shopId)
+
+    && request.resource.data.customerId == resource.data.customerId
+    && request.resource.data.shopId == resource.data.shopId
+    && request.resource.data.barberId == resource.data.barberId
+    && request.resource.data.serviceId == resource.data.serviceId
+    && request.resource.data.bookingDate == resource.data.bookingDate
+    && request.resource.data.startTime == resource.data.startTime
+    && request.resource.data.endTime == resource.data.endTime
+    && request.resource.data.serviceName == resource.data.serviceName
+    && request.resource.data.serviceDurationMinutes
+        == resource.data.serviceDurationMinutes
+    && request.resource.data.servicePrice == resource.data.servicePrice
+    && request.resource.data.customerName == resource.data.customerName
+    && request.resource.data.barberName == resource.data.barberName
+    && request.resource.data.createdAt == resource.data.createdAt
+    && request.resource.data.updatedAt is timestamp
+
+    && (
+      (
+        resource.data.status == 'pending'
+        && (
+          request.resource.data.status == 'confirmed'
+          || request.resource.data.status == 'cancelled'
+        )
+      )
+      ||
+      (
+        resource.data.status == 'confirmed'
+        && (
+          request.resource.data.status == 'completed'
+          || request.resource.data.status == 'noShow'
+          || request.resource.data.status == 'cancelled'
+        )
+      )
+    );
+
+  allow delete: if false;
+}
+
+
+// ============================================================
+// Booking Locks
+// ============================================================
+
+match /barbers/{barberId}/bookingLocks/{lockId} {
+
+  // Customer can read booking locks for availability.
+  allow read: if signedIn()
+    && userRole() == 'customer';
+
+
+  // ----------------------------------------------------------
+  // Customer creates locks as part of the booking transaction.
+  // ----------------------------------------------------------
+
+  allow create: if signedIn()
+    && userRole() == 'customer'
+
+    && request.resource.data.bookingId is string
+    && request.resource.data.barberId == barberId
+    && request.resource.data.date is timestamp
+    && request.resource.data.startTime is string
+    && request.resource.data.endTime is string
+    && request.resource.data.createdAt is timestamp
+
+    // The same transaction must create a booking belonging
+    // to the authenticated customer.
+    && getAfter(
+      /databases/$(database)/documents/bookings/$(request.resource.data.bookingId)
+    ).data.customerId == request.auth.uid
+
+    // The booking must use this barber.
+    && getAfter(
+      /databases/$(database)/documents/bookings/$(request.resource.data.bookingId)
+    ).data.barberId == barberId
+
+    // The booking must be pending.
+    && getAfter(
+      /databases/$(database)/documents/bookings/$(request.resource.data.bookingId)
+    ).data.status == 'pending';
+
+
+  allow update: if false;
+
+
+  // ----------------------------------------------------------
+  // Lock deletion is allowed only when the booking is cancelled.
+  // ----------------------------------------------------------
+
+  allow delete: if signedIn()
+    && resource.data.bookingId is string
+
+    && getAfter(
+      /databases/$(database)/documents/bookings/$(resource.data.bookingId)
+    ).data.status == 'cancelled'
+
+    && (
+      (
+        userRole() == 'customer'
+        && getAfter(
+          /databases/$(database)/documents/bookings/$(resource.data.bookingId)
+        ).data.customerId == request.auth.uid
+      )
+      ||
+      (
+        userRole() == 'barber'
+        && exists(
+          /databases/$(database)/documents/barbers/$(barberId)
+        )
+        && barberDoc(barberId).userId == request.auth.uid
+        && getAfter(
+          /databases/$(database)/documents/bookings/$(resource.data.bookingId)
+        ).data.barberId == barberId
+      )
+      ||
+      (
+        userRole() == 'owner'
+        && ownsShop(
+          getAfter(
+            /databases/$(database)/documents/bookings/$(resource.data.bookingId)
+          ).data.shopId
+        )
+      )
+    );
+}
+
+
+// ============================================================
+// Default Deny
+// ============================================================
+
+match /{document=**} {
+  allow read, write: if false;
+}
+
+}
+}

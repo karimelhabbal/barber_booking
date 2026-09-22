@@ -21,6 +21,8 @@ class _OwnerCreateBarberPageState extends State<OwnerCreateBarberPage> {
 
   BarberCandidate? _selectedCandidate;
 
+  List<BarberCandidate> _candidates = const [];
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -66,6 +68,12 @@ class _OwnerCreateBarberPageState extends State<OwnerCreateBarberPage> {
                 Navigator.of(context).pop(state.barber);
               }
 
+              if (state is BarberCandidatesLoaded) {
+                setState(() {
+                  _candidates = state.candidates;
+                });
+              }
+
               if (state is BarberError) {
                 ScaffoldMessenger.of(context)
                     .showSnackBar(SnackBar(content: Text(state.message)));
@@ -90,57 +98,58 @@ class _OwnerCreateBarberPageState extends State<OwnerCreateBarberPage> {
                             );
                           }
 
-                          if (state is BarberError) {
+                          if (state is BarberError && _candidates.isEmpty) {
                             return Text(state.message);
                           }
 
-                          if (state is BarberCandidatesLoaded) {
-                            if (state.candidates.isEmpty) {
-                              return const Text(
-                                'No barber users are available.',
-                              );
-                            }
-
-                            return DropdownButtonFormField<BarberCandidate>(
-                              initialValue: _selectedCandidate,
-                              decoration: const InputDecoration(
-                                labelText: 'Select Barber',
-                                border: OutlineInputBorder(),
-                              ),
-                              items: state.candidates.map((candidate) {
-                                final phone = candidate.phone;
-
-                                return DropdownMenuItem<BarberCandidate>(
-                                  value: candidate,
-                                  child: Text(
-                                    phone == null || phone.isEmpty
-                                        ? candidate.name
-                                        : '${candidate.name} - $phone',
-                                  ),
-                                );
-                              }).toList(),
-                              onChanged: (candidate) {
-                                setState(() {
-                                  _selectedCandidate = candidate;
-
-                                  if (candidate != null) {
-                                    _nameController.text = candidate.name;
-                                    _phoneController.text =
-                                        candidate.phone ?? '';
-                                  }
-                                });
-                              },
-                              validator: (value) {
-                                if (value == null) {
-                                  return 'Please select a barber.';
-                                }
-
-                                return null;
-                              },
+                          if (state is BarberCandidatesLoaded &&
+                              _candidates.isEmpty) {
+                            return const Text(
+                              'No barber users are available.',
                             );
                           }
 
-                          return const SizedBox.shrink();
+                          if (_candidates.isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+
+                          return DropdownButtonFormField<BarberCandidate>(
+                            initialValue: _selectedCandidate,
+                            decoration: const InputDecoration(
+                              labelText: 'Select Barber',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: _candidates.map((candidate) {
+                              final phone = candidate.phone;
+
+                              return DropdownMenuItem<BarberCandidate>(
+                                value: candidate,
+                                child: Text(
+                                  phone == null || phone.isEmpty
+                                      ? candidate.name
+                                      : '${candidate.name} - $phone',
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (candidate) {
+                              setState(() {
+                                _selectedCandidate = candidate;
+
+                                if (candidate != null) {
+                                  _nameController.text = candidate.name;
+                                  _phoneController.text =
+                                      candidate.phone ?? '';
+                                }
+                              });
+                            },
+                            validator: (value) {
+                              if (value == null) {
+                                return 'Please select a barber.';
+                              }
+
+                              return null;
+                            },
+                          );
                         },
                       ),
                       const SizedBox(height: 16),

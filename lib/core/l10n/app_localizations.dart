@@ -119,43 +119,43 @@ abstract class AppLocalizations {
   /// No description provided for @bookNow.
   ///
   /// In en, this message translates to:
-  /// **'احجز الآن'**
+  /// **'Book Appointment'**
   String get bookNow;
 
   /// No description provided for @dashboard.
   ///
   /// In en, this message translates to:
-  /// **'الرئيسية'**
+  /// **'Home'**
   String get dashboard;
 
   /// No description provided for @settings.
   ///
   /// In en, this message translates to:
-  /// **'الإعدادات'**
+  /// **'Settings'**
   String get settings;
 
   /// No description provided for @language.
   ///
   /// In en, this message translates to:
-  /// **'اللغة'**
+  /// **'Language'**
   String get language;
 
   /// No description provided for @theme.
   ///
   /// In en, this message translates to:
-  /// **'المظهر'**
+  /// **'Theme'**
   String get theme;
 
   /// No description provided for @light.
   ///
   /// In en, this message translates to:
-  /// **'فاتح'**
+  /// **'Light'**
   String get light;
 
   /// No description provided for @dark.
   ///
   /// In en, this message translates to:
-  /// **'داكن'**
+  /// **'Dark'**
   String get dark;
 
   /// No description provided for @phoneNumber.
@@ -185,7 +185,7 @@ abstract class AppLocalizations {
   /// No description provided for @confirm.
   ///
   /// In en, this message translates to:
-  /// **'تأكيد'**
+  /// **'Confirm appointment'**
   String get confirm;
 
   /// No description provided for @verifyCode.
@@ -209,7 +209,7 @@ abstract class AppLocalizations {
   /// No description provided for @logout.
   ///
   /// In en, this message translates to:
-  /// **'تسجيل الخروج'**
+  /// **'Logout'**
   String get logout;
 
   /// No description provided for @invalidName.
@@ -323,7 +323,7 @@ abstract class AppLocalizations {
   /// No description provided for @noBarberShopsAvailable.
   ///
   /// In en, this message translates to:
-  /// **'No barber shops available.'**
+  /// **'No active shops right now'**
   String get noBarberShopsAvailable;
 
   /// No description provided for @customerDashboard.
@@ -331,6 +331,378 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Customer Dashboard'**
   String get customerDashboard;
+
+  /// No description provided for @bookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookings'**
+  String get bookings;
+
+  /// No description provided for @loadingDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading your dashboard...'**
+  String get loadingDashboard;
+
+  /// No description provided for @loadingHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading your home...'**
+  String get loadingHome;
+
+  /// No description provided for @dashboardLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load your dashboard'**
+  String get dashboardLoadError;
+
+  /// No description provided for @availableBarbersLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check back later for available barbers.'**
+  String get availableBarbersLater;
+
+  /// No description provided for @upcomingAppointment.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming Appointment'**
+  String get upcomingAppointment;
+
+  /// No description provided for @noUpcomingAppointment.
+  ///
+  /// In en, this message translates to:
+  /// **'No upcoming appointment'**
+  String get noUpcomingAppointment;
+
+  /// No description provided for @nextBookingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your next booking will appear here.'**
+  String get nextBookingMessage;
+
+  /// No description provided for @barberSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Barber Selection'**
+  String get barberSelection;
+
+  /// No description provided for @services.
+  ///
+  /// In en, this message translates to:
+  /// **'Services'**
+  String get services;
+
+  /// No description provided for @goodMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get goodMorning;
+
+  /// No description provided for @goodAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon'**
+  String get goodAfternoon;
+
+  /// No description provided for @goodEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get goodEvening;
+
+  /// No description provided for @customer.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer'**
+  String get customer;
+
+  /// No description provided for @minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'min'**
+  String get minutes;
+
+  /// No description provided for @hour.
+  ///
+  /// In en, this message translates to:
+  /// **'hour'**
+  String get hour;
+
+  /// No description provided for @hours.
+  ///
+  /// In en, this message translates to:
+  /// **'hours'**
+  String get hours;
+
+  /// No description provided for @hourShort.
+  ///
+  /// In en, this message translates to:
+  /// **'h'**
+  String get hourShort;
+
+  /// No description provided for @pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get pending;
+
+  /// No description provided for @confirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed'**
+  String get confirmed;
+
+  /// No description provided for @completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get completed;
+
+  /// No description provided for @cancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get cancelled;
+
+  /// No description provided for @noShow.
+  ///
+  /// In en, this message translates to:
+  /// **'No show'**
+  String get noShow;
+
+  /// No description provided for @loadingBarbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading barbers...'**
+  String get loadingBarbers;
+
+  /// No description provided for @loadingServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading services...'**
+  String get loadingServices;
+
+  /// No description provided for @loadBarbersError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load barbers.'**
+  String get loadBarbersError;
+
+  /// No description provided for @noActiveBarbers.
+  ///
+  /// In en, this message translates to:
+  /// **'No active barbers'**
+  String get noActiveBarbers;
+
+  /// No description provided for @noBarbersMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no barbers available for this shop right now.'**
+  String get noBarbersMessage;
+
+  /// No description provided for @loadServicesError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load services.'**
+  String get loadServicesError;
+
+  /// No description provided for @noServicesAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No services available'**
+  String get noServicesAvailable;
+
+  /// No description provided for @noServicesMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This shop is not offering any active services right now.'**
+  String get noServicesMessage;
+
+  /// No description provided for @noBarbersCurrentlyAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No barbers are currently available.'**
+  String get noBarbersCurrentlyAvailable;
+
+  /// No description provided for @customerProfileIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Your customer profile is incomplete.'**
+  String get customerProfileIncomplete;
+
+  /// No description provided for @showAvailableSlots.
+  ///
+  /// In en, this message translates to:
+  /// **'Show available slots'**
+  String get showAvailableSlots;
+
+  /// No description provided for @noAvailableSlots.
+  ///
+  /// In en, this message translates to:
+  /// **'No available slots for this date.'**
+  String get noAvailableSlots;
+
+  /// No description provided for @confirmAppointment.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm appointment'**
+  String get confirmAppointment;
+
+  /// No description provided for @at.
+  ///
+  /// In en, this message translates to:
+  /// **'at'**
+  String get at;
+
+  /// No description provided for @creating.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating...'**
+  String get creating;
+
+  /// No description provided for @confirmBooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm booking'**
+  String get confirmBooking;
+
+  /// No description provided for @bookingCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking created successfully.'**
+  String get bookingCreated;
+
+  /// No description provided for @noServicesCurrentlyAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No services are currently available.'**
+  String get noServicesCurrentlyAvailable;
+
+  /// No description provided for @cancelBookingQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel booking?'**
+  String get cancelBookingQuestion;
+
+  /// No description provided for @bookingCancelledMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This booking will be cancelled.'**
+  String get bookingCancelledMessage;
+
+  /// No description provided for @keep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep'**
+  String get keep;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @myBookings.
+  ///
+  /// In en, this message translates to:
+  /// **'My bookings'**
+  String get myBookings;
+
+  /// No description provided for @loadingBookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading bookings...'**
+  String get loadingBookings;
+
+  /// No description provided for @loadBookingsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load bookings.'**
+  String get loadBookingsError;
+
+  /// No description provided for @noBookingsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No bookings yet.'**
+  String get noBookingsYet;
+
+  /// No description provided for @bookingsEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your upcoming and past bookings will appear here.'**
+  String get bookingsEmptyMessage;
+
+  /// No description provided for @upcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get upcoming;
+
+  /// No description provided for @noUpcomingBookings.
+  ///
+  /// In en, this message translates to:
+  /// **'No upcoming bookings.'**
+  String get noUpcomingBookings;
+
+  /// No description provided for @noUpcomingAppointments.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no upcoming appointments right now.'**
+  String get noUpcomingAppointments;
+
+  /// No description provided for @history.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get history;
+
+  /// No description provided for @noBookingHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No booking history.'**
+  String get noBookingHistory;
+
+  /// No description provided for @pastAppointments.
+  ///
+  /// In en, this message translates to:
+  /// **'Past appointments will appear here.'**
+  String get pastAppointments;
+
+  /// No description provided for @barber.
+  ///
+  /// In en, this message translates to:
+  /// **'Barber'**
+  String get barber;
+
+  /// No description provided for @date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get date;
+
+  /// No description provided for @time.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get time;
+
+  /// No description provided for @price.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get price;
+
+  /// No description provided for @cancelBooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel booking'**
+  String get cancelBooking;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
 }
 
 class _AppLocalizationsDelegate

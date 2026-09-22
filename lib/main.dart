@@ -64,20 +64,23 @@ class _MyAppState extends State<MyApp> {
     return BlocBuilder<SettingsCubit, SettingsState>(
       bloc: widget.settingsCubit,
       builder: (context, settingsState) {
-        return MaterialApp.router(
-          title: 'Barber Booking',
-          routerConfig: _appRouter.router,
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [Locale('en'), Locale('ar')],
-          locale: settingsState.locale,
-          theme: AppTheme.light(),
-          darkTheme: AppTheme.dark(),
-          themeMode: settingsState.themeMode,
+        return BlocProvider<AuthCubit>.value(
+          value: _authCubit,
+          child: MaterialApp.router(
+            title: 'Barber Booking',
+            routerConfig: _appRouter.router,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('en'), Locale('ar')],
+            locale: settingsState.locale,
+            theme: AppTheme.light(),
+            darkTheme: AppTheme.dark(),
+            themeMode: settingsState.themeMode,
+          ),
         );
       },
     );

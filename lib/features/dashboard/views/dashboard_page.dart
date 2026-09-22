@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../auth/domain/entities/user.dart';
 import '../../auth/presentation/cubit/auth_cubit.dart';
 import 'barber_dashboard_page.dart';
-import 'customer_dashboard_page.dart';
+import 'customer_app_shell.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -19,7 +19,7 @@ class DashboardPage extends StatelessWidget {
     }
 
     if (authState.user.role == UserRole.customer) {
-      return const CustomerDashboardPage();
+      return const CustomerAppShell();
     }
 
     if (authState.user.role == UserRole.owner) {

@@ -51,7 +51,24 @@ class OwnerDashboardPage extends StatelessWidget {
             }
 
             if (state is BarberShopError) {
-              return Center(child: Text(state.message));
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(state.message),
+                      const SizedBox(height: 12),
+                      ElevatedButton(
+                        onPressed: () => context
+                            .read<BarberShopCubit>()
+                            .loadOwnerShop(ownerId: user.id),
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
             }
 
             if (state is BarberShopOwnerLoaded) {

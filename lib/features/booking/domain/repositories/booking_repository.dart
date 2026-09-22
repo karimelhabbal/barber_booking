@@ -6,6 +6,13 @@ abstract interface class BookingRepository {
     required DateTime date,
   });
 
+  /// Loads only booked time ranges for availability calculations through
+  /// the secure `getBarberAvailability` Cloud Function.
+  Future<List<Booking>> getBookedTimeRangesForDate({
+    required String barberId,
+    required DateTime date,
+  });
+
   Future<List<Booking>> getCustomerBookings({required String customerId});
 
   Future<List<Booking>> getOwnerBookings({required String shopId});

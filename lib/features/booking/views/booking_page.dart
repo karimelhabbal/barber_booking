@@ -7,6 +7,7 @@ import 'package:barber_booking/features/booking/domain/entities/available_slot.d
 import 'package:barber_booking/features/booking/domain/entities/booking.dart';
 import 'package:barber_booking/features/booking/presentation/cubit/booking_cubit.dart';
 import 'package:barber_booking/features/booking/presentation/cubit/booking_state.dart';
+import 'package:barber_booking/features/booking/views/customer_bookings_page.dart';
 import 'package:barber_booking/features/service/domain/entities/service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -50,11 +51,17 @@ class _BookingFlow extends StatefulWidget {
 class _BookingFlowState extends State<_BookingFlow> {
   late DateTime _selectedDate;
   AvailableSlot? _selectedSlot;
+  bool _isAvailabilityStale = false;
 
   @override
   void initState() {
     super.initState();
     _selectedDate = DateUtils.dateOnly(DateTime.now());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _loadSlots();
+      }
+    });
   }
 
   Future<void> _pickDate() async {
@@ -71,15 +78,26 @@ class _BookingFlowState extends State<_BookingFlow> {
       return;
     }
 
+    final dateChanged = !DateUtils.isSameDay(_selectedDate, date);
+
     setState(() {
+      if (dateChanged) {
+        _isAvailabilityStale = true;
+      }
+
       _selectedDate = DateUtils.dateOnly(date);
       _selectedSlot = null;
     });
+
+    if (dateChanged) {
+      _loadSlots();
+    }
   }
 
   void _loadSlots() {
     setState(() {
       _selectedSlot = null;
+      _isAvailabilityStale = false;
     });
 
     context.read<BookingCubit>().loadAvailableSlots(
@@ -92,6 +110,7 @@ class _BookingFlowState extends State<_BookingFlow> {
   void _createBooking() {
     final slot = _selectedSlot;
     final authState = context.read<AuthCubit>().state;
+    final loc = AppLocalizations.of(context)!;
 
     if (slot == null) {
       return;
@@ -100,9 +119,8 @@ class _BookingFlowState extends State<_BookingFlow> {
     if (authState is! AuthAuthenticated ||
         authState.user.name == null ||
         authState.user.name!.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Your customer profile is incomplete.')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(loc.customerProfileIncomplete)));
       return;
     }
 
@@ -142,24 +160,36 @@ class _BookingFlowState extends State<_BookingFlow> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.bookNow)),
+      appBar: AppBar(title: Text(loc.bookNow)),
       body: BlocBuilder<BookingCubit, BookingState>(
         builder: (context, state) {
           final isCreating = state is BookingCreating;
           final isCreated = state is BookingCreated;
           final slots = state is AvailabilityLoaded ? state.slots : const [];
 
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
+          // Reserve the system navigation inset OUTSIDE the scroll viewport so
+          // the confirmation card and its Confirm button can never sit in the
+          // Android system navigation area, at any scroll position; adds
+          // nothing on devices without bottom system insets.
+          return SafeArea(
+            top: false,
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
               Text(
                 widget.service.name,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 4),
+              Text(loc.barber, style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: 2),
               Text(widget.barber.name),
               const SizedBox(height: 16),
+              Text(loc.date, style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: 4),
               Card(
                 child: ListTile(
                   title: Text(_formatDate(_selectedDate)),
@@ -169,9 +199,14 @@ class _BookingFlowState extends State<_BookingFlow> {
               ),
               const SizedBox(height: 12),
               ElevatedButton(
-                onPressed: isCreating || isCreated ? null : _loadSlots,
-                child: const Text('Show available slots'),
+                onPressed:
+                    isCreating || isCreated || state is AvailabilityLoading
+                    ? null
+                    : _loadSlots,
+                child: Text(loc.showAvailableSlots),
               ),
+              const SizedBox(height: 16),
+              Text(loc.time, style: Theme.of(context).textTheme.bodySmall),
               if (state is AvailabilityLoading) ...[
                 const SizedBox(height: 24),
                 const Center(child: CircularProgressIndicator()),
@@ -180,12 +215,17 @@ class _BookingFlowState extends State<_BookingFlow> {
                 const SizedBox(height: 16),
                 Text(state.message, textAlign: TextAlign.center),
               ],
-              if (state is AvailabilityLoaded) ...[
+              if (state is AvailabilityLoaded && !_isAvailabilityStale) ...[
                 const SizedBox(height: 16),
                 if (slots.isEmpty)
-                  const Text(
-                    'No available slots for this date.',
-                    textAlign: TextAlign.center,
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        loc.noAvailableSlots,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   )
                 else
                   Wrap(
@@ -212,18 +252,47 @@ class _BookingFlowState extends State<_BookingFlow> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Confirm appointment'),
+                        Text(loc.confirmAppointment),
                         const SizedBox(height: 8),
                         Text(
-                          '${_formatDate(_selectedDate)} at '
+                          widget.service.name,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Text(loc.barber),
+                            const SizedBox(width: 8),
+                            Expanded(child: Text(widget.barber.name)),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${_formatDate(_selectedDate)} ${loc.at} '
                           '${_formatTime(_selectedSlot!.start)} - '
                           '${_formatTime(_selectedSlot!.end)}',
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${widget.service.durationMinutes} ${loc.minutes}',
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Text(loc.price),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                widget.service.price.toStringAsFixed(2),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 12),
                         ElevatedButton(
                           onPressed: isCreating ? null : _createBooking,
                           child: Text(
-                            isCreating ? 'Creating...' : 'Confirm booking',
+                            isCreating ? loc.creating : loc.confirmBooking,
                           ),
                         ),
                       ],
@@ -233,17 +302,46 @@ class _BookingFlowState extends State<_BookingFlow> {
               ],
               if (state is BookingCreated) ...[
                 const SizedBox(height: 24),
-                const Card(
+                Card(
                   child: Padding(
                     padding: EdgeInsets.all(16),
-                    child: Text(
-                      'Booking created successfully.',
-                      textAlign: TextAlign.center,
+                    child: Column(
+                      children: [
+                        Text(loc.bookingCreated, textAlign: TextAlign.center),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            final authState = context.read<AuthCubit>().state;
+
+                            if (authState is! AuthAuthenticated) {
+                              return;
+                            }
+
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => CustomerBookingsPage(
+                                  customerId: authState.user.id,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Text(loc.myBookings),
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context)
+                                .popUntil((route) => route.isFirst);
+                          },
+                          child: Text(loc.dashboard),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ],
             ],
+            ),
           );
         },
       ),

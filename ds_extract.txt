@@ -1,129 +1,32 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+﻿    final result = await callable.call(<String, dynamic>{
+      'barberId': trimmedBarberId,
+      'date': _calendarDateKey(normalizedDate),
+    });
 
-import '../../domain/entities/booking.dart';
-import '../models/booking_model.dart';
+    final rawRanges = result.data;
 
-abstract interface class BookingRemoteDataSource {
-  Future<List<BookingModel>> getBarberBookingsForDate({
-    required String barberId,
-    required DateTime date,
-  });
-
-  /// Loads only the booked time ranges (start/end) for a barber on a date by
-  /// reading the barber's booking lock subcollection, which is a deliberately
-  /// minimal availability projection.
-  ///
-  /// Used for customer availability calculations. The lock documents expose
-  /// no customer data, service details, prices, or raw booking documents, so
-  /// customers never need read access to the top-level bookings collection.
-  Future<List<BookingModel>> getBookedTimeRangesForDate({
-    required String barberId,
-    required DateTime date,
-  });
-
-  Future<List<BookingModel>> getCustomerBookings({required String customerId});
-
-  Future<List<BookingModel>> getOwnerBookings({required String shopId});
-
-  Future<List<BookingModel>> getBarberBookings({required String barberId});
-
-  Future<BookingModel?> getBooking({required String bookingId});
-
-  Future<BookingModel> createBooking({required BookingModel booking});
-
-  Future<void> cancelBooking({required String bookingId});
-
-  Future<void> updateBookingStatus({
-    required String bookingId,
-    required BookingStatus status,
-  });
-}
-
-class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
-  BookingRemoteDataSourceImpl({required this._firestore});
-
-  final FirebaseFirestore _firestore;
-
-  CollectionReference<Map<String, dynamic>> get _bookingsCollection =>
-      _firestore.collection('bookings');
-
-  CollectionReference<Map<String, dynamic>> _bookingLocksCollection(
-    String barberId,
-  ) {
-    return _firestore
-        .collection('barbers')
-        .doc(barberId)
-        .collection('bookingLocks');
-  }
-
-  @override
-  Future<List<BookingModel>> getBarberBookingsForDate({
-    required String barberId,
-    required DateTime date,
-  }) async {
-    final trimmedBarberId = barberId.trim();
-
-    if (trimmedBarberId.isEmpty) {
-      throw ArgumentError('Barber ID cannot be empty.');
+    if (rawRanges is! List<dynamic>) {
+      throw StateError(
+        'Availability response must be a list of booked time ranges.',
+      );
     }
 
-    final startOfDay = DateTime(date.year, date.month, date.day);
+    // Parse ONLY the booked time ranges returned by the Cloud Function.
+    // The response contains no booking IDs, customer data, prices, or raw
+    // booking documents, so none are read or exposed here.
+    return rawRanges.map<BookingModel>((rawRange) {
+      if (rawRange is! Map) {
+        throw StateError(
+          'Availability response entries must be time range objects.',
+        );
+      }
 
-    final startOfNextDay = startOfDay.add(const Duration(days: 1));
-
-    final snapshot = await _bookingsCollection
-        .where('barberId', isEqualTo: trimmedBarberId)
-        .where(
-          'bookingDate',
-          isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
-        )
-        .where('bookingDate', isLessThan: Timestamp.fromDate(startOfNextDay))
-        .get();
-
-    return snapshot.docs
-        .map(BookingModel.fromFirestore)
-        .where((booking) => booking.status != BookingStatus.cancelled)
-        .toList();
-  }
-
-  @override
-  Future<List<BookingModel>> getBookedTimeRangesForDate({
-    required String barberId,
-    required DateTime date,
-  }) async {
-    final trimmedBarberId = barberId.trim();
-
-    if (trimmedBarberId.isEmpty) {
-      throw ArgumentError('Barber ID cannot be empty.');
-    }
-
-    final normalizedDate = DateTime(date.year, date.month, date.day);
-
-    final startOfDay = normalizedDate;
-
-    final startOfNextDay = normalizedDate.add(const Duration(days: 1));
-
-    // Read ONLY the barber's booking lock subcollection for the requested
-    // calendar date. Each lock document represents one occupied 5-minute
-    // segment and carries no customer, service, or pricing data, so customer
-    // availability never reads the top-level bookings collection.
-    final snapshot = await _bookingLocksCollection(trimmedBarberId)
-        .where(
-          'date',
-          isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
-        )
-        .where('date', isLessThan: Timestamp.fromDate(startOfNextDay))
-        .get();
-
-    return snapshot.docs.map<BookingModel>((document) {
-      final data = document.data();
-
-      final startTime = data['startTime'];
-      final endTime = data['endTime'];
+      final startTime = rawRange['startTime'];
+      final endTime = rawRange['endTime'];
 
       if (startTime is! String || endTime is! String) {
         throw StateError(
-          'Booking lock documents must contain startTime and endTime.',
+          'Availability response entries must contain startTime and endTime.',
         );
       }
 
@@ -137,8 +40,7 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
         startTime: startTime,
         endTime: endTime,
 
-        // Cancelled bookings delete their locks, so a lock always represents
-        // an occupied segment; `confirmed` is the only status the
+        // A booked range is never cancelled, which is the only status the
         // AvailabilityService inspects when blocking busy time.
         status: BookingStatus.confirmed,
 
@@ -151,6 +53,16 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
         updatedAt: normalizedDate,
       );
     }).toList();
+  }
+
+  /// Formats the selected day as the YYYY-MM-DD calendar key expected by
+  /// the `getBarberAvailability` Cloud Function, matching the client's
+  /// local (Africa/Cairo) date representation.
+  String _calendarDateKey(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+
+    return '${date.year.toString().padLeft(4, '0')}-$month-$day';
   }
 
   @override
@@ -315,6 +227,8 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
 
         transaction.set(lockReference, {
           'bookingId': createdBooking.id,
+          'customerId': createdBooking.customerId,
+          'shopId': createdBooking.shopId,
           'barberId': createdBooking.barberId,
           'date': Timestamp.fromDate(normalizedDate),
           'startTime': _minutesToTime(minutes),
@@ -440,123 +354,3 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
     });
   }
 
-  void _validateBooking(BookingModel booking) {
-    if (booking.customerId.trim().isEmpty) {
-      throw ArgumentError('Customer ID cannot be empty.');
-    }
-
-    if (booking.shopId.trim().isEmpty) {
-      throw ArgumentError('Shop ID cannot be empty.');
-    }
-
-    if (booking.barberId.trim().isEmpty) {
-      throw ArgumentError('Barber ID cannot be empty.');
-    }
-
-    if (booking.serviceId.trim().isEmpty) {
-      throw ArgumentError('Service ID cannot be empty.');
-    }
-
-    if (booking.serviceName.trim().isEmpty) {
-      throw ArgumentError('Service name cannot be empty.');
-    }
-
-    if (booking.customerName.trim().isEmpty) {
-      throw ArgumentError('Customer name cannot be empty.');
-    }
-
-    if (booking.barberName.trim().isEmpty) {
-      throw ArgumentError('Barber name cannot be empty.');
-    }
-
-    if (booking.serviceDurationMinutes <= 0) {
-      throw ArgumentError('Service duration must be greater than zero.');
-    }
-
-    if (booking.serviceDurationMinutes % 5 != 0) {
-      throw ArgumentError('Service duration must be a multiple of 5 minutes.');
-    }
-
-    if (booking.servicePrice < 0) {
-      throw ArgumentError('Service price cannot be negative.');
-    }
-
-    if (!_isValidTime(booking.startTime)) {
-      throw ArgumentError('Invalid booking start time.');
-    }
-
-    if (!_isValidTime(booking.endTime)) {
-      throw ArgumentError('Invalid booking end time.');
-    }
-
-    final startMinutes = _timeToMinutes(booking.startTime);
-
-    final endMinutes = _timeToMinutes(booking.endTime);
-
-    if (startMinutes % 5 != 0) {
-      throw ArgumentError('Booking start time must be on a 5-minute interval.');
-    }
-
-    if (endMinutes <= startMinutes) {
-      throw ArgumentError('Booking end time must be after start time.');
-    }
-
-    final actualDuration = endMinutes - startMinutes;
-
-    if (actualDuration != booking.serviceDurationMinutes) {
-      throw ArgumentError('Booking duration does not match service duration.');
-    }
-  }
-
-  String _buildLockId({
-    required DateTime date,
-    required int minutesFromMidnight,
-  }) {
-    final year = date.year.toString().padLeft(4, '0');
-
-    final month = date.month.toString().padLeft(2, '0');
-
-    final day = date.day.toString().padLeft(2, '0');
-
-    final hour = (minutesFromMidnight ~/ 60).toString().padLeft(2, '0');
-
-    final minute = (minutesFromMidnight % 60).toString().padLeft(2, '0');
-
-    return '$year-$month-${day}_'
-        '$hour-$minute';
-  }
-
-  bool _isValidTime(String value) {
-    return RegExp(r'^(?:[01]\d|2[0-3]):[0-5]\d$').hasMatch(value);
-  }
-
-  int _timeToMinutes(String value) {
-    final parts = value.split(':');
-
-    if (parts.length != 2) {
-      throw ArgumentError('Invalid time format: $value');
-    }
-
-    final hour = int.tryParse(parts[0]);
-    final minute = int.tryParse(parts[1]);
-
-    if (hour == null ||
-        minute == null ||
-        hour < 0 ||
-        hour > 23 ||
-        minute < 0 ||
-        minute > 59) {
-      throw ArgumentError('Invalid time value: $value');
-    }
-
-    return (hour * 60) + minute;
-  }
-
-  String _minutesToTime(int minutes) {
-    final hour = minutes ~/ 60;
-    final minute = minutes % 60;
-
-    return '${hour.toString().padLeft(2, '0')}:'
-        '${minute.toString().padLeft(2, '0')}';
-  }
-}

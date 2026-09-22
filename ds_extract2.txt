@@ -1,0 +1,105 @@
+﻿      return BookingModel(
+        id: '',
+        customerId: '',
+        shopId: '',
+        barberId: trimmedBarberId,
+        serviceId: '',
+        bookingDate: normalizedDate,
+        startTime: startTime,
+        endTime: endTime,
+
+        // A booked range is never cancelled, which is the only status the
+        // AvailabilityService inspects when blocking busy time.
+        status: BookingStatus.confirmed,
+
+        serviceName: '',
+        serviceDurationMinutes: 0,
+        servicePrice: 0,
+        customerName: '',
+        barberName: '',
+        createdAt: normalizedDate,
+        updatedAt: normalizedDate,
+      );
+    }).toList();
+  }
+
+  /// Formats the selected day as the YYYY-MM-DD calendar key expected by
+  /// the `getBarberAvailability` Cloud Function, matching the client's
+  /// local (Africa/Cairo) date representation.
+  String _calendarDateKey(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+
+    return '${date.year.toString().padLeft(4, '0')}-$month-$day';
+  }
+
+  @override
+  Future<List<BookingModel>> getCustomerBookings({
+    required String customerId,
+  }) async {
+    final trimmedCustomerId = customerId.trim();
+
+    if (trimmedCustomerId.isEmpty) {
+      throw ArgumentError('Customer ID cannot be empty.');
+    }
+
+    final snapshot = await _bookingsCollection
+        .where('customerId', isEqualTo: trimmedCustomerId)
+        .orderBy('bookingDate', descending: true)
+        .get();
+
+    return snapshot.docs.map(BookingModel.fromFirestore).toList();
+  }
+
+  @override
+  Future<List<BookingModel>> getOwnerBookings({required String shopId}) async {
+    final trimmedShopId = shopId.trim();
+
+    if (trimmedShopId.isEmpty) {
+      throw ArgumentError('Barber shop ID cannot be empty.');
+    }
+
+    final snapshot = await _bookingsCollection
+        .where('shopId', isEqualTo: trimmedShopId)
+        .orderBy('bookingDate', descending: true)
+        .get();
+
+    return snapshot.docs.map(BookingModel.fromFirestore).toList();
+  }
+
+  @override
+  Future<List<BookingModel>> getBarberBookings({
+    required String barberId,
+  }) async {
+    final trimmedBarberId = barberId.trim();
+
+    if (trimmedBarberId.isEmpty) {
+      throw ArgumentError('Barber ID cannot be empty.');
+    }
+
+    final snapshot = await _bookingsCollection
+        .where('barberId', isEqualTo: trimmedBarberId)
+        .orderBy('bookingDate', descending: true)
+        .get();
+
+    return snapshot.docs.map(BookingModel.fromFirestore).toList();
+  }
+
+  @override
+  Future<BookingModel?> getBooking({required String bookingId}) async {
+    final trimmedBookingId = bookingId.trim();
+
+    if (trimmedBookingId.isEmpty) {
+      throw ArgumentError('Booking ID cannot be empty.');
+    }
+
+    final document = await _bookingsCollection.doc(trimmedBookingId).get();
+
+    if (!document.exists) {
+      return null;
+    }
+
+    return BookingModel.fromFirestore(document);
+  }
+
+  @override

@@ -104,7 +104,19 @@ class _OwnerScheduleViewState extends State<_OwnerScheduleView> {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Text(state.message),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(state.message),
+                      const SizedBox(height: 12),
+                      ElevatedButton(
+                        onPressed: () => context
+                            .read<ScheduleCubit>()
+                            .loadWeeklySchedule(barberId: widget.barberId),
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }

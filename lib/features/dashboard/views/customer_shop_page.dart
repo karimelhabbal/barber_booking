@@ -1,4 +1,5 @@
 import 'package:barber_booking/core/di/injection.dart';
+import 'package:barber_booking/core/l10n/app_localizations.dart';
 import 'package:barber_booking/features/barber/presentation/cubit/barber_cubit.dart';
 import 'package:barber_booking/features/barber_shop/domain/entities/barber_shop.dart';
 import 'package:barber_booking/features/service/presentation/pages/customer_services_page.dart';
@@ -12,6 +13,8 @@ class CustomerShopPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return BlocProvider(
       create: (_) =>
           getIt<BarberCubit>()..loadShopBarbers(barberShopId: shop.id),
@@ -34,9 +37,9 @@ class CustomerShopPage extends StatelessWidget {
 
             if (state is BarberLoaded) {
               if (state.barbers.isEmpty) {
-                return const Center(
+                return Center(
                   child: Text(
-                    'No barbers are currently available.',
+                    loc.noBarbersCurrentlyAvailable,
                     textAlign: TextAlign.center,
                   ),
                 );
