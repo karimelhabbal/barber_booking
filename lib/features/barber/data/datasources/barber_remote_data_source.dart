@@ -18,6 +18,8 @@ abstract interface class BarberRemoteDataSource {
 
   Future<void> updateBarber(BarberModel barber);
 
+  Future<void> deleteBarber({required String barberId});
+
   Future<List<BarberCandidateModel>> getBarberCandidates();
 
   Future<BarberModel?> getBarberByUserAndShop({
@@ -119,6 +121,20 @@ class BarberRemoteDataSourceImpl implements BarberRemoteDataSource {
     await _barbersCollection
         .doc(barber.id)
         .set(barber.toFirestore(), SetOptions(merge: true));
+  }
+
+  @override
+  Future<void> deleteBarber({required String barberId}) async {
+    final trimmedBarberId = barberId.trim();
+
+    if (trimmedBarberId.isEmpty) {
+      throw ArgumentError('Barber ID cannot be empty.');
+    }
+
+    await _barbersCollection.doc(trimmedBarberId).set({
+      'isActive': false,
+      'updatedAt': Timestamp.fromDate(DateTime.now()),
+    }, SetOptions(merge: true));
   }
 
   @override

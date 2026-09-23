@@ -1,4 +1,5 @@
 import 'package:barber_booking/core/di/injection.dart';
+import 'package:barber_booking/core/l10n/app_localizations.dart';
 import 'package:barber_booking/features/service/domain/entities/service.dart';
 import 'package:barber_booking/features/service/presentation/cubit/service_cubit.dart';
 import 'package:barber_booking/features/service/presentation/cubit/service_state.dart';
@@ -67,20 +68,21 @@ class _OwnerServicesView extends StatelessWidget {
   }
 
   Future<void> _deleteService(BuildContext context, Service service) async {
+    final loc = AppLocalizations.of(context)!;
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Delete service?'),
-          content: Text('Delete ${service.name}?'),
+          title: Text(loc.deleteServiceTitle),
+          content: Text(loc.deleteServiceMessage(service.name)),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Keep'),
+              child: Text(loc.keep),
             ),
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Delete'),
+              child: Text(loc.delete),
             ),
           ],
         );
@@ -97,8 +99,10 @@ class _OwnerServicesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Manage services')),
+      appBar: AppBar(title: Text(loc.manageServices)),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showForm(context),
         child: const Icon(Icons.add),
@@ -139,9 +143,9 @@ class _OwnerServicesView extends StatelessWidget {
                 onRefresh: () => _refresh(context),
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  children: const [
+                  children: [
                     SizedBox(height: 160),
-                    Center(child: Text('No services yet.')),
+                    Center(child: Text(loc.noServicesYet)),
                   ],
                 ),
               );
@@ -171,12 +175,12 @@ class _OwnerServicesView extends StatelessWidget {
                             onPressed: () =>
                                 _showForm(context, service: service),
                             icon: const Icon(Icons.edit_outlined),
-                            tooltip: 'Edit service',
+                            tooltip: loc.editService,
                           ),
                           IconButton(
                             onPressed: () => _deleteService(context, service),
                             icon: const Icon(Icons.delete_outline),
-                            tooltip: 'Delete service',
+                            tooltip: loc.delete,
                           ),
                         ],
                       ),
@@ -250,22 +254,23 @@ class _ServiceFormDialogState extends State<_ServiceFormDialog> {
   }
 
   void _submit() {
+    final loc = AppLocalizations.of(context)!;
     final name = _nameController.text.trim();
     final duration = int.tryParse(_durationController.text.trim());
     final price = double.tryParse(_priceController.text.trim());
 
     if (name.isEmpty) {
-      setState(() => _error = 'Service name is required.');
+      setState(() => _error = loc.serviceNameRequired);
       return;
     }
 
     if (duration == null || duration <= 0 || duration % 5 != 0) {
-      setState(() => _error = 'Duration must be a positive multiple of 5.');
+      setState(() => _error = loc.invalidDuration);
       return;
     }
 
     if (price == null || price < 0) {
-      setState(() => _error = 'Price must be zero or greater.');
+      setState(() => _error = loc.invalidPrice);
       return;
     }
 
@@ -283,33 +288,33 @@ class _ServiceFormDialogState extends State<_ServiceFormDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return AlertDialog(
-      title: Text(widget.service == null ? 'Add service' : 'Edit service'),
+      title: Text(widget.service == null ? loc.addService : loc.editService),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
+              decoration: InputDecoration(labelText: loc.name),
             ),
             TextField(
               controller: _descriptionController,
-              decoration: const InputDecoration(labelText: 'Description'),
+              decoration: InputDecoration(labelText: loc.description),
             ),
             TextField(
               controller: _durationController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Duration (minutes)',
-              ),
+              decoration: InputDecoration(labelText: loc.durationMinutes),
             ),
             TextField(
               controller: _priceController,
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
-              decoration: const InputDecoration(labelText: 'Price'),
+              decoration: InputDecoration(labelText: loc.price),
             ),
             if (_error != null) ...[
               const SizedBox(height: 8),
@@ -321,9 +326,9 @@ class _ServiceFormDialogState extends State<_ServiceFormDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(loc.cancel),
         ),
-        ElevatedButton(onPressed: _submit, child: const Text('Save')),
+        ElevatedButton(onPressed: _submit, child: Text(loc.save)),
       ],
     );
   }

@@ -13,10 +13,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Barber Booking';
 
   @override
-  String get login => 'تسجيل الدخول';
+  String get login => 'ÊÓÌíá ÇáÏÎæá';
 
   @override
-  String get register => 'إنشاء حساب';
+  String get register => 'ÅäÔÇÁ ÍÓÇÈ';
 
   @override
   String get bookNow => 'Book Appointment';
@@ -40,87 +40,87 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dark => 'Dark';
 
   @override
-  String get phoneNumber => 'رقم الهاتف';
+  String get phoneNumber => 'ÑÞã ÇáåÇÊÝ';
 
   @override
-  String get sendCode => 'إرسال الرمز';
+  String get sendCode => 'ÅÑÓÇá ÇáÑãÒ';
 
   @override
-  String get otpSentTo => 'تم إرسال الرمز إلى';
+  String get otpSentTo => 'Êã ÅÑÓÇá ÇáÑãÒ Åáì';
 
   @override
-  String get otpCode => 'رمز التحقق';
+  String get otpCode => 'ÑãÒ ÇáÊÍÞÞ';
 
   @override
-  String get confirm => 'Confirm appointment';
+  String get confirm => 'Confirm';
 
   @override
-  String get verifyCode => 'تأكيد الرمز';
+  String get verifyCode => 'ÊÃßíÏ ÇáÑãÒ';
 
   @override
-  String get resendCode => 'إعادة إرسال الرمز';
+  String get resendCode => 'ÅÚÇÏÉ ÅÑÓÇá ÇáÑãÒ';
 
   @override
-  String get welcomeBarberSaas => 'أهلًا بك في Barber SaaS';
+  String get welcomeBarberSaas => 'ÃåáðÇ Èß Ýí Barber SaaS';
 
   @override
   String get logout => 'Logout';
 
   @override
-  String get invalidName => 'أدخل اسمك.';
+  String get invalidName => 'ÃÏÎá ÇÓãß.';
 
   @override
-  String get invalidPhoneNumber => 'أدخل رقم هاتف صحيح.';
+  String get invalidPhoneNumber => 'ÃÏÎá ÑÞã åÇÊÝ ÕÍíÍ.';
 
   @override
-  String get invalidVerificationCode => 'رمز التحقق غير صحيح.';
+  String get invalidVerificationCode => 'ÑãÒ ÇáÊÍÞÞ ÛíÑ ÕÍíÍ.';
 
   @override
-  String get verificationInProgress => 'عملية التحقق قيد التنفيذ بالفعل.';
+  String get verificationInProgress => 'ÚãáíÉ ÇáÊÍÞÞ ÞíÏ ÇáÊäÝíÐ ÈÇáÝÚá.';
 
   @override
-  String get sessionExpired => 'انتهت صلاحية رمز التحقق. اطلب رمزًا جديدًا.';
+  String get sessionExpired => 'ÇäÊåÊ ÕáÇÍíÉ ÑãÒ ÇáÊÍÞÞ. ÇØáÈ ÑãÒðÇ ÌÏíÏðÇ.';
 
   @override
   String get tooManyRequests =>
-      'محاولات كثيرة جدًا. يرجى الانتظار قبل المحاولة مرة أخرى.';
+      'ãÍÇæáÇÊ ßËíÑÉ ÌÏðÇ. íÑÌì ÇáÇäÊÙÇÑ ÞÈá ÇáãÍÇæáÉ ãÑÉ ÃÎÑì.';
 
   @override
-  String get networkRequestFailed => 'تحقق من اتصالك بالإنترنت وحاول مرة أخرى.';
+  String get networkRequestFailed => 'ÊÍÞÞ ãä ÇÊÕÇáß ÈÇáÅäÊÑäÊ æÍÇæá ãÑÉ ÃÎÑì.';
 
   @override
   String get operationNotAllowed =>
-      'تسجيل الدخول برقم الهاتف غير مفعّل لهذا المشروع في Firebase.';
+      'ÊÓÌíá ÇáÏÎæá ÈÑÞã ÇáåÇÊÝ ÛíÑ ãÝÚøá áåÐÇ ÇáãÔÑæÚ Ýí Firebase.';
 
   @override
   String get unauthorizedDomain =>
-      'هذا النطاق غير مصرح له باستخدام تسجيل الدخول برقم الهاتف في Firebase.';
+      'åÐÇ ÇáäØÇÞ ÛíÑ ãÕÑÍ áå ÈÇÓÊÎÏÇã ÊÓÌíá ÇáÏÎæá ÈÑÞã ÇáåÇÊÝ Ýí Firebase.';
 
   @override
-  String get captchaCheckFailed => 'فشل التحقق من reCAPTCHA. حاول مرة أخرى.';
+  String get captchaCheckFailed => 'ÝÔá ÇáÊÍÞÞ ãä reCAPTCHA. ÍÇæá ãÑÉ ÃÎÑì.';
 
   @override
   String get firebaseNotInitialized =>
-      'لم يتم تهيئة Firebase. أعد تشغيل التطبيق.';
+      'áã íÊã ÊåíÆÉ Firebase. ÃÚÏ ÊÔÛíá ÇáÊØÈíÞ.';
 
   @override
   String get unsupportedPlatform =>
-      'التحقق برقم الهاتف غير مدعوم على هذه المنصة.';
+      'ÇáÊÍÞÞ ÈÑÞã ÇáåÇÊÝ ÛíÑ ãÏÚæã Úáì åÐå ÇáãäÕÉ.';
 
   @override
-  String get sendCodeFailed => 'تعذر إرسال رمز التحقق. حاول مرة أخرى.';
+  String get sendCodeFailed => 'ÊÚÐÑ ÅÑÓÇá ÑãÒ ÇáÊÍÞÞ. ÍÇæá ãÑÉ ÃÎÑì.';
 
   @override
-  String get verifyCodeFailed => 'تعذر التحقق من الرمز. حاول مرة أخرى.';
+  String get verifyCodeFailed => 'ÊÚÐÑ ÇáÊÍÞÞ ãä ÇáÑãÒ. ÍÇæá ãÑÉ ÃÎÑì.';
 
   @override
-  String get requestNewCode => 'اطلب رمز تحقق جديدًا وحاول مرة أخرى.';
+  String get requestNewCode => 'ÇØáÈ ÑãÒ ÊÍÞÞ ÌÏíÏðÇ æÍÇæá ãÑÉ ÃÎÑì.';
 
   @override
-  String get logoutFailed => 'تعذر تسجيل الخروج. حاول مرة أخرى.';
+  String get logoutFailed => 'ÊÚÐÑ ÊÓÌíá ÇáÎÑæÌ. ÍÇæá ãÑÉ ÃÎÑì.';
 
   @override
-  String get genericAuthError => 'فشلت المصادقة. حاول مرة أخرى.';
+  String get genericAuthError => 'ÝÔáÊ ÇáãÕÇÏÞÉ. ÍÇæá ãÑÉ ÃÎÑì.';
 
   @override
   String get name => 'Name';
@@ -311,6 +311,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get barber => 'Barber';
 
   @override
+  String get noPhone => 'No phone';
+
+  @override
+  String get noAddress => 'No address';
+
+  @override
   String get date => 'Date';
 
   @override
@@ -324,4 +330,352 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retry => 'Retry';
+
+  @override
+  String get ownerDashboard => 'Owner Dashboard';
+
+  @override
+  String get accessDenied => 'Access denied.';
+
+  @override
+  String get shopLoadError => 'Could not load your shop';
+
+  @override
+  String get createShopTitle => 'Create your barber shop';
+
+  @override
+  String get createShopSubtitle =>
+      'Set up your shop profile so customers can discover and book your services.';
+
+  @override
+  String get createShop => 'Create shop';
+
+  @override
+  String get yourShop => 'Your shop';
+
+  @override
+  String get editShopDetails => 'Edit shop details';
+
+  @override
+  String get todaysOverview => 'Today\'s overview';
+
+  @override
+  String get todaysBookings => 'Today\'s bookings';
+
+  @override
+  String get pendingApproval => 'Pending approval';
+
+  @override
+  String get totalBarbers => 'Total barbers';
+
+  @override
+  String get totalServices => 'Total services';
+
+  @override
+  String get manageTeam => 'Manage your team';
+
+  @override
+  String get barbersDescription =>
+      'Add barbers to your shop and manage their weekly schedules.';
+
+  @override
+  String get manageBarbers => 'Manage barbers';
+
+  @override
+  String get servicesDescription =>
+      'Create service offerings with pricing and durations.';
+
+  @override
+  String get manageServices => 'Manage services';
+
+  @override
+  String get manageBookings => 'Manage bookings';
+
+  @override
+  String get manageWeeklyHours => 'Manage weekly hours, breaks and time off';
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String get barbers => 'Barbers';
+
+  @override
+  String get noBarbersYet => 'No barbers yet';
+
+  @override
+  String get addFirstBarber => 'Add your first barber to get started.';
+
+  @override
+  String get addBarber => 'Add barber';
+
+  @override
+  String get active => 'Active';
+
+  @override
+  String get inactive => 'Inactive';
+
+  @override
+  String get manageSchedule => 'Manage schedule';
+
+  @override
+  String get deleteBarberTitle => 'Delete barber?';
+
+  @override
+  String deleteBarberMessage(String name) {
+    return 'Delete $name? They will be deactivated and removed from the active barbers list.';
+  }
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get editBarber => 'Edit barber';
+
+  @override
+  String get barberNameRequired => 'Barber name is required.';
+
+  @override
+  String get phone => 'Phone';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get callBarber => 'Call';
+
+  @override
+  String get messageBarber => 'Message';
+
+  @override
+  String get callFailed => 'Could not place the call.';
+
+  @override
+  String get deleteServiceTitle => 'Delete service?';
+
+  @override
+  String deleteServiceMessage(String name) {
+    return 'Delete $name?';
+  }
+
+  @override
+  String get addService => 'Add service';
+
+  @override
+  String get editService => 'Edit service';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get durationMinutes => 'Duration (minutes)';
+
+  @override
+  String get noServicesYet => 'No services yet';
+
+  @override
+  String get addFirstService => 'Add your first service to get started.';
+
+  @override
+  String get serviceNameRequired => 'Service name is required.';
+
+  @override
+  String get invalidDuration => 'Duration must be a positive multiple of 5.';
+
+  @override
+  String get invalidPrice => 'Price must be zero or greater.';
+
+  @override
+  String get shopBookings => 'Shop bookings';
+
+  @override
+  String get confirmAction => 'Confirm';
+
+  @override
+  String get rejectCancelAction => 'Reject / cancel';
+
+  @override
+  String get completeAction => 'Complete';
+
+  @override
+  String get markNoShowAction => 'Mark no-show';
+
+  @override
+  String get schedule => 'Schedule';
+
+  @override
+  String scheduleForBarber(String name) {
+    return 'Schedule - $name';
+  }
+
+  @override
+  String get scheduleExceptions => 'Schedule Exceptions';
+
+  @override
+  String get scheduleSaved => 'Schedule saved successfully.';
+
+  @override
+  String get open => 'Open';
+
+  @override
+  String get closed => 'Closed';
+
+  @override
+  String get workingDay => 'Working day';
+
+  @override
+  String get dayOff => 'Day off';
+
+  @override
+  String get scheduleStart => 'Start';
+
+  @override
+  String get scheduleEnd => 'End';
+
+  @override
+  String get breaks => 'Breaks';
+
+  @override
+  String get addBreak => 'Add Break';
+
+  @override
+  String get noBreaks => 'No breaks';
+
+  @override
+  String get removeBreak => 'Remove break';
+
+  @override
+  String get selectStartTime => 'Select start time';
+
+  @override
+  String get selectEndTime => 'Select end time';
+
+  @override
+  String get saveSchedule => 'Save schedule';
+
+  @override
+  String get monday => 'Monday';
+
+  @override
+  String get tuesday => 'Tuesday';
+
+  @override
+  String get wednesday => 'Wednesday';
+
+  @override
+  String get thursday => 'Thursday';
+
+  @override
+  String get friday => 'Friday';
+
+  @override
+  String get saturday => 'Saturday';
+
+  @override
+  String get sunday => 'Sunday';
+
+  @override
+  String timeOffForBarber(String name) {
+    return 'Time off - $name';
+  }
+
+  @override
+  String get previousMonth => 'Previous month';
+
+  @override
+  String get nextMonth => 'Next month';
+
+  @override
+  String get loadingExceptions => 'Loading exceptions...';
+
+  @override
+  String get noExceptionsThisMonth => 'No exceptions for this month';
+
+  @override
+  String get addException => 'Add schedule exception';
+
+  @override
+  String get working => 'Working';
+
+  @override
+  String get editException => 'Edit exception';
+
+  @override
+  String get deleteException => 'Delete exception';
+
+  @override
+  String get deleteExceptionTitle => 'Delete exception?';
+
+  @override
+  String get deleteExceptionMessage => 'Delete this exception?';
+
+  @override
+  String get addExceptionTitle => 'Add exception';
+
+  @override
+  String get editExceptionTitle => 'Edit exception';
+
+  @override
+  String get selectDate => 'Select date';
+
+  @override
+  String get exceptionStartTime => 'Start time';
+
+  @override
+  String get exceptionEndTime => 'End time';
+
+  @override
+  String get reason => 'Reason';
+
+  @override
+  String get reasonHint => 'Optional reason for this exception';
+
+  @override
+  String get saveException => 'Save Exception';
+
+  @override
+  String get updateException => 'Update Exception';
+
+  @override
+  String get endTimeAfterStartTime => 'End time must be after start time.';
+
+  @override
+  String get ownerNavDashboard => 'Dashboard';
+
+  @override
+  String get ownerNavSchedule => 'Schedule';
+
+  @override
+  String get pendingBookings => 'Pending bookings';
+
+  @override
+  String get completedBookings => 'Completed bookings';
+
+  @override
+  String get cancelledBookings => 'Cancelled bookings';
+
+  @override
+  String get revenue => 'Revenue';
+
+  @override
+  String get currency => 'EGP';
+
+  @override
+  String get popularServices => 'Popular services';
+
+  @override
+  String bookingsCount(int count) {
+    return '$count bookings';
+  }
+
+  @override
+  String get noBarbersForSchedule => 'No barbers available for scheduling';
+
+  @override
+  String breaksCount(int count) {
+    return '$count breaks';
+  }
+
+  @override
+  String get edit => 'Edit';
 }

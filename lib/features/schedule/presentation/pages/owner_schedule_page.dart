@@ -4,6 +4,8 @@ import 'package:barber_booking/features/schedule/presentation/cubit/schedule_cub
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/l10n/app_localizations.dart';
+
 import 'owner_schedule_exceptions_page.dart';
 
 class OwnerSchedulePage extends StatelessWidget {
@@ -39,18 +41,22 @@ class _OwnerScheduleView extends StatefulWidget {
 class _OwnerScheduleViewState extends State<_OwnerScheduleView> {
   List<WeeklySchedule> _schedules = [];
 
-  static const _dayNames = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
-  ];
+  String _dayName(AppLocalizations loc, int dayOfWeek) {
+    return [
+      loc.monday,
+      loc.tuesday,
+      loc.wednesday,
+      loc.thursday,
+      loc.friday,
+      loc.saturday,
+      loc.sunday,
+    ][dayOfWeek - 1];
+  }
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return BlocListener<ScheduleCubit, ScheduleState>(
       listener: (context, state) {
         if (state is ScheduleLoaded) {
@@ -64,9 +70,8 @@ class _OwnerScheduleViewState extends State<_OwnerScheduleView> {
             _schedules = List.of(state.schedules);
           });
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Schedule saved successfully.')),
-          );
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(loc.scheduleSaved)));
         }
 
         if (state is ScheduleError) {
@@ -76,10 +81,10 @@ class _OwnerScheduleViewState extends State<_OwnerScheduleView> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Schedule - ${widget.barberName}'),
+          title: Text(loc.scheduleForBarber(widget.barberName)),
           actions: [
             IconButton(
-              tooltip: 'Schedule Exceptions',
+              tooltip: loc.scheduleExceptions,
               icon: const Icon(Icons.event_busy_outlined),
               onPressed: () {
                 Navigator.of(context).push(
@@ -113,7 +118,7 @@ class _OwnerScheduleViewState extends State<_OwnerScheduleView> {
                         onPressed: () => context
                             .read<ScheduleCubit>()
                             .loadWeeklySchedule(barberId: widget.barberId),
-                        child: const Text('Retry'),
+                        child: Text(loc.retry),
                       ),
                     ],
                   ),
@@ -140,8 +145,9 @@ class _OwnerScheduleViewState extends State<_OwnerScheduleView> {
                       final schedule = _schedules[index];
 
                       return _DayScheduleCard(
-                        dayName: _dayNames[schedule.dayOfWeek - 1],
+                        dayName: _dayName(loc, schedule.dayOfWeek),
                         schedule: schedule,
+                        loc: loc,
                         onChanged: (updatedSchedule) {
                           setState(() {
                             _schedules[index] = updatedSchedule;
@@ -170,7 +176,7 @@ class _OwnerScheduleViewState extends State<_OwnerScheduleView> {
                               height: 24,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Text('Save Schedule'),
+                          : Text(loc.saveSchedule),
                     ),
                   ),
                 ),
@@ -187,11 +193,13 @@ class _DayScheduleCard extends StatelessWidget {
   const _DayScheduleCard({
     required this.dayName,
     required this.schedule,
+    required this.loc,
     required this.onChanged,
   });
 
   final String dayName;
   final WeeklySchedule schedule;
+  final AppLocalizations loc;
   final ValueChanged<WeeklySchedule> onChanged;
 
   Future<void> _selectTime(
@@ -343,7 +351,9 @@ class _DayScheduleCard extends StatelessWidget {
                       onPressed: () {
                         _selectTime(context, isStart: true);
                       },
-                      child: Text('Start: ${schedule.startTime}'),
+                      child: Text(
+                        '${loc.scheduleStart}: ${schedule.startTime}',
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -352,7 +362,7 @@ class _DayScheduleCard extends StatelessWidget {
                       onPressed: () {
                         _selectTime(context, isStart: false);
                       },
-                      child: Text('End: ${schedule.endTime}'),
+                      child: Text('${loc.scheduleEnd}: ${schedule.endTime}'),
                     ),
                   ),
                 ],
@@ -362,7 +372,7 @@ class _DayScheduleCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'Breaks',
+                      loc.breaks,
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ),
@@ -371,14 +381,14 @@ class _DayScheduleCard extends StatelessWidget {
                       _addBreak(context);
                     },
                     icon: const Icon(Icons.add),
-                    label: const Text('Add Break'),
+                    label: Text(loc.addBreak),
                   ),
                 ],
               ),
               if (schedule.breaks.isEmpty)
-                const Padding(
+                Padding(
                   padding: EdgeInsets.only(top: 4),
-                  child: Text('No breaks'),
+                  child: Text(loc.noBreaks),
                 )
               else
                 ...List.generate(schedule.breaks.length, (index) {
@@ -392,7 +402,7 @@ class _DayScheduleCard extends StatelessWidget {
                       '${breakItem.endTime}',
                     ),
                     trailing: IconButton(
-                      tooltip: 'Remove break',
+                      tooltip: loc.removeBreak,
                       onPressed: () {
                         _removeBreak(index);
                       },
@@ -401,9 +411,9 @@ class _DayScheduleCard extends StatelessWidget {
                   );
                 }),
             ] else ...[
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 4),
-                child: Text('Day off'),
+                child: Text(loc.dayOff),
               ),
             ],
           ],

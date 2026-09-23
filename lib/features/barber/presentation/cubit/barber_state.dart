@@ -63,6 +63,24 @@ class BarberUpdated extends BarberState {
   List<Object?> get props => [barber];
 }
 
+class BarberDeleting extends BarberState {
+  const BarberDeleting(this.barberId);
+
+  final String barberId;
+
+  @override
+  List<Object?> get props => [barberId];
+}
+
+class BarberDeleted extends BarberState {
+  const BarberDeleted(this.barberId);
+
+  final String barberId;
+
+  @override
+  List<Object?> get props => [barberId];
+}
+
 class BarberError extends BarberState {
   const BarberError(this.message);
 

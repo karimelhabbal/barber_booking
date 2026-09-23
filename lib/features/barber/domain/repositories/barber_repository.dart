@@ -15,6 +15,10 @@ abstract interface class BarberRepository {
   });
 
   Future<void> updateBarber(Barber barber);
+
+  /// Soft deletes a barber by deactivating the existing document.
+  Future<void> deleteBarber({required String barberId});
+
   Future<List<BarberCandidate>> getBarberCandidates();
   Future<Barber?> getBarberByUserAndShop({
     required String userId,

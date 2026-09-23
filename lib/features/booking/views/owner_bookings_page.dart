@@ -1,4 +1,5 @@
 import 'package:barber_booking/core/di/injection.dart';
+import 'package:barber_booking/core/l10n/app_localizations.dart';
 import 'package:barber_booking/features/booking/domain/entities/booking.dart';
 import 'package:barber_booking/features/booking/presentation/cubit/booking_cubit.dart';
 import 'package:barber_booking/features/booking/presentation/cubit/booking_state.dart';
@@ -51,8 +52,10 @@ class _OwnerBookingsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Shop bookings')),
+      appBar: AppBar(title: Text(loc.shopBookings)),
       body: BlocConsumer<BookingCubit, BookingState>(
         listener: (context, state) {
           if (state is BookingCancelled || state is BookingStatusUpdated) {
@@ -86,9 +89,9 @@ class _OwnerBookingsView extends StatelessWidget {
                 onRefresh: () => _refresh(context),
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  children: const [
+                  children: [
                     SizedBox(height: 160),
-                    Center(child: Text('No bookings for this shop.')),
+                    Center(child: Text(loc.noBookingsYet)),
                   ],
                 ),
               );
@@ -105,6 +108,7 @@ class _OwnerBookingsView extends StatelessWidget {
                   final booking = state.bookings[index];
                   return _OwnerBookingCard(
                     booking: booking,
+                    loc: loc,
                     onStatusChange: (status) =>
                         _updateStatus(context, booking.id, status),
                   );
@@ -123,10 +127,12 @@ class _OwnerBookingsView extends StatelessWidget {
 class _OwnerBookingCard extends StatelessWidget {
   const _OwnerBookingCard({
     required this.booking,
+    required this.loc,
     required this.onStatusChange,
   });
 
   final Booking booking;
+  final AppLocalizations loc;
   final Future<void> Function(BookingStatus status) onStatusChange;
 
   @override
@@ -139,8 +145,8 @@ class _OwnerBookingCard extends StatelessWidget {
       child: ListTile(
         title: Text(booking.serviceName),
         subtitle: Text(
-          'Customer: ${booking.customerName}\n'
-          'Barber: ${booking.barberName}\n'
+          '${loc.customer}: ${booking.customerName}\n'
+          '${loc.barber}: ${booking.barberName}\n'
           '${_formatDate(booking.bookingDate)} | '
           '${booking.startTime} - ${booking.endTime}',
         ),
@@ -176,30 +182,30 @@ class _OwnerBookingCard extends StatelessWidget {
   String _statusText(BookingStatus status) {
     switch (status) {
       case BookingStatus.pending:
-        return 'Pending';
+        return loc.pending;
       case BookingStatus.confirmed:
-        return 'Confirmed';
+        return loc.confirmed;
       case BookingStatus.completed:
-        return 'Completed';
+        return loc.completed;
       case BookingStatus.cancelled:
-        return 'Cancelled';
+        return loc.cancelled;
       case BookingStatus.noShow:
-        return 'No-show';
+        return loc.noShow;
     }
   }
 
   String _actionText(BookingStatus status) {
     switch (status) {
       case BookingStatus.confirmed:
-        return 'Confirm';
+        return loc.confirmAction;
       case BookingStatus.cancelled:
-        return 'Reject / cancel';
+        return loc.rejectCancelAction;
       case BookingStatus.completed:
-        return 'Complete';
+        return loc.completeAction;
       case BookingStatus.noShow:
-        return 'Mark no-show';
+        return loc.markNoShowAction;
       case BookingStatus.pending:
-        return 'Pending';
+        return loc.pending;
     }
   }
 

@@ -171,4 +171,44 @@ class BarberCubit extends Cubit<BarberState> {
       emit(BarberError(error.toString()));
     }
   }
+
+  Future<void> deleteBarber({required String barberId}) async {
+    final trimmedBarberId = barberId.trim();
+
+    if (trimmedBarberId.isEmpty) {
+      emit(const BarberError('Barber ID cannot be empty.'));
+      return;
+    }
+
+    final currentState = state;
+
+    final barberShopId = currentState is BarberLoaded
+        ? _shopIdForBarber(currentState.barbers, trimmedBarberId)
+        : null;
+
+    emit(BarberDeleting(trimmedBarberId));
+
+    try {
+      await _repository.deleteBarber(barberId: trimmedBarberId);
+    } on Object catch (error) {
+      emit(BarberError(error.toString()));
+      return;
+    }
+
+    emit(BarberDeleted(trimmedBarberId));
+
+    if (barberShopId != null) {
+      await loadShopBarbers(barberShopId: barberShopId);
+    }
+  }
+
+  String? _shopIdForBarber(List<Barber> barbers, String barberId) {
+    for (final barber in barbers) {
+      if (barber.id == barberId) {
+        return barber.barberShopId;
+      }
+    }
+
+    return null;
+  }
 }

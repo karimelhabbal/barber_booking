@@ -107,13 +107,13 @@ abstract class AppLocalizations {
   /// No description provided for @login.
   ///
   /// In en, this message translates to:
-  /// **'تسجيل الدخول'**
+  /// **'ÊÓÌíá ÇáÏÎæá'**
   String get login;
 
   /// No description provided for @register.
   ///
   /// In en, this message translates to:
-  /// **'إنشاء حساب'**
+  /// **'ÅäÔÇÁ ÍÓÇÈ'**
   String get register;
 
   /// No description provided for @bookNow.
@@ -161,49 +161,49 @@ abstract class AppLocalizations {
   /// No description provided for @phoneNumber.
   ///
   /// In en, this message translates to:
-  /// **'رقم الهاتف'**
+  /// **'ÑÞã ÇáåÇÊÝ'**
   String get phoneNumber;
 
   /// No description provided for @sendCode.
   ///
   /// In en, this message translates to:
-  /// **'إرسال الرمز'**
+  /// **'ÅÑÓÇá ÇáÑãÒ'**
   String get sendCode;
 
   /// No description provided for @otpSentTo.
   ///
   /// In en, this message translates to:
-  /// **'تم إرسال الرمز إلى'**
+  /// **'Êã ÅÑÓÇá ÇáÑãÒ Åáì'**
   String get otpSentTo;
 
   /// No description provided for @otpCode.
   ///
   /// In en, this message translates to:
-  /// **'رمز التحقق'**
+  /// **'ÑãÒ ÇáÊÍÞÞ'**
   String get otpCode;
 
   /// No description provided for @confirm.
   ///
   /// In en, this message translates to:
-  /// **'Confirm appointment'**
+  /// **'Confirm'**
   String get confirm;
 
   /// No description provided for @verifyCode.
   ///
   /// In en, this message translates to:
-  /// **'تأكيد الرمز'**
+  /// **'ÊÃßíÏ ÇáÑãÒ'**
   String get verifyCode;
 
   /// No description provided for @resendCode.
   ///
   /// In en, this message translates to:
-  /// **'إعادة إرسال الرمز'**
+  /// **'ÅÚÇÏÉ ÅÑÓÇá ÇáÑãÒ'**
   String get resendCode;
 
   /// No description provided for @welcomeBarberSaas.
   ///
   /// In en, this message translates to:
-  /// **'أهلًا بك في Barber SaaS'**
+  /// **'ÃåáðÇ Èß Ýí Barber SaaS'**
   String get welcomeBarberSaas;
 
   /// No description provided for @logout.
@@ -215,103 +215,103 @@ abstract class AppLocalizations {
   /// No description provided for @invalidName.
   ///
   /// In en, this message translates to:
-  /// **'أدخل اسمك.'**
+  /// **'ÃÏÎá ÇÓãß.'**
   String get invalidName;
 
   /// No description provided for @invalidPhoneNumber.
   ///
   /// In en, this message translates to:
-  /// **'أدخل رقم هاتف صحيح.'**
+  /// **'ÃÏÎá ÑÞã åÇÊÝ ÕÍíÍ.'**
   String get invalidPhoneNumber;
 
   /// No description provided for @invalidVerificationCode.
   ///
   /// In en, this message translates to:
-  /// **'رمز التحقق غير صحيح.'**
+  /// **'ÑãÒ ÇáÊÍÞÞ ÛíÑ ÕÍíÍ.'**
   String get invalidVerificationCode;
 
   /// No description provided for @verificationInProgress.
   ///
   /// In en, this message translates to:
-  /// **'عملية التحقق قيد التنفيذ بالفعل.'**
+  /// **'ÚãáíÉ ÇáÊÍÞÞ ÞíÏ ÇáÊäÝíÐ ÈÇáÝÚá.'**
   String get verificationInProgress;
 
   /// No description provided for @sessionExpired.
   ///
   /// In en, this message translates to:
-  /// **'انتهت صلاحية رمز التحقق. اطلب رمزًا جديدًا.'**
+  /// **'ÇäÊåÊ ÕáÇÍíÉ ÑãÒ ÇáÊÍÞÞ. ÇØáÈ ÑãÒðÇ ÌÏíÏðÇ.'**
   String get sessionExpired;
 
   /// No description provided for @tooManyRequests.
   ///
   /// In en, this message translates to:
-  /// **'محاولات كثيرة جدًا. يرجى الانتظار قبل المحاولة مرة أخرى.'**
+  /// **'ãÍÇæáÇÊ ßËíÑÉ ÌÏðÇ. íÑÌì ÇáÇäÊÙÇÑ ÞÈá ÇáãÍÇæáÉ ãÑÉ ÃÎÑì.'**
   String get tooManyRequests;
 
   /// No description provided for @networkRequestFailed.
   ///
   /// In en, this message translates to:
-  /// **'تحقق من اتصالك بالإنترنت وحاول مرة أخرى.'**
+  /// **'ÊÍÞÞ ãä ÇÊÕÇáß ÈÇáÅäÊÑäÊ æÍÇæá ãÑÉ ÃÎÑì.'**
   String get networkRequestFailed;
 
   /// No description provided for @operationNotAllowed.
   ///
   /// In en, this message translates to:
-  /// **'تسجيل الدخول برقم الهاتف غير مفعّل لهذا المشروع في Firebase.'**
+  /// **'ÊÓÌíá ÇáÏÎæá ÈÑÞã ÇáåÇÊÝ ÛíÑ ãÝÚøá áåÐÇ ÇáãÔÑæÚ Ýí Firebase.'**
   String get operationNotAllowed;
 
   /// No description provided for @unauthorizedDomain.
   ///
   /// In en, this message translates to:
-  /// **'هذا النطاق غير مصرح له باستخدام تسجيل الدخول برقم الهاتف في Firebase.'**
+  /// **'åÐÇ ÇáäØÇÞ ÛíÑ ãÕÑÍ áå ÈÇÓÊÎÏÇã ÊÓÌíá ÇáÏÎæá ÈÑÞã ÇáåÇÊÝ Ýí Firebase.'**
   String get unauthorizedDomain;
 
   /// No description provided for @captchaCheckFailed.
   ///
   /// In en, this message translates to:
-  /// **'فشل التحقق من reCAPTCHA. حاول مرة أخرى.'**
+  /// **'ÝÔá ÇáÊÍÞÞ ãä reCAPTCHA. ÍÇæá ãÑÉ ÃÎÑì.'**
   String get captchaCheckFailed;
 
   /// No description provided for @firebaseNotInitialized.
   ///
   /// In en, this message translates to:
-  /// **'لم يتم تهيئة Firebase. أعد تشغيل التطبيق.'**
+  /// **'áã íÊã ÊåíÆÉ Firebase. ÃÚÏ ÊÔÛíá ÇáÊØÈíÞ.'**
   String get firebaseNotInitialized;
 
   /// No description provided for @unsupportedPlatform.
   ///
   /// In en, this message translates to:
-  /// **'التحقق برقم الهاتف غير مدعوم على هذه المنصة.'**
+  /// **'ÇáÊÍÞÞ ÈÑÞã ÇáåÇÊÝ ÛíÑ ãÏÚæã Úáì åÐå ÇáãäÕÉ.'**
   String get unsupportedPlatform;
 
   /// No description provided for @sendCodeFailed.
   ///
   /// In en, this message translates to:
-  /// **'تعذر إرسال رمز التحقق. حاول مرة أخرى.'**
+  /// **'ÊÚÐÑ ÅÑÓÇá ÑãÒ ÇáÊÍÞÞ. ÍÇæá ãÑÉ ÃÎÑì.'**
   String get sendCodeFailed;
 
   /// No description provided for @verifyCodeFailed.
   ///
   /// In en, this message translates to:
-  /// **'تعذر التحقق من الرمز. حاول مرة أخرى.'**
+  /// **'ÊÚÐÑ ÇáÊÍÞÞ ãä ÇáÑãÒ. ÍÇæá ãÑÉ ÃÎÑì.'**
   String get verifyCodeFailed;
 
   /// No description provided for @requestNewCode.
   ///
   /// In en, this message translates to:
-  /// **'اطلب رمز تحقق جديدًا وحاول مرة أخرى.'**
+  /// **'ÇØáÈ ÑãÒ ÊÍÞÞ ÌÏíÏðÇ æÍÇæá ãÑÉ ÃÎÑì.'**
   String get requestNewCode;
 
   /// No description provided for @logoutFailed.
   ///
   /// In en, this message translates to:
-  /// **'تعذر تسجيل الخروج. حاول مرة أخرى.'**
+  /// **'ÊÚÐÑ ÊÓÌíá ÇáÎÑæÌ. ÍÇæá ãÑÉ ÃÎÑì.'**
   String get logoutFailed;
 
   /// No description provided for @genericAuthError.
   ///
   /// In en, this message translates to:
-  /// **'فشلت المصادقة. حاول مرة أخرى.'**
+  /// **'ÝÔáÊ ÇáãÕÇÏÞÉ. ÍÇæá ãÑÉ ÃÎÑì.'**
   String get genericAuthError;
 
   /// No description provided for @name.
@@ -674,6 +674,18 @@ abstract class AppLocalizations {
   /// **'Barber'**
   String get barber;
 
+  /// No description provided for @noPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'No phone'**
+  String get noPhone;
+
+  /// No description provided for @noAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'No address'**
+  String get noAddress;
+
   /// No description provided for @date.
   ///
   /// In en, this message translates to:
@@ -703,6 +715,672 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get retry;
+
+  /// No description provided for @ownerDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner Dashboard'**
+  String get ownerDashboard;
+
+  /// No description provided for @accessDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Access denied.'**
+  String get accessDenied;
+
+  /// No description provided for @shopLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your shop'**
+  String get shopLoadError;
+
+  /// No description provided for @createShopTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your barber shop'**
+  String get createShopTitle;
+
+  /// No description provided for @createShopSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up your shop profile so customers can discover and book your services.'**
+  String get createShopSubtitle;
+
+  /// No description provided for @createShop.
+  ///
+  /// In en, this message translates to:
+  /// **'Create shop'**
+  String get createShop;
+
+  /// No description provided for @yourShop.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shop'**
+  String get yourShop;
+
+  /// No description provided for @editShopDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit shop details'**
+  String get editShopDetails;
+
+  /// No description provided for @todaysOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s overview'**
+  String get todaysOverview;
+
+  /// No description provided for @todaysBookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s bookings'**
+  String get todaysBookings;
+
+  /// No description provided for @pendingApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending approval'**
+  String get pendingApproval;
+
+  /// No description provided for @totalBarbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Total barbers'**
+  String get totalBarbers;
+
+  /// No description provided for @totalServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Total services'**
+  String get totalServices;
+
+  /// No description provided for @manageTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your team'**
+  String get manageTeam;
+
+  /// No description provided for @barbersDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Add barbers to your shop and manage their weekly schedules.'**
+  String get barbersDescription;
+
+  /// No description provided for @manageBarbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage barbers'**
+  String get manageBarbers;
+
+  /// No description provided for @servicesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Create service offerings with pricing and durations.'**
+  String get servicesDescription;
+
+  /// No description provided for @manageServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage services'**
+  String get manageServices;
+
+  /// No description provided for @manageBookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage bookings'**
+  String get manageBookings;
+
+  /// No description provided for @manageWeeklyHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage weekly hours, breaks and time off'**
+  String get manageWeeklyHours;
+
+  /// No description provided for @refresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get refresh;
+
+  /// No description provided for @barbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Barbers'**
+  String get barbers;
+
+  /// No description provided for @noBarbersYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No barbers yet'**
+  String get noBarbersYet;
+
+  /// No description provided for @addFirstBarber.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first barber to get started.'**
+  String get addFirstBarber;
+
+  /// No description provided for @addBarber.
+  ///
+  /// In en, this message translates to:
+  /// **'Add barber'**
+  String get addBarber;
+
+  /// No description provided for @active.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get active;
+
+  /// No description provided for @inactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive'**
+  String get inactive;
+
+  /// No description provided for @manageSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage schedule'**
+  String get manageSchedule;
+
+  /// No description provided for @deleteBarberTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete barber?'**
+  String get deleteBarberTitle;
+
+  /// No description provided for @deleteBarberMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name}? They will be deactivated and removed from the active barbers list.'**
+  String deleteBarberMessage(String name);
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @editBarber.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit barber'**
+  String get editBarber;
+
+  /// No description provided for @barberNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Barber name is required.'**
+  String get barberNameRequired;
+
+  /// No description provided for @phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get phone;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @callBarber.
+  ///
+  /// In en, this message translates to:
+  /// **'Call'**
+  String get callBarber;
+
+  /// No description provided for @messageBarber.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get messageBarber;
+
+  /// No description provided for @callFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not place the call.'**
+  String get callFailed;
+
+  /// No description provided for @deleteServiceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete service?'**
+  String get deleteServiceTitle;
+
+  /// No description provided for @deleteServiceMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name}?'**
+  String deleteServiceMessage(String name);
+
+  /// No description provided for @addService.
+  ///
+  /// In en, this message translates to:
+  /// **'Add service'**
+  String get addService;
+
+  /// No description provided for @editService.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit service'**
+  String get editService;
+
+  /// No description provided for @description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// No description provided for @durationMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration (minutes)'**
+  String get durationMinutes;
+
+  /// No description provided for @noServicesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No services yet'**
+  String get noServicesYet;
+
+  /// No description provided for @addFirstService.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first service to get started.'**
+  String get addFirstService;
+
+  /// No description provided for @serviceNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Service name is required.'**
+  String get serviceNameRequired;
+
+  /// No description provided for @invalidDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration must be a positive multiple of 5.'**
+  String get invalidDuration;
+
+  /// No description provided for @invalidPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Price must be zero or greater.'**
+  String get invalidPrice;
+
+  /// No description provided for @shopBookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop bookings'**
+  String get shopBookings;
+
+  /// No description provided for @confirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirmAction;
+
+  /// No description provided for @rejectCancelAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject / cancel'**
+  String get rejectCancelAction;
+
+  /// No description provided for @completeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get completeAction;
+
+  /// No description provided for @markNoShowAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark no-show'**
+  String get markNoShowAction;
+
+  /// No description provided for @schedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule'**
+  String get schedule;
+
+  /// No description provided for @scheduleForBarber.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule - {name}'**
+  String scheduleForBarber(String name);
+
+  /// No description provided for @scheduleExceptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule Exceptions'**
+  String get scheduleExceptions;
+
+  /// No description provided for @scheduleSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule saved successfully.'**
+  String get scheduleSaved;
+
+  /// No description provided for @open.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get open;
+
+  /// No description provided for @closed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get closed;
+
+  /// No description provided for @workingDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Working day'**
+  String get workingDay;
+
+  /// No description provided for @dayOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Day off'**
+  String get dayOff;
+
+  /// No description provided for @scheduleStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get scheduleStart;
+
+  /// No description provided for @scheduleEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get scheduleEnd;
+
+  /// No description provided for @breaks.
+  ///
+  /// In en, this message translates to:
+  /// **'Breaks'**
+  String get breaks;
+
+  /// No description provided for @addBreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Break'**
+  String get addBreak;
+
+  /// No description provided for @noBreaks.
+  ///
+  /// In en, this message translates to:
+  /// **'No breaks'**
+  String get noBreaks;
+
+  /// No description provided for @removeBreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove break'**
+  String get removeBreak;
+
+  /// No description provided for @selectStartTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Select start time'**
+  String get selectStartTime;
+
+  /// No description provided for @selectEndTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Select end time'**
+  String get selectEndTime;
+
+  /// No description provided for @saveSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Save schedule'**
+  String get saveSchedule;
+
+  /// No description provided for @monday.
+  ///
+  /// In en, this message translates to:
+  /// **'Monday'**
+  String get monday;
+
+  /// No description provided for @tuesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Tuesday'**
+  String get tuesday;
+
+  /// No description provided for @wednesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Wednesday'**
+  String get wednesday;
+
+  /// No description provided for @thursday.
+  ///
+  /// In en, this message translates to:
+  /// **'Thursday'**
+  String get thursday;
+
+  /// No description provided for @friday.
+  ///
+  /// In en, this message translates to:
+  /// **'Friday'**
+  String get friday;
+
+  /// No description provided for @saturday.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturday'**
+  String get saturday;
+
+  /// No description provided for @sunday.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunday'**
+  String get sunday;
+
+  /// No description provided for @timeOffForBarber.
+  ///
+  /// In en, this message translates to:
+  /// **'Time off - {name}'**
+  String timeOffForBarber(String name);
+
+  /// No description provided for @previousMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous month'**
+  String get previousMonth;
+
+  /// No description provided for @nextMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Next month'**
+  String get nextMonth;
+
+  /// No description provided for @loadingExceptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading exceptions...'**
+  String get loadingExceptions;
+
+  /// No description provided for @noExceptionsThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'No exceptions for this month'**
+  String get noExceptionsThisMonth;
+
+  /// No description provided for @addException.
+  ///
+  /// In en, this message translates to:
+  /// **'Add schedule exception'**
+  String get addException;
+
+  /// No description provided for @working.
+  ///
+  /// In en, this message translates to:
+  /// **'Working'**
+  String get working;
+
+  /// No description provided for @editException.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit exception'**
+  String get editException;
+
+  /// No description provided for @deleteException.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete exception'**
+  String get deleteException;
+
+  /// No description provided for @deleteExceptionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete exception?'**
+  String get deleteExceptionTitle;
+
+  /// No description provided for @deleteExceptionMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this exception?'**
+  String get deleteExceptionMessage;
+
+  /// No description provided for @addExceptionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add exception'**
+  String get addExceptionTitle;
+
+  /// No description provided for @editExceptionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit exception'**
+  String get editExceptionTitle;
+
+  /// No description provided for @selectDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select date'**
+  String get selectDate;
+
+  /// No description provided for @exceptionStartTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Start time'**
+  String get exceptionStartTime;
+
+  /// No description provided for @exceptionEndTime.
+  ///
+  /// In en, this message translates to:
+  /// **'End time'**
+  String get exceptionEndTime;
+
+  /// No description provided for @reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get reason;
+
+  /// No description provided for @reasonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional reason for this exception'**
+  String get reasonHint;
+
+  /// No description provided for @saveException.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Exception'**
+  String get saveException;
+
+  /// No description provided for @updateException.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Exception'**
+  String get updateException;
+
+  /// No description provided for @endTimeAfterStartTime.
+  ///
+  /// In en, this message translates to:
+  /// **'End time must be after start time.'**
+  String get endTimeAfterStartTime;
+
+  /// No description provided for @ownerNavDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
+  String get ownerNavDashboard;
+
+  /// No description provided for @ownerNavSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule'**
+  String get ownerNavSchedule;
+
+  /// No description provided for @pendingBookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending bookings'**
+  String get pendingBookings;
+
+  /// No description provided for @completedBookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed bookings'**
+  String get completedBookings;
+
+  /// No description provided for @cancelledBookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled bookings'**
+  String get cancelledBookings;
+
+  /// No description provided for @revenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue'**
+  String get revenue;
+
+  /// No description provided for @currency.
+  ///
+  /// In en, this message translates to:
+  /// **'EGP'**
+  String get currency;
+
+  /// No description provided for @popularServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular services'**
+  String get popularServices;
+
+  /// No description provided for @bookingsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} bookings'**
+  String bookingsCount(int count);
+
+  /// No description provided for @noBarbersForSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'No barbers available for scheduling'**
+  String get noBarbersForSchedule;
+
+  /// No description provided for @breaksCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} breaks'**
+  String breaksCount(int count);
+
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
 }
 
 class _AppLocalizationsDelegate

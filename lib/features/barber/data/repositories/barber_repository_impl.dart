@@ -42,6 +42,11 @@ class BarberRepositoryImpl implements BarberRepository {
   }
 
   @override
+  Future<void> deleteBarber({required String barberId}) {
+    return _remoteDataSource.deleteBarber(barberId: barberId);
+  }
+
+  @override
   Future<List<BarberCandidate>> getBarberCandidates() {
     return _remoteDataSource.getBarberCandidates();
   }
