@@ -4,8 +4,6 @@ import 'package:barber_booking/features/schedule/domain/entities/weekly_schedule
 import 'package:barber_booking/features/schedule/presentation/cubit/schedule_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import 'package:barber_booking/core/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 class OwnerScheduleExceptionsPage extends StatelessWidget {
@@ -156,28 +154,27 @@ class _OwnerScheduleExceptionsViewState
   }
 
   Future<void> _deleteException(ScheduleException exception) async {
-    final loc = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(loc.deleteExceptionTitle),
+          title: const Text('Delete exception?'),
           content: Text(
-            '${loc.deleteExceptionMessage} '
-            '${DateFormat.yMMMd().format(exception.date)}',
+            'Remove the exception for '
+            '${DateFormat.yMMMd().format(exception.date)}?',
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
-              child: Text(loc.cancel),
+              child: const Text('Cancel'),
             ),
             FilledButton(
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
-              child: Text(loc.delete),
+              child: const Text('Delete'),
             ),
           ],
         );
@@ -196,8 +193,6 @@ class _OwnerScheduleExceptionsViewState
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
-
     return BlocListener<ScheduleCubit, ScheduleState>(
       listener: (context, state) {
         if (state is ScheduleExceptionsLoaded) {
@@ -218,16 +213,13 @@ class _OwnerScheduleExceptionsViewState
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text('${loc.scheduleExceptions} - ${widget.barberName}'),
-        ),
+        appBar: AppBar(title: Text('Exceptions - ${widget.barberName}')),
         floatingActionButton: FloatingActionButton.extended(
-          heroTag: 'owner-add-exception',
           onPressed: () {
             _addException();
           },
           icon: const Icon(Icons.add),
-          label: Text(loc.addException),
+          label: const Text('Add Exception'),
         ),
         body: BlocBuilder<ScheduleCubit, ScheduleState>(
           builder: (context, state) {
@@ -250,7 +242,9 @@ class _OwnerScheduleExceptionsViewState
                 ),
                 Expanded(
                   child: _exceptions.isEmpty
-                      ? Center(child: Text(loc.noExceptionsThisMonth))
+                      ? const Center(
+                          child: Text('No schedule exceptions for this month.'),
+                        )
                       : RefreshIndicator(
                           onRefresh: _loadExceptions,
                           child: ListView.separated(
@@ -339,7 +333,6 @@ class _ExceptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
     final dateText = DateFormat.yMMMd().format(exception.date);
 
     return Card(
@@ -358,10 +351,10 @@ class _ExceptionCard extends StatelessWidget {
                 exception.isWorking
                     ? '${exception.startTime} - '
                           '${exception.endTime}'
-                    : loc.dayOff,
+                    : 'Day off',
               ),
               if (exception.breaks.isNotEmpty)
-                Text(loc.breaksCount(exception.breaks.length)),
+                Text('${exception.breaks.length} break(s)'),
               if (exception.reason != null && exception.reason!.isNotEmpty)
                 Text(exception.reason!),
             ],
@@ -378,9 +371,9 @@ class _ExceptionCard extends StatelessWidget {
             }
           },
           itemBuilder: (_) {
-            return [
-              PopupMenuItem(value: 'edit', child: Text(loc.edit)),
-              PopupMenuItem(value: 'delete', child: Text(loc.delete)),
+            return const [
+              PopupMenuItem(value: 'edit', child: Text('Edit')),
+              PopupMenuItem(value: 'delete', child: Text('Delete')),
             ];
           },
         ),
@@ -566,8 +559,6 @@ class _ExceptionFormSheetState extends State<_ExceptionFormSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
-
     final isEditing = widget.initialException != null;
 
     return SafeArea(
@@ -584,7 +575,7 @@ class _ExceptionFormSheetState extends State<_ExceptionFormSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                isEditing ? loc.editException : loc.addException,
+                isEditing ? 'Edit Exception' : 'Add Exception',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 20),
@@ -596,7 +587,7 @@ class _ExceptionFormSheetState extends State<_ExceptionFormSheet> {
               const SizedBox(height: 12),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(loc.workingDay),
+                title: const Text('Working day'),
                 value: _isWorking,
                 onChanged: (value) {
                   setState(() {
@@ -616,7 +607,7 @@ class _ExceptionFormSheetState extends State<_ExceptionFormSheet> {
                       child: OutlinedButton(
                         onPressed: _selectStartTime,
                         child: Text(
-                          '${loc.scheduleStart}: '
+                          'Start: '
                           '${_formatTime(_startTime)}',
                         ),
                       ),
@@ -626,7 +617,7 @@ class _ExceptionFormSheetState extends State<_ExceptionFormSheet> {
                       child: OutlinedButton(
                         onPressed: _selectEndTime,
                         child: Text(
-                          '${loc.scheduleEnd}: '
+                          'End: '
                           '${_formatTime(_endTime)}',
                         ),
                       ),
@@ -638,19 +629,19 @@ class _ExceptionFormSheetState extends State<_ExceptionFormSheet> {
                   children: [
                     Expanded(
                       child: Text(
-                        loc.breaks,
+                        'Breaks',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ),
                     TextButton.icon(
                       onPressed: _addBreak,
                       icon: const Icon(Icons.add),
-                      label: Text(loc.addBreak),
+                      label: const Text('Add Break'),
                     ),
                   ],
                 ),
                 if (_breaks.isEmpty)
-                  Text(loc.noBreaks)
+                  const Text('No breaks')
                 else
                   ...List.generate(_breaks.length, (index) {
                     final breakItem = _breaks[index];
@@ -675,9 +666,9 @@ class _ExceptionFormSheetState extends State<_ExceptionFormSheet> {
               TextField(
                 controller: _reasonController,
                 maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: loc.reason,
-                  hintText: loc.reasonHint,
+                decoration: const InputDecoration(
+                  labelText: 'Reason',
+                  hintText: 'Optional reason for this exception',
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -688,7 +679,7 @@ class _ExceptionFormSheetState extends State<_ExceptionFormSheet> {
                 child: FilledButton(
                   onPressed: _submit,
                   child: Text(
-                    isEditing ? loc.updateException : loc.saveException,
+                    isEditing ? 'Update Exception' : 'Save Exception',
                   ),
                 ),
               ),

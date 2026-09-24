@@ -1,4 +1,5 @@
 import 'package:barber_booking/core/di/injection.dart';
+import 'package:barber_booking/core/l10n/app_localizations.dart';
 import 'package:barber_booking/features/barber/domain/entities/barber_candidate.dart';
 import 'package:barber_booking/features/barber/presentation/cubit/barber_cubit.dart';
 import 'package:flutter/material.dart';
@@ -38,9 +39,10 @@ class _OwnerCreateBarberPageState extends State<OwnerCreateBarberPage> {
     final candidate = _selectedCandidate;
 
     if (candidate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a barber user.')),
-      );
+      final loc = AppLocalizations.of(context)!;
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(loc.selectBarber)));
       return;
     }
 
@@ -54,6 +56,8 @@ class _OwnerCreateBarberPageState extends State<OwnerCreateBarberPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return BlocProvider(
       create: (_) => getIt<BarberCubit>()..loadBarberCandidates(),
       child: Builder(
@@ -62,7 +66,7 @@ class _OwnerCreateBarberPageState extends State<OwnerCreateBarberPage> {
             listener: (context, state) {
               if (state is BarberCreated) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Barber created successfully.')),
+                  SnackBar(content: Text(loc.barberCreatedSuccessfully)),
                 );
 
                 Navigator.of(context).pop(state.barber);
@@ -80,7 +84,7 @@ class _OwnerCreateBarberPageState extends State<OwnerCreateBarberPage> {
               }
             },
             child: Scaffold(
-              appBar: AppBar(title: const Text('Create Barber')),
+              appBar: AppBar(title: Text(loc.addBarber)),
               body: SafeArea(
                 child: Form(
                   key: _formKey,
@@ -104,9 +108,7 @@ class _OwnerCreateBarberPageState extends State<OwnerCreateBarberPage> {
 
                           if (state is BarberCandidatesLoaded &&
                               _candidates.isEmpty) {
-                            return const Text(
-                              'No barber users are available.',
-                            );
+                            return Text(loc.noBarberUsersAvailable);
                           }
 
                           if (_candidates.isEmpty) {
@@ -115,9 +117,9 @@ class _OwnerCreateBarberPageState extends State<OwnerCreateBarberPage> {
 
                           return DropdownButtonFormField<BarberCandidate>(
                             initialValue: _selectedCandidate,
-                            decoration: const InputDecoration(
-                              labelText: 'Select Barber',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: loc.selectBarber,
+                              border: const OutlineInputBorder(),
                             ),
                             items: _candidates.map((candidate) {
                               final phone = candidate.phone;
@@ -137,14 +139,13 @@ class _OwnerCreateBarberPageState extends State<OwnerCreateBarberPage> {
 
                                 if (candidate != null) {
                                   _nameController.text = candidate.name;
-                                  _phoneController.text =
-                                      candidate.phone ?? '';
+                                  _phoneController.text = candidate.phone ?? '';
                                 }
                               });
                             },
                             validator: (value) {
                               if (value == null) {
-                                return 'Please select a barber.';
+                                return loc.pleaseSelectBarber;
                               }
 
                               return null;
@@ -155,13 +156,13 @@ class _OwnerCreateBarberPageState extends State<OwnerCreateBarberPage> {
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _nameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Barber Name',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: loc.barberName,
+                          border: const OutlineInputBorder(),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Barber name is required.';
+                            return loc.barberNameRequired;
                           }
 
                           return null;
@@ -171,9 +172,9 @@ class _OwnerCreateBarberPageState extends State<OwnerCreateBarberPage> {
                       TextFormField(
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
-                        decoration: const InputDecoration(
-                          labelText: 'Phone',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: loc.phone,
+                          border: const OutlineInputBorder(),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -195,7 +196,7 @@ class _OwnerCreateBarberPageState extends State<OwnerCreateBarberPage> {
                                         strokeWidth: 2,
                                       ),
                                     )
-                                  : const Text('Create Barber'),
+                                  : Text(loc.addBarber),
                             ),
                           );
                         },

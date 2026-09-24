@@ -358,5 +358,15 @@
   "reasonHint": "سبب اختياري لهذا الاستثناء",
   "saveException": "حفظ الاستثناء",
   "updateException": "تحديث الاستثناء",
-  "endTimeAfterStartTime": "يجب أن يكون وقت النهاية بعد وقت البداية."
+  "endTimeAfterStartTime": "يجب أن يكون وقت النهاية بعد وقت البداية.",
+  "addBarber": "إضافة حلاق",
+"editBarber": "تعديل حلاق",
+"barberName": "اسم الحلاق",
+"barberNameRequired": "اسم الحلاق مطلوب.",
+"selectBarber": "اختر الحلاق",
+"pleaseSelectBarber": "يرجى اختيار حلاق.",
+"barberCreatedSuccessfully": "تم إنشاء الحلاق بنجاح.",
+"noBarberUsersAvailable": "لا يوجد مستخدمون متاحون كحلاقين.",
+"phone": "الهاتف",
+"save": "حفظ"
 }

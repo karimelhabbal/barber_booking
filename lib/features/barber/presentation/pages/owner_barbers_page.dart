@@ -219,6 +219,7 @@ class OwnerBarbersPage extends StatelessWidget {
               },
             ),
             floatingActionButton: FloatingActionButton(
+              heroTag: 'owner-add-barber',
               onPressed: () async {
                 final createdBarber = await Navigator.of(context).push(
                   MaterialPageRoute(

@@ -104,6 +104,7 @@ class _OwnerServicesView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(loc.manageServices)),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'owner-add-service',
         onPressed: () => _showForm(context),
         child: const Icon(Icons.add),
       ),

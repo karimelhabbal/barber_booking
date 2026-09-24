@@ -13,10 +13,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Barber Booking';
 
   @override
-  String get login => 'ÊÓÌíá ÇáÏÎæá';
+  String get login => 'Login';
 
   @override
-  String get register => 'ÅäÔÇÁ ÍÓÇÈ';
+  String get register => 'Create Account';
 
   @override
   String get bookNow => 'Book Appointment';
@@ -40,87 +40,91 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dark => 'Dark';
 
   @override
-  String get phoneNumber => 'ÑÞã ÇáåÇÊÝ';
+  String get phoneNumber => 'Phone Number';
 
   @override
-  String get sendCode => 'ÅÑÓÇá ÇáÑãÒ';
+  String get sendCode => 'Send Code';
 
   @override
-  String get otpSentTo => 'Êã ÅÑÓÇá ÇáÑãÒ Åáì';
+  String get otpSentTo => 'Code sent to';
 
   @override
-  String get otpCode => 'ÑãÒ ÇáÊÍÞÞ';
+  String get otpCode => 'Verification Code';
 
   @override
   String get confirm => 'Confirm';
 
   @override
-  String get verifyCode => 'ÊÃßíÏ ÇáÑãÒ';
+  String get verifyCode => 'Verify Code';
 
   @override
-  String get resendCode => 'ÅÚÇÏÉ ÅÑÓÇá ÇáÑãÒ';
+  String get resendCode => 'Resend Code';
 
   @override
-  String get welcomeBarberSaas => 'ÃåáðÇ Èß Ýí Barber SaaS';
+  String get welcomeBarberSaas => 'Welcome to Barber SaaS';
 
   @override
   String get logout => 'Logout';
 
   @override
-  String get invalidName => 'ÃÏÎá ÇÓãß.';
+  String get invalidName => 'Please enter your name.';
 
   @override
-  String get invalidPhoneNumber => 'ÃÏÎá ÑÞã åÇÊÝ ÕÍíÍ.';
+  String get invalidPhoneNumber => 'Please enter a valid phone number.';
 
   @override
-  String get invalidVerificationCode => 'ÑãÒ ÇáÊÍÞÞ ÛíÑ ÕÍíÍ.';
+  String get invalidVerificationCode => 'Invalid verification code.';
 
   @override
-  String get verificationInProgress => 'ÚãáíÉ ÇáÊÍÞÞ ÞíÏ ÇáÊäÝíÐ ÈÇáÝÚá.';
+  String get verificationInProgress => 'Verification is already in progress.';
 
   @override
-  String get sessionExpired => 'ÇäÊåÊ ÕáÇÍíÉ ÑãÒ ÇáÊÍÞÞ. ÇØáÈ ÑãÒðÇ ÌÏíÏðÇ.';
+  String get sessionExpired =>
+      'The verification code has expired. Please request a new code.';
 
   @override
   String get tooManyRequests =>
-      'ãÍÇæáÇÊ ßËíÑÉ ÌÏðÇ. íÑÌì ÇáÇäÊÙÇÑ ÞÈá ÇáãÍÇæáÉ ãÑÉ ÃÎÑì.';
+      'Too many attempts. Please wait before trying again.';
 
   @override
-  String get networkRequestFailed => 'ÊÍÞÞ ãä ÇÊÕÇáß ÈÇáÅäÊÑäÊ æÍÇæá ãÑÉ ÃÎÑì.';
+  String get networkRequestFailed =>
+      'Check your internet connection and try again.';
 
   @override
   String get operationNotAllowed =>
-      'ÊÓÌíá ÇáÏÎæá ÈÑÞã ÇáåÇÊÝ ÛíÑ ãÝÚøá áåÐÇ ÇáãÔÑæÚ Ýí Firebase.';
+      'Phone sign-in is not enabled for this project in Firebase.';
 
   @override
   String get unauthorizedDomain =>
-      'åÐÇ ÇáäØÇÞ ÛíÑ ãÕÑÍ áå ÈÇÓÊÎÏÇã ÊÓÌíá ÇáÏÎæá ÈÑÞã ÇáåÇÊÝ Ýí Firebase.';
+      'This domain is not authorized to use phone sign-in in Firebase.';
 
   @override
-  String get captchaCheckFailed => 'ÝÔá ÇáÊÍÞÞ ãä reCAPTCHA. ÍÇæá ãÑÉ ÃÎÑì.';
+  String get captchaCheckFailed =>
+      'reCAPTCHA verification failed. Please try again.';
 
   @override
   String get firebaseNotInitialized =>
-      'áã íÊã ÊåíÆÉ Firebase. ÃÚÏ ÊÔÛíá ÇáÊØÈíÞ.';
+      'Firebase has not been initialized. Restart the app.';
 
   @override
   String get unsupportedPlatform =>
-      'ÇáÊÍÞÞ ÈÑÞã ÇáåÇÊÝ ÛíÑ ãÏÚæã Úáì åÐå ÇáãäÕÉ.';
+      'Phone verification is not supported on this platform.';
 
   @override
-  String get sendCodeFailed => 'ÊÚÐÑ ÅÑÓÇá ÑãÒ ÇáÊÍÞÞ. ÍÇæá ãÑÉ ÃÎÑì.';
+  String get sendCodeFailed =>
+      'Unable to send the verification code. Please try again.';
 
   @override
-  String get verifyCodeFailed => 'ÊÚÐÑ ÇáÊÍÞÞ ãä ÇáÑãÒ. ÍÇæá ãÑÉ ÃÎÑì.';
+  String get verifyCodeFailed => 'Unable to verify the code. Please try again.';
 
   @override
-  String get requestNewCode => 'ÇØáÈ ÑãÒ ÊÍÞÞ ÌÏíÏðÇ æÍÇæá ãÑÉ ÃÎÑì.';
+  String get requestNewCode => 'Request a new verification code and try again.';
 
   @override
-  String get logoutFailed => 'ÊÚÐÑ ÊÓÌíá ÇáÎÑæÌ. ÍÇæá ãÑÉ ÃÎÑì.';
+  String get logoutFailed => 'Unable to log out. Please try again.';
 
   @override
-  String get genericAuthError => 'ÝÔáÊ ÇáãÕÇÏÞÉ. ÍÇæá ãÑÉ ÃÎÑì.';
+  String get genericAuthError => 'Authentication failed. Please try again.';
 
   @override
   String get name => 'Name';
@@ -678,4 +682,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get edit => 'Edit';
+
+  @override
+  String get barberName => 'Barber Name';
+
+  @override
+  String get selectBarber => 'Select Barber';
+
+  @override
+  String get pleaseSelectBarber => 'Please select a barber.';
+
+  @override
+  String get barberCreatedSuccessfully => 'Barber created successfully.';
+
+  @override
+  String get noBarberUsersAvailable => 'No barber users are available.';
 }

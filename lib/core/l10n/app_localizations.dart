@@ -107,13 +107,13 @@ abstract class AppLocalizations {
   /// No description provided for @login.
   ///
   /// In en, this message translates to:
-  /// **'ÊÓÌíá ÇáÏÎæá'**
+  /// **'Login'**
   String get login;
 
   /// No description provided for @register.
   ///
   /// In en, this message translates to:
-  /// **'ÅäÔÇÁ ÍÓÇÈ'**
+  /// **'Create Account'**
   String get register;
 
   /// No description provided for @bookNow.
@@ -161,25 +161,25 @@ abstract class AppLocalizations {
   /// No description provided for @phoneNumber.
   ///
   /// In en, this message translates to:
-  /// **'ÑÞã ÇáåÇÊÝ'**
+  /// **'Phone Number'**
   String get phoneNumber;
 
   /// No description provided for @sendCode.
   ///
   /// In en, this message translates to:
-  /// **'ÅÑÓÇá ÇáÑãÒ'**
+  /// **'Send Code'**
   String get sendCode;
 
   /// No description provided for @otpSentTo.
   ///
   /// In en, this message translates to:
-  /// **'Êã ÅÑÓÇá ÇáÑãÒ Åáì'**
+  /// **'Code sent to'**
   String get otpSentTo;
 
   /// No description provided for @otpCode.
   ///
   /// In en, this message translates to:
-  /// **'ÑãÒ ÇáÊÍÞÞ'**
+  /// **'Verification Code'**
   String get otpCode;
 
   /// No description provided for @confirm.
@@ -191,19 +191,19 @@ abstract class AppLocalizations {
   /// No description provided for @verifyCode.
   ///
   /// In en, this message translates to:
-  /// **'ÊÃßíÏ ÇáÑãÒ'**
+  /// **'Verify Code'**
   String get verifyCode;
 
   /// No description provided for @resendCode.
   ///
   /// In en, this message translates to:
-  /// **'ÅÚÇÏÉ ÅÑÓÇá ÇáÑãÒ'**
+  /// **'Resend Code'**
   String get resendCode;
 
   /// No description provided for @welcomeBarberSaas.
   ///
   /// In en, this message translates to:
-  /// **'ÃåáðÇ Èß Ýí Barber SaaS'**
+  /// **'Welcome to Barber SaaS'**
   String get welcomeBarberSaas;
 
   /// No description provided for @logout.
@@ -215,103 +215,103 @@ abstract class AppLocalizations {
   /// No description provided for @invalidName.
   ///
   /// In en, this message translates to:
-  /// **'ÃÏÎá ÇÓãß.'**
+  /// **'Please enter your name.'**
   String get invalidName;
 
   /// No description provided for @invalidPhoneNumber.
   ///
   /// In en, this message translates to:
-  /// **'ÃÏÎá ÑÞã åÇÊÝ ÕÍíÍ.'**
+  /// **'Please enter a valid phone number.'**
   String get invalidPhoneNumber;
 
   /// No description provided for @invalidVerificationCode.
   ///
   /// In en, this message translates to:
-  /// **'ÑãÒ ÇáÊÍÞÞ ÛíÑ ÕÍíÍ.'**
+  /// **'Invalid verification code.'**
   String get invalidVerificationCode;
 
   /// No description provided for @verificationInProgress.
   ///
   /// In en, this message translates to:
-  /// **'ÚãáíÉ ÇáÊÍÞÞ ÞíÏ ÇáÊäÝíÐ ÈÇáÝÚá.'**
+  /// **'Verification is already in progress.'**
   String get verificationInProgress;
 
   /// No description provided for @sessionExpired.
   ///
   /// In en, this message translates to:
-  /// **'ÇäÊåÊ ÕáÇÍíÉ ÑãÒ ÇáÊÍÞÞ. ÇØáÈ ÑãÒðÇ ÌÏíÏðÇ.'**
+  /// **'The verification code has expired. Please request a new code.'**
   String get sessionExpired;
 
   /// No description provided for @tooManyRequests.
   ///
   /// In en, this message translates to:
-  /// **'ãÍÇæáÇÊ ßËíÑÉ ÌÏðÇ. íÑÌì ÇáÇäÊÙÇÑ ÞÈá ÇáãÍÇæáÉ ãÑÉ ÃÎÑì.'**
+  /// **'Too many attempts. Please wait before trying again.'**
   String get tooManyRequests;
 
   /// No description provided for @networkRequestFailed.
   ///
   /// In en, this message translates to:
-  /// **'ÊÍÞÞ ãä ÇÊÕÇáß ÈÇáÅäÊÑäÊ æÍÇæá ãÑÉ ÃÎÑì.'**
+  /// **'Check your internet connection and try again.'**
   String get networkRequestFailed;
 
   /// No description provided for @operationNotAllowed.
   ///
   /// In en, this message translates to:
-  /// **'ÊÓÌíá ÇáÏÎæá ÈÑÞã ÇáåÇÊÝ ÛíÑ ãÝÚøá áåÐÇ ÇáãÔÑæÚ Ýí Firebase.'**
+  /// **'Phone sign-in is not enabled for this project in Firebase.'**
   String get operationNotAllowed;
 
   /// No description provided for @unauthorizedDomain.
   ///
   /// In en, this message translates to:
-  /// **'åÐÇ ÇáäØÇÞ ÛíÑ ãÕÑÍ áå ÈÇÓÊÎÏÇã ÊÓÌíá ÇáÏÎæá ÈÑÞã ÇáåÇÊÝ Ýí Firebase.'**
+  /// **'This domain is not authorized to use phone sign-in in Firebase.'**
   String get unauthorizedDomain;
 
   /// No description provided for @captchaCheckFailed.
   ///
   /// In en, this message translates to:
-  /// **'ÝÔá ÇáÊÍÞÞ ãä reCAPTCHA. ÍÇæá ãÑÉ ÃÎÑì.'**
+  /// **'reCAPTCHA verification failed. Please try again.'**
   String get captchaCheckFailed;
 
   /// No description provided for @firebaseNotInitialized.
   ///
   /// In en, this message translates to:
-  /// **'áã íÊã ÊåíÆÉ Firebase. ÃÚÏ ÊÔÛíá ÇáÊØÈíÞ.'**
+  /// **'Firebase has not been initialized. Restart the app.'**
   String get firebaseNotInitialized;
 
   /// No description provided for @unsupportedPlatform.
   ///
   /// In en, this message translates to:
-  /// **'ÇáÊÍÞÞ ÈÑÞã ÇáåÇÊÝ ÛíÑ ãÏÚæã Úáì åÐå ÇáãäÕÉ.'**
+  /// **'Phone verification is not supported on this platform.'**
   String get unsupportedPlatform;
 
   /// No description provided for @sendCodeFailed.
   ///
   /// In en, this message translates to:
-  /// **'ÊÚÐÑ ÅÑÓÇá ÑãÒ ÇáÊÍÞÞ. ÍÇæá ãÑÉ ÃÎÑì.'**
+  /// **'Unable to send the verification code. Please try again.'**
   String get sendCodeFailed;
 
   /// No description provided for @verifyCodeFailed.
   ///
   /// In en, this message translates to:
-  /// **'ÊÚÐÑ ÇáÊÍÞÞ ãä ÇáÑãÒ. ÍÇæá ãÑÉ ÃÎÑì.'**
+  /// **'Unable to verify the code. Please try again.'**
   String get verifyCodeFailed;
 
   /// No description provided for @requestNewCode.
   ///
   /// In en, this message translates to:
-  /// **'ÇØáÈ ÑãÒ ÊÍÞÞ ÌÏíÏðÇ æÍÇæá ãÑÉ ÃÎÑì.'**
+  /// **'Request a new verification code and try again.'**
   String get requestNewCode;
 
   /// No description provided for @logoutFailed.
   ///
   /// In en, this message translates to:
-  /// **'ÊÚÐÑ ÊÓÌíá ÇáÎÑæÌ. ÍÇæá ãÑÉ ÃÎÑì.'**
+  /// **'Unable to log out. Please try again.'**
   String get logoutFailed;
 
   /// No description provided for @genericAuthError.
   ///
   /// In en, this message translates to:
-  /// **'ÝÔáÊ ÇáãÕÇÏÞÉ. ÍÇæá ãÑÉ ÃÎÑì.'**
+  /// **'Authentication failed. Please try again.'**
   String get genericAuthError;
 
   /// No description provided for @name.
@@ -1381,6 +1381,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit'**
   String get edit;
+
+  /// No description provided for @barberName.
+  ///
+  /// In en, this message translates to:
+  /// **'Barber Name'**
+  String get barberName;
+
+  /// No description provided for @selectBarber.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Barber'**
+  String get selectBarber;
+
+  /// No description provided for @pleaseSelectBarber.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a barber.'**
+  String get pleaseSelectBarber;
+
+  /// No description provided for @barberCreatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Barber created successfully.'**
+  String get barberCreatedSuccessfully;
+
+  /// No description provided for @noBarberUsersAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No barber users are available.'**
+  String get noBarberUsersAvailable;
 }
 
 class _AppLocalizationsDelegate

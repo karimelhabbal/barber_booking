@@ -421,7 +421,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get delete => 'حذف';
 
   @override
-  String get editBarber => 'تعديل الحلاق';
+  String get editBarber => 'تعديل حلاق';
 
   @override
   String get barberNameRequired => 'اسم الحلاق مطلوب.';
@@ -670,4 +670,19 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get edit => 'تعديل';
+
+  @override
+  String get barberName => 'اسم الحلاق';
+
+  @override
+  String get selectBarber => 'اختر الحلاق';
+
+  @override
+  String get pleaseSelectBarber => 'يرجى اختيار حلاق.';
+
+  @override
+  String get barberCreatedSuccessfully => 'تم إنشاء الحلاق بنجاح.';
+
+  @override
+  String get noBarberUsersAvailable => 'لا يوجد مستخدمون متاحون كحلاقين.';
 }

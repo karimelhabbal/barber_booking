@@ -1,8 +1,10 @@
+
 {
   "@@locale": "en",
+
   "appTitle": "Barber Booking",
-  "login": "ÊÓÌíá ÇáÏÎæá",
-  "register": "ÅäÔÇÁ ÍÓÇÈ",
+  "login": "Login",
+  "register": "Create Account",
   "bookNow": "Book Appointment",
   "dashboard": "Home",
   "settings": "Settings",
@@ -10,33 +12,38 @@
   "theme": "Theme",
   "light": "Light",
   "dark": "Dark",
-  "phoneNumber": "ÑÞã ÇáåÇÊÝ",
-  "sendCode": "ÅÑÓÇá ÇáÑãÒ",
-  "otpSentTo": "Êã ÅÑÓÇá ÇáÑãÒ Åáì",
-  "otpCode": "ÑãÒ ÇáÊÍÞÞ",
+
+  "phoneNumber": "Phone Number",
+  "sendCode": "Send Code",
+  "otpSentTo": "Code sent to",
+  "otpCode": "Verification Code",
   "confirm": "Confirm",
-  "verifyCode": "ÊÃßíÏ ÇáÑãÒ",
-  "resendCode": "ÅÚÇÏÉ ÅÑÓÇá ÇáÑãÒ",
-  "welcomeBarberSaas": "ÃåáðÇ Èß Ýí Barber SaaS",
+  "verifyCode": "Verify Code",
+  "resendCode": "Resend Code",
+
+  "welcomeBarberSaas": "Welcome to Barber SaaS",
   "logout": "Logout",
-  "invalidName": "ÃÏÎá ÇÓãß.",
-  "invalidPhoneNumber": "ÃÏÎá ÑÞã åÇÊÝ ÕÍíÍ.",
-  "invalidVerificationCode": "ÑãÒ ÇáÊÍÞÞ ÛíÑ ÕÍíÍ.",
-  "verificationInProgress": "ÚãáíÉ ÇáÊÍÞÞ ÞíÏ ÇáÊäÝíÐ ÈÇáÝÚá.",
-  "sessionExpired": "ÇäÊåÊ ÕáÇÍíÉ ÑãÒ ÇáÊÍÞÞ. ÇØáÈ ÑãÒðÇ ÌÏíÏðÇ.",
-  "tooManyRequests": "ãÍÇæáÇÊ ßËíÑÉ ÌÏðÇ. íÑÌì ÇáÇäÊÙÇÑ ÞÈá ÇáãÍÇæáÉ ãÑÉ ÃÎÑì.",
-  "networkRequestFailed": "ÊÍÞÞ ãä ÇÊÕÇáß ÈÇáÅäÊÑäÊ æÍÇæá ãÑÉ ÃÎÑì.",
-  "operationNotAllowed": "ÊÓÌíá ÇáÏÎæá ÈÑÞã ÇáåÇÊÝ ÛíÑ ãÝÚøá áåÐÇ ÇáãÔÑæÚ Ýí Firebase.",
-  "unauthorizedDomain": "åÐÇ ÇáäØÇÞ ÛíÑ ãÕÑÍ áå ÈÇÓÊÎÏÇã ÊÓÌíá ÇáÏÎæá ÈÑÞã ÇáåÇÊÝ Ýí Firebase.",
-  "captchaCheckFailed": "ÝÔá ÇáÊÍÞÞ ãä reCAPTCHA. ÍÇæá ãÑÉ ÃÎÑì.",
-  "firebaseNotInitialized": "áã íÊã ÊåíÆÉ Firebase. ÃÚÏ ÊÔÛíá ÇáÊØÈíÞ.",
-  "unsupportedPlatform": "ÇáÊÍÞÞ ÈÑÞã ÇáåÇÊÝ ÛíÑ ãÏÚæã Úáì åÐå ÇáãäÕÉ.",
-  "sendCodeFailed": "ÊÚÐÑ ÅÑÓÇá ÑãÒ ÇáÊÍÞÞ. ÍÇæá ãÑÉ ÃÎÑì.",
-  "verifyCodeFailed": "ÊÚÐÑ ÇáÊÍÞÞ ãä ÇáÑãÒ. ÍÇæá ãÑÉ ÃÎÑì.",
-  "requestNewCode": "ÇØáÈ ÑãÒ ÊÍÞÞ ÌÏíÏðÇ æÍÇæá ãÑÉ ÃÎÑì.",
-  "logoutFailed": "ÊÚÐÑ ÊÓÌíá ÇáÎÑæÌ. ÍÇæá ãÑÉ ÃÎÑì.",
-  "genericAuthError": "ÝÔáÊ ÇáãÕÇÏÞÉ. ÍÇæá ãÑÉ ÃÎÑì.",
+
+  "invalidName": "Please enter your name.",
+  "invalidPhoneNumber": "Please enter a valid phone number.",
+  "invalidVerificationCode": "Invalid verification code.",
+  "verificationInProgress": "Verification is already in progress.",
+  "sessionExpired": "The verification code has expired. Please request a new code.",
+  "tooManyRequests": "Too many attempts. Please wait before trying again.",
+  "networkRequestFailed": "Check your internet connection and try again.",
+  "operationNotAllowed": "Phone sign-in is not enabled for this project in Firebase.",
+  "unauthorizedDomain": "This domain is not authorized to use phone sign-in in Firebase.",
+  "captchaCheckFailed": "reCAPTCHA verification failed. Please try again.",
+  "firebaseNotInitialized": "Firebase has not been initialized. Restart the app.",
+  "unsupportedPlatform": "Phone verification is not supported on this platform.",
+  "sendCodeFailed": "Unable to send the verification code. Please try again.",
+  "verifyCodeFailed": "Unable to verify the code. Please try again.",
+  "requestNewCode": "Request a new verification code and try again.",
+  "logoutFailed": "Unable to log out. Please try again.",
+  "genericAuthError": "Authentication failed. Please try again.",
+
   "name": "Name",
+
   "noBarberShopsAvailable": "No active shops right now",
   "customerDashboard": "Customer Dashboard",
   "bookings": "Bookings",
@@ -44,34 +51,43 @@
   "loadingHome": "Loading your home...",
   "dashboardLoadError": "Unable to load your dashboard",
   "availableBarbersLater": "Please check back later for available barbers.",
+
   "upcomingAppointment": "Upcoming Appointment",
   "noUpcomingAppointment": "No upcoming appointment",
   "nextBookingMessage": "Your next booking will appear here.",
+
   "barberSelection": "Barber Selection",
   "services": "Services",
+
   "goodMorning": "Good morning",
   "goodAfternoon": "Good afternoon",
   "goodEvening": "Good evening",
   "customer": "Customer",
+
   "minutes": "min",
   "hour": "hour",
   "hours": "hours",
   "hourShort": "h",
+
   "pending": "Pending",
   "confirmed": "Confirmed",
   "completed": "Completed",
   "cancelled": "Cancelled",
   "noShow": "No show",
+
   "loadingBarbers": "Loading barbers...",
   "loadingServices": "Loading services...",
   "loadBarbersError": "Unable to load barbers.",
   "noActiveBarbers": "No active barbers",
   "noBarbersMessage": "There are no barbers available for this shop right now.",
+
   "loadServicesError": "Unable to load services.",
   "noServicesAvailable": "No services available",
   "noServicesMessage": "This shop is not offering any active services right now.",
+
   "noBarbersCurrentlyAvailable": "No barbers are currently available.",
   "customerProfileIncomplete": "Your customer profile is incomplete.",
+
   "showAvailableSlots": "Show available slots",
   "noAvailableSlots": "No available slots for this date.",
   "confirmAppointment": "Confirm appointment",
@@ -79,22 +95,28 @@
   "creating": "Creating...",
   "confirmBooking": "Confirm booking",
   "bookingCreated": "Booking created successfully.",
+
   "noServicesCurrentlyAvailable": "No services are currently available.",
+
   "cancelBookingQuestion": "Cancel booking?",
   "bookingCancelledMessage": "This booking will be cancelled.",
   "keep": "Keep",
   "cancel": "Cancel",
+
   "myBookings": "My bookings",
   "loadingBookings": "Loading bookings...",
   "loadBookingsError": "Unable to load bookings.",
   "noBookingsYet": "No bookings yet.",
   "bookingsEmptyMessage": "Your upcoming and past bookings will appear here.",
+
   "upcoming": "Upcoming",
   "noUpcomingBookings": "No upcoming bookings.",
   "noUpcomingAppointments": "There are no upcoming appointments right now.",
+
   "history": "History",
   "noBookingHistory": "No booking history.",
   "pastAppointments": "Past appointments will appear here.",
+
   "barber": "Barber",
   "noPhone": "No phone",
   "noAddress": "No address",
@@ -103,27 +125,35 @@
   "price": "Price",
   "cancelBooking": "Cancel booking",
   "retry": "Retry",
+
   "ownerDashboard": "Owner Dashboard",
   "accessDenied": "Access denied.",
   "shopLoadError": "Could not load your shop",
+
   "createShopTitle": "Create your barber shop",
   "createShopSubtitle": "Set up your shop profile so customers can discover and book your services.",
   "createShop": "Create shop",
+
   "yourShop": "Your shop",
   "editShopDetails": "Edit shop details",
+
   "todaysOverview": "Today's overview",
   "todaysBookings": "Today's bookings",
   "pendingApproval": "Pending approval",
   "totalBarbers": "Total barbers",
   "totalServices": "Total services",
+
   "manageTeam": "Manage your team",
   "barbersDescription": "Add barbers to your shop and manage their weekly schedules.",
   "manageBarbers": "Manage barbers",
+
   "servicesDescription": "Create service offerings with pricing and durations.",
   "manageServices": "Manage services",
+
   "manageBookings": "Manage bookings",
   "manageWeeklyHours": "Manage weekly hours, breaks and time off",
   "refresh": "Refresh",
+
   "barbers": "Barbers",
   "noBarbersYet": "No barbers yet",
   "addFirstBarber": "Add your first barber to get started.",
@@ -131,13 +161,17 @@
   "active": "Active",
   "inactive": "Inactive",
   "manageSchedule": "Manage schedule",
+
   "deleteBarberTitle": "Delete barber?",
   "deleteBarberMessage": "Delete {name}? They will be deactivated and removed from the active barbers list.",
   "@deleteBarberMessage": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
+
   "delete": "Delete",
   "editBarber": "Edit barber",
   "barberNameRequired": "Barber name is required.",
@@ -146,13 +180,17 @@
   "callBarber": "Call",
   "messageBarber": "Message",
   "callFailed": "Could not place the call.",
+
   "deleteServiceTitle": "Delete service?",
   "deleteServiceMessage": "Delete {name}?",
   "@deleteServiceMessage": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
+
   "addService": "Add service",
   "editService": "Edit service",
   "description": "Description",
@@ -162,18 +200,23 @@
   "serviceNameRequired": "Service name is required.",
   "invalidDuration": "Duration must be a positive multiple of 5.",
   "invalidPrice": "Price must be zero or greater.",
+
   "shopBookings": "Shop bookings",
   "confirmAction": "Confirm",
   "rejectCancelAction": "Reject / cancel",
   "completeAction": "Complete",
   "markNoShowAction": "Mark no-show",
+
   "schedule": "Schedule",
   "scheduleForBarber": "Schedule - {name}",
   "@scheduleForBarber": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
+
   "scheduleExceptions": "Schedule Exceptions",
   "scheduleSaved": "Schedule saved successfully.",
   "open": "Open",
@@ -189,6 +232,7 @@
   "selectStartTime": "Select start time",
   "selectEndTime": "Select end time",
   "saveSchedule": "Save schedule",
+
   "monday": "Monday",
   "tuesday": "Tuesday",
   "wednesday": "Wednesday",
@@ -196,12 +240,16 @@
   "friday": "Friday",
   "saturday": "Saturday",
   "sunday": "Sunday",
+
   "timeOffForBarber": "Time off - {name}",
   "@timeOffForBarber": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
+
   "previousMonth": "Previous month",
   "nextMonth": "Next month",
   "loadingExceptions": "Loading exceptions...",
@@ -210,8 +258,10 @@
   "working": "Working",
   "editException": "Edit exception",
   "deleteException": "Delete exception",
+
   "deleteExceptionTitle": "Delete exception?",
   "deleteExceptionMessage": "Delete this exception?",
+
   "addExceptionTitle": "Add exception",
   "editExceptionTitle": "Edit exception",
   "selectDate": "Select date",
@@ -222,26 +272,46 @@
   "saveException": "Save Exception",
   "updateException": "Update Exception",
   "endTimeAfterStartTime": "End time must be after start time.",
+
   "ownerNavDashboard": "Dashboard",
   "ownerNavSchedule": "Schedule",
+
   "pendingBookings": "Pending bookings",
   "completedBookings": "Completed bookings",
   "cancelledBookings": "Cancelled bookings",
   "revenue": "Revenue",
   "currency": "EGP",
   "popularServices": "Popular services",
+
   "bookingsCount": "{count} bookings",
   "noBarbersForSchedule": "No barbers available for scheduling",
   "breaksCount": "{count} breaks",
   "edit": "Edit",
+
   "@bookingsCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
+
   "@breaksCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
-  }
+  },
+  "addBarber": "Add barber",
+"editBarber": "Edit barber",
+"barberName": "Barber Name",
+"barberNameRequired": "Barber name is required.",
+"selectBarber": "Select Barber",
+"pleaseSelectBarber": "Please select a barber.",
+"barberCreatedSuccessfully": "Barber created successfully.",
+"noBarberUsersAvailable": "No barber users are available.",
+"phone": "Phone",
+"save": "Save"
 }
+
