@@ -1,5 +1,7 @@
 part of 'auth_cubit.dart';
 
+enum AuthMode { login, register }
+
 abstract class AuthState extends Equatable {
   const AuthState();
 
@@ -22,12 +24,13 @@ class AuthLoading extends AuthState {
 }
 
 class AuthCodeSent extends AuthState {
-  const AuthCodeSent(this.phoneNumber);
+  const AuthCodeSent({required this.phoneNumber, required this.mode});
 
   final String phoneNumber;
+  final AuthMode mode;
 
   @override
-  List<Object?> get props => [phoneNumber];
+  List<Object?> get props => [phoneNumber, mode];
 }
 
 class AuthAuthenticated extends AuthState {

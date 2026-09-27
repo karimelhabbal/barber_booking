@@ -58,12 +58,37 @@ match /users/{userId} {
     && request.resource.data.id == userId
     && request.resource.data.barberShopId == null;
 
+  // User can update only his own profile,
+  // without changing role or barberShopId.
   allow update: if signedIn()
     && request.auth.uid == userId
     && request.resource.data.role == resource.data.role
     && request.resource.data.barberShopId
         == resource.data.barberShopId
     && request.resource.data.id == resource.data.id;
+
+  // Owner can assign an unassigned barber to his own shop
+// or unassign a barber from his own shop.
+// Only barberShopId may change.
+allow update: if signedIn()
+  && userRole() == 'owner'
+  && resource.data.role == 'barber'
+  && request.resource.data.role == 'barber'
+  && request.resource.data.diff(resource.data).affectedKeys()
+      .hasOnly(['barberShopId'])
+  && (
+    (
+      resource.data.barberShopId == null
+      && request.resource.data.barberShopId is string
+      && ownsShop(request.resource.data.barberShopId)
+    )
+    ||
+    (
+      resource.data.barberShopId is string
+      && request.resource.data.barberShopId == null
+      && ownsShop(resource.data.barberShopId)
+    )
+  );
 
   allow delete: if false;
 }

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/di/injection.dart';
+
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../auth/domain/entities/user.dart';
 
 class OwnerCreateShopPage extends StatefulWidget {
@@ -36,23 +38,21 @@ class _OwnerCreateShopPageState extends State<OwnerCreateShopPage> {
       return;
     }
 
+    final loc = AppLocalizations.of(context)!;
     final authState = context.read<AuthCubit>().state;
 
     if (authState is! AuthAuthenticated) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User session is not available.')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(loc.userSessionNotAvailable)));
       return;
     }
 
     final user = authState.user;
 
     if (user.role != UserRole.owner) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Only an owner can create a barber shop.'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(loc.onlyOwnerCanCreateBarberShop)));
       return;
     }
 
@@ -67,6 +67,8 @@ class _OwnerCreateShopPageState extends State<OwnerCreateShopPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return BlocProvider.value(
       value: widget.authCubit,
       child: BlocProvider(
@@ -77,9 +79,7 @@ class _OwnerCreateShopPageState extends State<OwnerCreateShopPage> {
               listener: (context, state) {
                 if (state is BarberShopCreated) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Barber shop created successfully.'),
-                    ),
+                    SnackBar(content: Text(loc.barberShopCreatedSuccessfully)),
                   );
 
                   Navigator.of(context).pop(state.shop);
@@ -91,7 +91,7 @@ class _OwnerCreateShopPageState extends State<OwnerCreateShopPage> {
                 }
               },
               child: Scaffold(
-                appBar: AppBar(title: const Text('Create Barber Shop')),
+                appBar: AppBar(title: Text(loc.createBarberShop)),
                 body: SafeArea(
                   child: Form(
                     key: _formKey,
@@ -101,56 +101,48 @@ class _OwnerCreateShopPageState extends State<OwnerCreateShopPage> {
                         TextFormField(
                           controller: _nameController,
                           textInputAction: TextInputAction.next,
-                          decoration: const InputDecoration(
-                            labelText: 'Shop name',
-                            hintText: 'Enter barber shop name',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: loc.shopName,
+                            hintText: loc.enterBarberShopName,
+                            border: const OutlineInputBorder(),
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Shop name is required.';
+                              return loc.shopNameRequired;
                             }
 
                             return null;
                           },
                         ),
-
                         const SizedBox(height: 16),
-
                         TextFormField(
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
                           textInputAction: TextInputAction.next,
-                          decoration: const InputDecoration(
-                            labelText: 'Phone',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: loc.phone,
+                            border: const OutlineInputBorder(),
                           ),
                         ),
-
                         const SizedBox(height: 16),
-
                         TextFormField(
                           controller: _addressController,
                           textInputAction: TextInputAction.next,
-                          decoration: const InputDecoration(
-                            labelText: 'Address',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: loc.address,
+                            border: const OutlineInputBorder(),
                           ),
                         ),
-
                         const SizedBox(height: 16),
-
                         TextFormField(
                           controller: _descriptionController,
                           maxLines: 4,
-                          decoration: const InputDecoration(
-                            labelText: 'Description',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: loc.description,
+                            border: const OutlineInputBorder(),
                           ),
                         ),
-
                         const SizedBox(height: 24),
-
                         BlocBuilder<BarberShopCubit, BarberShopState>(
                           builder: (context, state) {
                             final isCreating = state is BarberShopCreating;
@@ -169,7 +161,7 @@ class _OwnerCreateShopPageState extends State<OwnerCreateShopPage> {
                                           strokeWidth: 2,
                                         ),
                                       )
-                                    : const Text('Create Shop'),
+                                    : Text(loc.createShop),
                               ),
                             );
                           },

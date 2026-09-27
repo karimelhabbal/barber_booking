@@ -1,6 +1,5 @@
 import 'package:barber_booking/core/di/injection.dart';
 import 'package:barber_booking/core/l10n/app_localizations.dart';
-import 'package:barber_booking/core/theme/app_theme.dart';
 import 'package:barber_booking/core/widgets/app_card.dart';
 import 'package:barber_booking/core/widgets/empty_view.dart';
 import 'package:barber_booking/core/widgets/error_view.dart';
@@ -68,10 +67,10 @@ class _CustomerBookingsView extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Text(loc.myBookings),
-        backgroundColor: AppColors.background,
+        backgroundColor: Theme.of(context).colorScheme.surface,
       ),
       body: BlocConsumer<BookingCubit, BookingState>(
         listener: (context, state) {
@@ -229,6 +228,7 @@ class _BookingHistoryCard extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
 
     return AppCard(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,6 +302,8 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -309,14 +311,13 @@ class _InfoRow extends StatelessWidget {
           width: 56,
           child: Text(
             '$label:',
-            style: Theme.of(context).textTheme.bodyMedium
-                ?.copyWith(color: AppColors.textSecondary),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
         const SizedBox(width: 8),
-        Expanded(
-          child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
-        ),
+        Expanded(child: Text(value, style: theme.textTheme.bodyMedium)),
       ],
     );
   }

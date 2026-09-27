@@ -9,42 +9,115 @@ class _BookingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: ListTile(
-        leading: CircleAvatar(
-          child: Text(booking.startTime, style: const TextStyle(fontSize: 12)),
-        ),
-        title: Text(booking.customerName),
-        subtitle: Text(
-          '${booking.serviceName} • '
-          '${booking.startTime} - ${booking.endTime}',
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _StatusChip(status: booking.status),
-            if (booking.status == BookingStatus.pending ||
-                booking.status == BookingStatus.confirmed)
-              PopupMenuButton<BookingStatus>(
-                onSelected: (status) {
-                  onStatusChange(booking.id, status);
-                },
-                itemBuilder: (context) {
-                  final statuses = booking.status == BookingStatus.pending
-                      ? const [BookingStatus.confirmed, BookingStatus.cancelled]
-                      : const [BookingStatus.completed, BookingStatus.noShow];
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-                  return statuses
-                      .map(
-                        (status) => PopupMenuItem(
-                          value: status,
-                          child: Text(_statusActionText(status)),
-                        ),
-                      )
-                      .toList();
-                },
+    final canChangeStatus =
+        booking.status == BookingStatus.pending ||
+        booking.status == BookingStatus.confirmed;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 68,
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 11),
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(14),
               ),
+              child: Column(
+                children: [
+                  Text(
+                    booking.startTime,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Icon(
+                    Icons.access_time_rounded,
+                    size: 16,
+                    color: colorScheme.onPrimaryContainer,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          booking.customerName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      if (canChangeStatus)
+                        PopupMenuButton<BookingStatus>(
+                          tooltip: 'Actions',
+                          padding: EdgeInsets.zero,
+                          icon: const Icon(Icons.more_vert_rounded),
+                          onSelected: (status) {
+                            onStatusChange(booking.id, status);
+                          },
+                          itemBuilder: (context) {
+                            final statuses =
+                                booking.status == BookingStatus.pending
+                                ? const [
+                                    BookingStatus.confirmed,
+                                    BookingStatus.cancelled,
+                                  ]
+                                : const [
+                                    BookingStatus.completed,
+                                    BookingStatus.noShow,
+                                  ];
+
+                            return statuses
+                                .map(
+                                  (status) => PopupMenuItem<BookingStatus>(
+                                    value: status,
+                                    child: Text(_statusActionText(status)),
+                                  ),
+                                )
+                                .toList();
+                          },
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    booking.serviceName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${booking.startTime} • ${booking.endTime}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _StatusChip(status: booking.status),
+                ],
+              ),
+            ),
           ],
         ),
       ),

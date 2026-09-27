@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../auth/presentation/cubit/auth_cubit.dart';
 import '../../booking/views/customer_bookings_page.dart';
+import '../../notifications/presentation/pages/notifications_page.dart';
 import '../../settings/views/settings_page.dart';
 import 'customer_dashboard_page.dart';
 
@@ -30,12 +31,14 @@ class _CustomerAppShellState extends State<CustomerAppShell> {
     final pages = [
       const CustomerDashboardPage(),
       CustomerBookingsPage(customerId: authState.user.id),
+      NotificationsPage(recipientId: authState.user.id),
       const SettingsPage(),
     ];
 
     return Scaffold(
       body: IndexedStack(index: _selectedIndex, children: pages),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
         items: [
@@ -48,6 +51,11 @@ class _CustomerAppShellState extends State<CustomerAppShell> {
             icon: Icon(Icons.calendar_month_outlined),
             activeIcon: Icon(Icons.calendar_month),
             label: loc.bookings,
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications_outlined),
+            activeIcon: Icon(Icons.notifications),
+            label: loc.notifications,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings_outlined),

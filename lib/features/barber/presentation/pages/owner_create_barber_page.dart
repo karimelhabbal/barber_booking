@@ -31,6 +31,49 @@ class _OwnerCreateBarberPageState extends State<OwnerCreateBarberPage> {
     super.dispose();
   }
 
+  String _barberErrorMessage(BarberErrorCode code, AppLocalizations loc) {
+    switch (code) {
+      case BarberErrorCode.barberIdEmpty:
+        return loc.barberIdCannotBeEmpty;
+
+      case BarberErrorCode.userIdEmpty:
+        return loc.userIdCannotBeEmpty;
+
+      case BarberErrorCode.shopIdEmpty:
+        return loc.barberShopIdCannotBeEmpty;
+
+      case BarberErrorCode.nameEmpty:
+        return loc.barberNameCannotBeEmpty;
+
+      case BarberErrorCode.userNotFound:
+        return loc.barberUserNotFound;
+
+      case BarberErrorCode.userNotBarber:
+        return loc.selectedUserIsNotBarber;
+
+      case BarberErrorCode.assignedAnotherShop:
+        return loc.barberAssignedToAnotherShop;
+
+      case BarberErrorCode.assignedThisShop:
+        return loc.barberAlreadyAssignedToShop;
+
+      case BarberErrorCode.barberNotFound:
+        return loc.barberNotFound;
+
+      case BarberErrorCode.barberUserIdMissing:
+        return loc.barberUserIdMissing;
+
+      case BarberErrorCode.barberShopIdMissing:
+        return loc.barberShopIdMissing;
+
+      case BarberErrorCode.profileNotFound:
+        return loc.barberProfileNotFound;
+
+      case BarberErrorCode.unknown:
+        return loc.unknownError;
+    }
+  }
+
   void _createBarber(BuildContext context) {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -46,11 +89,13 @@ class _OwnerCreateBarberPageState extends State<OwnerCreateBarberPage> {
       return;
     }
 
+    final phone = _phoneController.text.trim();
+
     context.read<BarberCubit>().createBarber(
       userId: candidate.id,
       barberShopId: widget.barberShopId,
-      name: _nameController.text,
-      phone: _phoneController.text,
+      name: _nameController.text.trim(),
+      phone: phone.isEmpty ? null : phone,
     );
   }
 
@@ -79,8 +124,9 @@ class _OwnerCreateBarberPageState extends State<OwnerCreateBarberPage> {
               }
 
               if (state is BarberError) {
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(SnackBar(content: Text(state.message)));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(_barberErrorMessage(state.code, loc))),
+                );
               }
             },
             child: Scaffold(
@@ -103,7 +149,7 @@ class _OwnerCreateBarberPageState extends State<OwnerCreateBarberPage> {
                           }
 
                           if (state is BarberError && _candidates.isEmpty) {
-                            return Text(state.message);
+                            return Text(_barberErrorMessage(state.code, loc));
                           }
 
                           if (state is BarberCandidatesLoaded &&

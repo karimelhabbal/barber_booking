@@ -14,6 +14,7 @@ import 'package:barber_booking/features/barber_shop/presentation/cubit/barber_sh
 import 'package:barber_booking/features/booking/domain/entities/booking.dart';
 import 'package:barber_booking/features/booking/presentation/cubit/booking_cubit.dart';
 import 'package:barber_booking/features/booking/presentation/cubit/booking_state.dart';
+import 'package:barber_booking/features/notifications/presentation/pages/notifications_page.dart';
 import 'package:barber_booking/features/service/domain/entities/service.dart';
 import 'package:barber_booking/features/service/presentation/cubit/service_cubit.dart';
 import 'package:barber_booking/features/service/presentation/cubit/service_state.dart';
@@ -22,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../auth/presentation/cubit/auth_cubit.dart';
+import '../../booking/views/booking_page.dart';
 
 part 'widgets/customer_dashboard_header.dart';
 part 'widgets/customer_dashboard_appointment.dart';
@@ -82,7 +84,6 @@ class _CustomerDashboardView extends StatelessWidget {
         context.read<ServiceCubit>().loadActiveShopServices(shopId: shop.id);
       },
       child: Scaffold(
-        backgroundColor: AppColors.background,
         body: SafeArea(
           child: RefreshIndicator(
             onRefresh: () async {
@@ -128,6 +129,15 @@ class _DashboardContent extends StatefulWidget {
 
 class _DashboardContentState extends State<_DashboardContent> {
   Barber? _selectedBarber;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  int _selectedCategoryIndex = 0;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -171,45 +181,97 @@ class _DashboardContentState extends State<_DashboardContent> {
 
     _syncSelectedBarber(barbers);
 
+    final displayBarbers = _filterBarbers(barbers);
+    final displayServices = _filterServices(services);
+
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
       children: [
-        _Header(
-          customerName: widget.customerName,
-          shopName: shop.name,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: _Header(
+            customerName: widget.customerName,
+            shopName: shop.name,
+            loc: loc,
+            onNotifications: () => _openNotifications(context),
+          ),
+        ),
+        const SizedBox(height: 20),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: _HomeSearchField(
+            controller: _searchController,
+            hintText: loc.searchServices,
+            onChanged: (value) => setState(() => _searchQuery = value.trim()),
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: _SectionHeader(title: loc.upcomingAppointment),
+        ),
+
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: upcomingBooking == null
+              ? EmptyView(
+                  title: loc.noUpcomingAppointment,
+                  message: loc.nextBookingMessage,
+                  icon: Icons.event_available_outlined,
+                )
+              : _AppointmentCard(booking: upcomingBooking),
+        ),
+        const SizedBox(height: 24),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: _SectionHeader(
+            title: loc.popularServices,
+            actionLabel: _selectedBarber == null ? null : loc.seeAll,
+            onAction: _selectedBarber == null
+                ? null
+                : () => _openAllServices(context, shop, _selectedBarber),
+          ),
+        ),
+        const SizedBox(height: 16),
+        _ServiceCategoryChips(
+          selectedIndex: _selectedCategoryIndex,
+          onSelected: (index) => setState(() => _selectedCategoryIndex = index),
           loc: loc,
         ),
-        const SizedBox(height: 12),
-        _BookAppointmentAction(shop: shop, barber: _selectedBarber),
-        const SizedBox(height: 16),
-        _SectionHeader(title: loc.upcomingAppointment),
-        const SizedBox(height: 10),
-        upcomingBooking == null
-            ? EmptyView(
-                title: loc.noUpcomingAppointment,
-                message: loc.nextBookingMessage,
-                icon: Icons.event_available_outlined,
-              )
-            : _AppointmentCard(booking: upcomingBooking),
-        const SizedBox(height: 28),
-        _SectionHeader(title: loc.barberSelection),
-        const SizedBox(height: 10),
+        const SizedBox(height: 24),
+        _ServiceSectionContent(
+          services: displayServices,
+          serviceState: serviceState,
+          shop: shop,
+          barber: _selectedBarber,
+          isFiltered: _hasActiveFilter,
+          loc: loc,
+        ),
+        const SizedBox(height: 24),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: _SectionHeader(
+            title: loc.topBarbers,
+            actionLabel: displayBarbers.isEmpty ? null : loc.viewTeam,
+            onAction: displayBarbers.isEmpty
+                ? null
+                : () => _openTeamSheet(context, displayBarbers),
+          ),
+        ),
         _BarberSectionContent(
           shop: shop,
-          barbers: barbers,
+          barbers: displayBarbers,
           barberState: barberState,
           selectedBarber: _selectedBarber,
           onBarberSelected: _selectBarber,
+          isFiltered: _hasActiveFilter,
           loc: loc,
         ),
-        const SizedBox(height: 20),
-        _SectionHeader(title: loc.services),
-        const SizedBox(height: 10),
-        _ServiceSectionContent(
-          services: services,
-          serviceState: serviceState,
-          shop: shop,
-          loc: loc,
+        const SizedBox(height: 24),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: _BookAppointmentAction(shop: shop, barber: _selectedBarber),
         ),
       ],
     );
@@ -251,6 +313,86 @@ class _DashboardContentState extends State<_DashboardContent> {
     setState(() {
       _selectedBarber = barber;
     });
+  }
+
+  bool get _hasActiveFilter =>
+      _selectedCategoryIndex != 0 || _searchQuery.isNotEmpty;
+
+  void _openAllServices(BuildContext context, BarberShop shop, Barber? barber) {
+    if (barber == null) {
+      return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CustomerServicesPage(shop: shop, barber: barber),
+      ),
+    );
+  }
+
+  Future<void> _openTeamSheet(
+    BuildContext context,
+    List<Barber> barbers,
+  ) async {
+    final loc = AppLocalizations.of(context)!;
+
+    final selected = await showModalBottomSheet<Barber>(
+      context: context,
+      showDragHandle: true,
+      builder: (_) => _TeamSheet(
+        barbers: barbers,
+        selectedBarberId: _selectedBarber?.id,
+        loc: loc,
+      ),
+    );
+
+    if (!mounted || selected == null) {
+      return;
+    }
+
+    _selectBarber(selected);
+  }
+
+  void _openNotifications(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => NotificationsPage(recipientId: widget.customerId),
+      ),
+    );
+  }
+
+  List<Service> _filterServices(List<Service> services) {
+    final category = _ServiceCategory.values[_selectedCategoryIndex];
+    final query = _searchQuery.toLowerCase();
+
+    return services.where((service) {
+      if (!category.matches(service)) {
+        return false;
+      }
+
+      if (query.isEmpty) {
+        return true;
+      }
+
+      return service.name.toLowerCase().contains(query) ||
+          (service.description?.toLowerCase().contains(query) ?? false);
+    }).toList();
+  }
+
+  List<Barber> _filterBarbers(List<Barber> barbers) {
+    final query = _searchQuery.toLowerCase();
+
+    if (query.isEmpty) {
+      return barbers;
+    }
+
+    return barbers
+        .where(
+          (barber) =>
+              barber.name.toLowerCase().contains(query) ||
+              (barber.phone?.toLowerCase().contains(query) ?? false),
+        )
+        .toList();
   }
 
   Booking? _upcomingBooking(BookingState state) {

@@ -221,29 +221,29 @@
   "saveException": "حفظ الاستثناء",
   "updateException": "تحديث الاستثناء",
   "endTimeAfterStartTime": "يجب أن يكون وقت النهاية بعد وقت البداية.",
-  "ownerDashboard": "لوحة تحكم المالك",
-  "accessDenied": "تم رفض الوصول.",
-  "shopLoadError": "تعذر تحميل متجرك",
-  "createShopTitle": "أنشئ محل الحلاقة الخاص بك",
-  "createShopSubtitle": "أعدّ ملف متجرك حتى يتمكن العملاء من اكتشاف خدماتك وحجزها.",
-  "createShop": "إنشاء المتجر",
-  "yourShop": "متجرك",
-  "editShopDetails": "تعديل بيانات المتجر",
-  "todaysOverview": "ملخص اليوم",
-  "todaysBookings": "حجوزات اليوم",
-  "pendingApproval": "بانتظار الموافقة",
-  "totalBarbers": "إجمالي الحلاقين",
-  "totalServices": "إجمالي الخدمات",
-  "manageTeam": "إدارة الفريق",
-  "barbersDescription": "أضف الحلاقين إلى متجرك وأدر جداولهم الأسبوعية.",
-  "manageBarbers": "إدارة الحلاقين",
-  "servicesDescription": "أنشئ الخدمات مع الأسعار والمدد.",
-  "manageServices": "إدارة الخدمات",
-  "manageBookings": "إدارة الحجوزات",
-  "manageWeeklyHours": "إدارة ساعات العمل الأسبوعية والاستراحات والإجازات",
-  "refresh": "تحديث",
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   "ownerNavDashboard": "لوحة التحكم",
-  "barbers": "الحلاقون",
+  
   "ownerNavSchedule": "الجدول",
   "pendingBookings": "الحجوزات قيد الانتظار",
   "completedBookings": "الحجوزات المكتملة",
@@ -265,108 +265,150 @@
       "count": {"type": "int"}
     }
   },
-  "noBarbersYet": "لا يوجد حلاقون بعد",
-  "addFirstBarber": "أضف أول حلاق للبدء.",
-  "addBarber": "إضافة حلاق",
-  "active": "نشط",
-  "inactive": "غير نشط",
-  "manageSchedule": "إدارة الجدول",
-  "deleteBarberTitle": "حذف الحلاق؟",
-  "deleteBarberMessage": "حذف {name}؟ سيتم إلغاء تفعيله وإزالته من قائمة الحلاقين النشطين.",
-  "@deleteBarberMessage": {
-    "placeholders": {
-      "name": {"type": "String"}
-    }
-  },
-  "delete": "حذف",
-  "editBarber": "تعديل الحلاق",
-  "barberNameRequired": "اسم الحلاق مطلوب.",
-  "phone": "الهاتف",
-  "save": "حفظ",
-  "deleteServiceTitle": "حذف الخدمة؟",
-  "deleteServiceMessage": "حذف {name}؟",
-  "@deleteServiceMessage": {
-    "placeholders": {
-      "name": {"type": "String"}
-    }
-  },
-  "addService": "إضافة خدمة",
-  "editService": "تعديل الخدمة",
-  "description": "الوصف",
-  "durationMinutes": "المدة (بالدقائق)",
-  "noServicesYet": "لا توجد خدمات بعد",
-  "addFirstService": "أضف أول خدمة للبدء.",
-  "serviceNameRequired": "اسم الخدمة مطلوب.",
-  "invalidDuration": "يجب أن تكون المدة مضاعفًا موجبًا للرقم 5.",
-  "invalidPrice": "يجب أن يكون السعر صفرًا أو أكبر.",
-  "shopBookings": "حجوزات المتجر",
-  "confirmAction": "تأكيد",
-  "rejectCancelAction": "رفض / إلغاء",
-  "completeAction": "إتمام",
-  "markNoShowAction": "تسجيل عدم الحضور",
-  "schedule": "الجدول",
-  "scheduleForBarber": "جدول - {name}",
-  "@scheduleForBarber": {
-    "placeholders": {
-      "name": {"type": "String"}
-    }
-  },
-  "scheduleExceptions": "استثناءات الجدول",
-  "scheduleSaved": "تم حفظ الجدول بنجاح.",
-  "open": "مفتوح",
-  "closed": "مغلق",
-  "workingDay": "يوم عمل",
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   "dayOff": "يوم إجازة",
-  "scheduleStart": "البداية",
-  "scheduleEnd": "النهاية",
-  "breaks": "الاستراحات",
-  "addBreak": "إضافة استراحة",
-  "noBreaks": "لا توجد استراحات",
-  "removeBreak": "إزالة الاستراحة",
-  "selectStartTime": "اختر وقت البداية",
-  "selectEndTime": "اختر وقت النهاية",
-  "saveSchedule": "حفظ الجدول",
-  "monday": "الاثنين",
-  "tuesday": "الثلاثاء",
-  "wednesday": "الأربعاء",
-  "thursday": "الخميس",
-  "friday": "الجمعة",
-  "saturday": "السبت",
-  "sunday": "الأحد",
-  "timeOffForBarber": "الإجازات - {name}",
-  "@timeOffForBarber": {
-    "placeholders": {
-      "name": {"type": "String"}
-    }
-  },
-  "previousMonth": "الشهر السابق",
-  "nextMonth": "الشهر التالي",
-  "loadingExceptions": "جارٍ تحميل الاستثناءات...",
-  "noExceptionsThisMonth": "لا توجد استثناءات لهذا الشهر",
-  "addException": "إضافة استثناء للجدول",
-  "working": "يعمل",
-  "editException": "تعديل الاستثناء",
-  "deleteException": "حذف الاستثناء",
-  "deleteExceptionTitle": "حذف الاستثناء؟",
-  "deleteExceptionMessage": "حذف هذا الاستثناء؟",
-  "addExceptionTitle": "إضافة استثناء",
-  "editExceptionTitle": "تعديل الاستثناء",
-  "selectDate": "اختر التاريخ",
-  "exceptionStartTime": "وقت البداية",
-  "exceptionEndTime": "وقت النهاية",
-  "reason": "السبب",
-  "reasonHint": "سبب اختياري لهذا الاستثناء",
-  "saveException": "حفظ الاستثناء",
-  "updateException": "تحديث الاستثناء",
-  "endTimeAfterStartTime": "يجب أن يكون وقت النهاية بعد وقت البداية.",
-  "addBarber": "إضافة حلاق",
-"editBarber": "تعديل حلاق",
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
 "barberName": "اسم الحلاق",
-"barberNameRequired": "اسم الحلاق مطلوب.",
+
 "selectBarber": "اختر الحلاق",
 "pleaseSelectBarber": "يرجى اختيار حلاق.",
 "barberCreatedSuccessfully": "تم إنشاء الحلاق بنجاح.",
 "noBarberUsersAvailable": "لا يوجد مستخدمون متاحون كحلاقين.",
-"phone": "الهاتف",
-"save": "حفظ"
+
+
+  "appointments": "المواعيد",
+  "availability": "التوفر",
+  "barberDashboard": "لوحة تحكم الحلاق",
+  "noAppointmentsForDate": "لا توجد مواعيد في هذا التاريخ",
+  "noAppointmentsForDateMessage": "ستظهر المواعيد الجديدة للتاريخ المحدد هنا.",
+  "noWorkingDays": "لا توجد أيام عمل محددة",
+  "noWorkingDaysHint": "فعّل أيام العمل وحدد ساعاتك لتبدأ باستقبال الحجوزات.",
+  "notifications": "الإشعارات",
+  "markAllAsRead": "تحديد الكل كمقروء",
+  "noNotifications": "لا توجد إشعارات",
+  "noNotificationsMessage": "ستظهر هنا التنبيهات المتعلقة بحجوزاتك وجدولك.",
+  "notificationsLoadError": "تعذر تحميل الإشعارات",
+  "unreadNotifications": "{count} غير مقروءة",
+
+  "bookNextCut": "احجز موعدك التالي",
+  "searchServices": "ابحث عن خدمة",
+  "seeAll": "عرض الكل",
+  "viewTeam": "عرض الفريق",
+  "topBarbers": "أفضل الحلاقين",
+  "noServicesFound": "لا توجد خدمات مطابقة لبحثك.",
+  "categoryAll": "الكل",
+  "categoryHaircut": "قص شعر",
+  "categoryBeard": "لحية",
+  "categoryShave": "حلاقة",
+  "categoryPackages": "باقات",
+    "createBarberShop": "إنشاء متجر حلاقة",
+  "shopName": "اسم المتجر",
+  "enterBarberShopName": "أدخل اسم متجر الحلاقة",
+  "shopNameRequired": "اسم المتجر مطلوب.",
+  "address": "العنوان",
+  "userSessionNotAvailable": "جلسة المستخدم غير متاحة.",
+  "onlyOwnerCanCreateBarberShop": "يمكن للمالك فقط إنشاء متجر حلاقة.",
+  "barberShopCreatedSuccessfully": "تم إنشاء متجر الحلاقة بنجاح.",
+  "noAccount": "ليس لديك حساب؟",
+"createAccount": "إنشاء حساب",
+"hasAccount": "لديك حساب؟",
+"signIn": "تسجيل الدخول","otpTitle": "أدخل رمز التحقق",
+"otpSubtitle": "أدخل الرمز المكوّن من 6 أرقام الذي أرسلناه إلى",
+"otpResendAvailable": "يمكنك إعادة إرسال الرمز الآن",
+"otpResendIn": "إعادة الإرسال خلال",
+"barberIdCannotBeEmpty": "معرّف الحلاق مطلوب.",
+"userIdCannotBeEmpty": "معرّف المستخدم مطلوب.",
+"barberShopIdCannotBeEmpty": "معرّف متجر الحلاقة مطلوب.",
+"barberNameCannotBeEmpty": "اسم الحلاق مطلوب.",
+"barberUserNotFound": "بيانات مستخدم الحلاق غير موجودة.",
+"selectedUserIsNotBarber": "المستخدم المحدد ليس حلاقًا.",
+"barberAssignedToAnotherShop": "هذا الحلاق مرتبط بمتجر حلاقة آخر.",
+"barberAlreadyAssignedToShop": "هذا الحلاق مرتبط بالفعل بهذا المتجر.",
+"barberNotFound": "الحلاق غير موجود.",
+"barberUserIdMissing": "معرّف مستخدم الحلاق غير موجود.",
+"barberShopIdMissing": "معرّف متجر الحلاقة غير موجود.",
+"barberProfileNotFound": "ملف الحلاق غير موجود.",
+"unknownError": "حدث خطأ غير متوقع.",
+"barberDashboardTitle": "لوحة تحكم الحلاق",
+"barberAccountNotAssignedToShop": "حساب الحلاق الخاص بك غير مرتبط بمتجر.",
+"shopUnavailable": "المتجر غير متاح",
+"barberWorkspaceUnavailable": "مساحة عمل الحلاق الخاصة بك غير متاحة حاليًا. يرجى التأكد من أن المتجر نشط وأن حسابك مرتبط به.",
+"tryAgain": "حاول مرة أخرى"
 }

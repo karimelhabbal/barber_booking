@@ -101,6 +101,8 @@ class _OtpPageState extends State<OtpPage> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
 
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
@@ -113,61 +115,156 @@ class _OtpPageState extends State<OtpPage> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: Text(loc.otpCode)),
-        body: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(widget.phoneNumber, textAlign: TextAlign.center),
-              const SizedBox(height: 24),
-              PinCodeTextField(
-                appContext: context,
-                length: 6,
-                keyboardType: TextInputType.number,
-                animationType: AnimationType.fade,
-                autoFocus: true,
-                enableActiveFill: false,
-                onChanged: (value) {
-                  _otpCode = value;
-                },
-              ),
-              const SizedBox(height: 24),
-              BlocBuilder<AuthCubit, AuthState>(
-                builder: (context, state) {
-                  final isLoading = state is AuthLoading;
+        appBar: AppBar(title: Text(loc.otpCode), centerTitle: true),
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final horizontalPadding = constraints.maxWidth >= 600
+                  ? 48.0
+                  : 24.0;
 
-                  return SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: isLoading ? null : _verifyCode,
-                      child: isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(loc.verifyCode),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              BlocBuilder<AuthCubit, AuthState>(
-                builder: (context, state) {
-                  final isLoading = state is AuthLoading;
+              return SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: horizontalPadding,
+                  vertical: 24,
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 520),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 24),
 
-                  return TextButton(
-                    onPressed: isLoading || !_isResendEnabled
-                        ? null
-                        : _resendOtp,
-                    child: Text(
-                      _isResendEnabled ? loc.resendCode : '$_resendSeconds',
+                        Icon(
+                          Icons.verified_user_outlined,
+                          size: 56,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        Text(
+                          loc.otpTitle,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        Text(
+                          loc.otpSubtitle,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                              ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        Directionality(
+                          textDirection: TextDirection.ltr,
+                          child: Text(
+                            widget.phoneNumber,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        PinCodeTextField(
+                          appContext: context,
+                          length: 6,
+                          keyboardType: TextInputType.number,
+                          animationType: AnimationType.fade,
+                          autoFocus: true,
+                          enableActiveFill: true,
+                          textStyle: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                          pinTheme: PinTheme(
+                            shape: PinCodeFieldShape.box,
+                            borderRadius: BorderRadius.circular(12),
+                            fieldHeight: 56,
+                            fieldWidth: 48,
+                            activeColor: Theme.of(context).colorScheme.primary,
+                            selectedColor: Theme.of(context)
+                                .colorScheme
+                                .primary,
+                            inactiveColor: Theme.of(context)
+                                .colorScheme
+                                .outlineVariant,
+                            activeFillColor: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                            selectedFillColor: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                            inactiveFillColor: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                          ),
+                          onChanged: (value) {
+                            _otpCode = value;
+                          },
+                          onCompleted: (_) {
+                            _verifyCode();
+                          },
+                        ),
+
+                        const SizedBox(height: 28),
+
+                        BlocBuilder<AuthCubit, AuthState>(
+                          builder: (context, state) {
+                            final isLoading = state is AuthLoading;
+
+                            return SizedBox(
+                              width: double.infinity,
+                              height: 52,
+                              child: FilledButton(
+                                onPressed: isLoading ? null : _verifyCode,
+                                child: isLoading
+                                    ? const SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : Text(loc.verifyCode),
+                              ),
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        BlocBuilder<AuthCubit, AuthState>(
+                          builder: (context, state) {
+                            final isLoading = state is AuthLoading;
+
+                            return TextButton(
+                              onPressed: isLoading || !_isResendEnabled
+                                  ? null
+                                  : _resendOtp,
+                              child: Text(
+                                _isResendEnabled
+                                    ? loc.otpResendAvailable
+                                    : '${loc.otpResendIn} $_resendSeconds',
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                  );
-                },
-              ),
-            ],
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),

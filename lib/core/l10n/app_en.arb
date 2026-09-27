@@ -303,15 +303,81 @@
       }
     }
   },
-  "addBarber": "Add barber",
-"editBarber": "Edit barber",
+  
+
 "barberName": "Barber Name",
-"barberNameRequired": "Barber name is required.",
+
 "selectBarber": "Select Barber",
 "pleaseSelectBarber": "Please select a barber.",
 "barberCreatedSuccessfully": "Barber created successfully.",
 "noBarberUsersAvailable": "No barber users are available.",
-"phone": "Phone",
-"save": "Save"
+
+
+  "appointments": "Appointments",
+  "availability": "Availability",
+  "barberDashboard": "Barber Dashboard",
+  "noAppointmentsForDate": "No appointments for this date",
+  "noAppointmentsForDateMessage": "New appointments for the selected date will appear here.",
+  "noWorkingDays": "No working days yet",
+  "noWorkingDaysHint": "Turn on the days you work and set your hours to start receiving bookings.",
+  "notifications": "Notifications",
+  "markAllAsRead": "Mark all as read",
+  "noNotifications": "No notifications",
+  "noNotificationsMessage": "Alerts about your bookings and schedule will appear here.",
+  "notificationsLoadError": "Unable to load notifications",
+  "unreadNotifications": "{count} unread",
+  "@unreadNotifications": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "bookNextCut": "Book your next cut",
+  "searchServices": "Search services",
+  "seeAll": "See all",
+  "viewTeam": "View team",
+  "topBarbers": "Top barbers",
+  "noServicesFound": "No services match your search.",
+  "categoryAll": "All",
+  "categoryHaircut": "Haircut",
+  "categoryBeard": "Beard",
+  "categoryShave": "Shave",
+  "categoryPackages": "Packages",
+    "createBarberShop": "Create Barber Shop",
+  "shopName": "Shop name",
+  "enterBarberShopName": "Enter barber shop name",
+  "shopNameRequired": "Shop name is required.",
+  "address": "Address",
+  "userSessionNotAvailable": "User session is not available.",
+  "onlyOwnerCanCreateBarberShop": "Only an owner can create a barber shop.",
+  "barberShopCreatedSuccessfully": "Barber shop created successfully.",
+  "noAccount": "Don't have an account?",
+"createAccount": "Create account",
+"hasAccount": "Already have an account?",
+"signIn": "Sign in","otpTitle": "Enter verification code",
+"otpSubtitle": "Enter the 6-digit code we sent to",
+"otpResendAvailable": "You can resend the code now",
+"otpResendIn": "Resend code in",
+"barberIdCannotBeEmpty": "Barber ID cannot be empty.",
+"userIdCannotBeEmpty": "User ID cannot be empty.",
+"barberShopIdCannotBeEmpty": "Barber shop ID cannot be empty.",
+"barberNameCannotBeEmpty": "Barber name cannot be empty.",
+"barberUserNotFound": "Barber user data could not be found.",
+"selectedUserIsNotBarber": "The selected user is not a barber.",
+"barberAssignedToAnotherShop": "This barber is assigned to another shop.",
+"barberAlreadyAssignedToShop": "This barber is already assigned to this shop.",
+"barberNotFound": "Barber not found.",
+"barberUserIdMissing": "Barber user ID is missing.",
+"barberShopIdMissing": "Barber shop ID is missing.",
+"barberProfileNotFound": "Barber profile not found.",
+"unknownError": "An unexpected error occurred.",
+"barberDashboardTitle": "Barber Dashboard",
+"barberAccountNotAssignedToShop": "Your barber account is not assigned to a shop.",
+"shopUnavailable": "Shop unavailable",
+"barberWorkspaceUnavailable": "Your barber workspace is currently unavailable. Please make sure your shop is active and your account is assigned to it.",
+"tryAgain": "Try Again"
+
 }
 

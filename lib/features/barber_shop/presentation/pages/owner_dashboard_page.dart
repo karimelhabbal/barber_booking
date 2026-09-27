@@ -17,6 +17,7 @@ import 'package:barber_booking/features/booking/domain/entities/booking.dart';
 import 'package:barber_booking/features/booking/presentation/cubit/booking_cubit.dart';
 import 'package:barber_booking/features/booking/presentation/cubit/booking_state.dart';
 import 'package:barber_booking/features/booking/views/owner_bookings_page.dart';
+import 'package:barber_booking/features/notifications/presentation/pages/notifications_page.dart';
 import 'package:barber_booking/features/schedule/presentation/pages/owner_schedule_barbers_page.dart';
 import 'package:barber_booking/features/service/domain/entities/service.dart';
 import 'package:barber_booking/features/service/presentation/cubit/service_cubit.dart';
@@ -236,17 +237,63 @@ class _OwnerOverviewView extends StatelessWidget {
         .push(MaterialPageRoute(builder: (_) => const SettingsPage()));
   }
 
+  void _openNotifications(BuildContext context) {
+    final authState = context.read<AuthCubit>().state;
+
+    if (authState is! AuthAuthenticated) {
+      return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => NotificationsPage(recipientId: authState.user.id),
+      ),
+    );
+  }
+
   Future<void> _logout(BuildContext context) {
     return context.read<AuthCubit>().logout();
+  }
+
+  String? _barberErrorMessage(BarberErrorCode code, AppLocalizations loc) {
+    switch (code) {
+      case BarberErrorCode.barberIdEmpty:
+        return loc.barberIdCannotBeEmpty;
+      case BarberErrorCode.userIdEmpty:
+        return loc.userIdCannotBeEmpty;
+      case BarberErrorCode.shopIdEmpty:
+        return loc.barberShopIdCannotBeEmpty;
+      case BarberErrorCode.nameEmpty:
+        return loc.barberNameCannotBeEmpty;
+      case BarberErrorCode.userNotFound:
+        return loc.barberUserNotFound;
+      case BarberErrorCode.userNotBarber:
+        return loc.selectedUserIsNotBarber;
+      case BarberErrorCode.assignedAnotherShop:
+        return loc.barberAssignedToAnotherShop;
+      case BarberErrorCode.assignedThisShop:
+        return loc.barberAlreadyAssignedToShop;
+      case BarberErrorCode.barberNotFound:
+        return loc.barberNotFound;
+      case BarberErrorCode.barberUserIdMissing:
+        return loc.barberUserIdMissing;
+      case BarberErrorCode.barberShopIdMissing:
+        return loc.barberShopIdMissing;
+      case BarberErrorCode.profileNotFound:
+        return loc.barberProfileNotFound;
+      case BarberErrorCode.unknown:
+        return loc.unknownError;
+    }
   }
 
   String? _errorMessage(
     BarberState barberState,
     ServiceState serviceState,
     BookingState bookingState,
+    AppLocalizations loc,
   ) {
     if (barberState is BarberError) {
-      return barberState.message;
+      return _barberErrorMessage(barberState.code, loc);
     }
 
     if (serviceState is ServiceError) {
@@ -396,6 +443,11 @@ class _OwnerOverviewView extends StatelessWidget {
             tooltip: loc.refresh,
           ),
           IconButton(
+            onPressed: () => _openNotifications(context),
+            icon: const Icon(Icons.notifications_outlined),
+            tooltip: loc.notifications,
+          ),
+          IconButton(
             onPressed: () => _openSettings(context),
             icon: const Icon(Icons.settings_outlined),
             tooltip: loc.settings,
@@ -429,6 +481,7 @@ class _OwnerOverviewView extends StatelessWidget {
                     barberState,
                     serviceState,
                     bookingState,
+                    loc,
                   );
 
                   if (errorMessage != null) {

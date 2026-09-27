@@ -15,27 +15,41 @@ class _SummaryGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      childAspectRatio: 1.2,
-      children: [
-        _SummaryCard(title: 'Total', value: total, icon: Icons.calendar_today),
-        _SummaryCard(title: 'Pending', value: pending, icon: Icons.schedule),
-        _SummaryCard(
-          title: 'Confirmed',
-          value: confirmed,
-          icon: Icons.check_circle_outline,
-        ),
-        _SummaryCard(
-          title: 'Completed',
-          value: completed,
-          icon: Icons.done_all,
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 520;
+
+        return GridView.count(
+          crossAxisCount: isWide ? 4 : 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: isWide ? 1.45 : 1.55,
+          children: [
+            _SummaryCard(
+              title: 'Total',
+              value: total,
+              icon: Icons.calendar_today_rounded,
+            ),
+            _SummaryCard(
+              title: 'Pending',
+              value: pending,
+              icon: Icons.schedule_rounded,
+            ),
+            _SummaryCard(
+              title: 'Confirmed',
+              value: confirmed,
+              icon: Icons.check_circle_outline_rounded,
+            ),
+            _SummaryCard(
+              title: 'Completed',
+              value: completed,
+              icon: Icons.done_all_rounded,
+            ),
+          ],
+        );
+      },
     );
   }
 }

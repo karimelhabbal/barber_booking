@@ -1,5 +1,21 @@
 part of 'barber_cubit.dart';
 
+enum BarberErrorCode {
+  barberIdEmpty,
+  userIdEmpty,
+  shopIdEmpty,
+  nameEmpty,
+  userNotFound,
+  userNotBarber,
+  assignedAnotherShop,
+  assignedThisShop,
+  barberNotFound,
+  barberUserIdMissing,
+  barberShopIdMissing,
+  profileNotFound,
+  unknown,
+}
+
 abstract class BarberState extends Equatable {
   const BarberState();
 
@@ -82,12 +98,13 @@ class BarberDeleted extends BarberState {
 }
 
 class BarberError extends BarberState {
-  const BarberError(this.message);
+  const BarberError(this.code, {this.fallbackMessage});
 
-  final String message;
+  final BarberErrorCode code;
+  final String? fallbackMessage;
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [code, fallbackMessage];
 }
 
 class BarberCandidatesLoading extends BarberState {

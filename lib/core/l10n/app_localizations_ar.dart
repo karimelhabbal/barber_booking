@@ -421,7 +421,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get delete => 'حذف';
 
   @override
-  String get editBarber => 'تعديل حلاق';
+  String get editBarber => 'تعديل الحلاق';
 
   @override
   String get barberNameRequired => 'اسم الحلاق مطلوب.';
@@ -685,4 +685,187 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get noBarberUsersAvailable => 'لا يوجد مستخدمون متاحون كحلاقين.';
+
+  @override
+  String get appointments => 'المواعيد';
+
+  @override
+  String get availability => 'التوفر';
+
+  @override
+  String get barberDashboard => 'لوحة تحكم الحلاق';
+
+  @override
+  String get noAppointmentsForDate => 'لا توجد مواعيد في هذا التاريخ';
+
+  @override
+  String get noAppointmentsForDateMessage =>
+      'ستظهر المواعيد الجديدة للتاريخ المحدد هنا.';
+
+  @override
+  String get noWorkingDays => 'لا توجد أيام عمل محددة';
+
+  @override
+  String get noWorkingDaysHint =>
+      'فعّل أيام العمل وحدد ساعاتك لتبدأ باستقبال الحجوزات.';
+
+  @override
+  String get notifications => 'الإشعارات';
+
+  @override
+  String get markAllAsRead => 'تحديد الكل كمقروء';
+
+  @override
+  String get noNotifications => 'لا توجد إشعارات';
+
+  @override
+  String get noNotificationsMessage =>
+      'ستظهر هنا التنبيهات المتعلقة بحجوزاتك وجدولك.';
+
+  @override
+  String get notificationsLoadError => 'تعذر تحميل الإشعارات';
+
+  @override
+  String unreadNotifications(int count) {
+    return '$count غير مقروءة';
+  }
+
+  @override
+  String get bookNextCut => 'احجز موعدك التالي';
+
+  @override
+  String get searchServices => 'ابحث عن خدمة';
+
+  @override
+  String get seeAll => 'عرض الكل';
+
+  @override
+  String get viewTeam => 'عرض الفريق';
+
+  @override
+  String get topBarbers => 'أفضل الحلاقين';
+
+  @override
+  String get noServicesFound => 'لا توجد خدمات مطابقة لبحثك.';
+
+  @override
+  String get categoryAll => 'الكل';
+
+  @override
+  String get categoryHaircut => 'قص شعر';
+
+  @override
+  String get categoryBeard => 'لحية';
+
+  @override
+  String get categoryShave => 'حلاقة';
+
+  @override
+  String get categoryPackages => 'باقات';
+
+  @override
+  String get createBarberShop => 'إنشاء متجر حلاقة';
+
+  @override
+  String get shopName => 'اسم المتجر';
+
+  @override
+  String get enterBarberShopName => 'أدخل اسم متجر الحلاقة';
+
+  @override
+  String get shopNameRequired => 'اسم المتجر مطلوب.';
+
+  @override
+  String get address => 'العنوان';
+
+  @override
+  String get userSessionNotAvailable => 'جلسة المستخدم غير متاحة.';
+
+  @override
+  String get onlyOwnerCanCreateBarberShop =>
+      'يمكن للمالك فقط إنشاء متجر حلاقة.';
+
+  @override
+  String get barberShopCreatedSuccessfully => 'تم إنشاء متجر الحلاقة بنجاح.';
+
+  @override
+  String get noAccount => 'ليس لديك حساب؟';
+
+  @override
+  String get createAccount => 'إنشاء حساب';
+
+  @override
+  String get hasAccount => 'لديك حساب؟';
+
+  @override
+  String get signIn => 'تسجيل الدخول';
+
+  @override
+  String get otpTitle => 'أدخل رمز التحقق';
+
+  @override
+  String get otpSubtitle => 'أدخل الرمز المكوّن من 6 أرقام الذي أرسلناه إلى';
+
+  @override
+  String get otpResendAvailable => 'يمكنك إعادة إرسال الرمز الآن';
+
+  @override
+  String get otpResendIn => 'إعادة الإرسال خلال';
+
+  @override
+  String get barberIdCannotBeEmpty => 'معرّف الحلاق مطلوب.';
+
+  @override
+  String get userIdCannotBeEmpty => 'معرّف المستخدم مطلوب.';
+
+  @override
+  String get barberShopIdCannotBeEmpty => 'معرّف متجر الحلاقة مطلوب.';
+
+  @override
+  String get barberNameCannotBeEmpty => 'اسم الحلاق مطلوب.';
+
+  @override
+  String get barberUserNotFound => 'بيانات مستخدم الحلاق غير موجودة.';
+
+  @override
+  String get selectedUserIsNotBarber => 'المستخدم المحدد ليس حلاقًا.';
+
+  @override
+  String get barberAssignedToAnotherShop => 'هذا الحلاق مرتبط بمتجر حلاقة آخر.';
+
+  @override
+  String get barberAlreadyAssignedToShop =>
+      'هذا الحلاق مرتبط بالفعل بهذا المتجر.';
+
+  @override
+  String get barberNotFound => 'الحلاق غير موجود.';
+
+  @override
+  String get barberUserIdMissing => 'معرّف مستخدم الحلاق غير موجود.';
+
+  @override
+  String get barberShopIdMissing => 'معرّف متجر الحلاقة غير موجود.';
+
+  @override
+  String get barberProfileNotFound => 'ملف الحلاق غير موجود.';
+
+  @override
+  String get unknownError => 'حدث خطأ غير متوقع.';
+
+  @override
+  String get barberDashboardTitle => 'لوحة تحكم الحلاق';
+
+  @override
+  String get barberAccountNotAssignedToShop =>
+      'حساب الحلاق الخاص بك غير مرتبط بمتجر.';
+
+  @override
+  String get shopUnavailable => 'المتجر غير متاح';
+
+  @override
+  String get barberWorkspaceUnavailable =>
+      'مساحة عمل الحلاق الخاصة بك غير متاحة حاليًا. يرجى التأكد من أن المتجر نشط وأن حسابك مرتبط به.';
+
+  @override
+  String get tryAgain => 'حاول مرة أخرى';
 }

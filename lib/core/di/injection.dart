@@ -36,6 +36,10 @@ import '../../features/booking/domain/usecases/create_booking.dart';
 import '../../features/booking/domain/usecases/get_available_slots.dart';
 import '../../features/booking/presentation/cubit/booking_cubit.dart';
 
+import '../../features/notifications/data/repositories/in_memory_notification_repository.dart';
+import '../../features/notifications/domain/repositories/notification_repository.dart';
+import '../../features/notifications/presentation/cubit/notifications_cubit.dart';
+
 final GetIt getIt = GetIt.instance;
 
 void configureDependencies() {
@@ -178,5 +182,17 @@ void configureDependencies() {
       getAvailableSlots: getIt<GetAvailableSlots>(),
       createBooking: getIt<CreateBooking>(),
     ),
+  );
+
+  // ---------------------------------------------------------------------------
+  // Notifications
+  // ---------------------------------------------------------------------------
+
+  getIt.registerLazySingleton<NotificationRepository>(
+    () => InMemoryNotificationRepository(),
+  );
+
+  getIt.registerFactory<NotificationsCubit>(
+    () => NotificationsCubit(repository: getIt<NotificationRepository>()),
   );
 }

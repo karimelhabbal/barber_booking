@@ -68,6 +68,7 @@ class OwnerBarbersPage extends StatelessWidget {
 
   Future<void> _deleteBarber(BuildContext context, Barber barber) async {
     final loc = AppLocalizations.of(context)!;
+
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
@@ -100,6 +101,49 @@ class OwnerBarbersPage extends StatelessWidget {
             OwnerSchedulePage(barberId: barber.id, barberName: barber.name),
       ),
     );
+  }
+
+  String _barberErrorMessage(BarberErrorCode code, AppLocalizations loc) {
+    switch (code) {
+      case BarberErrorCode.barberIdEmpty:
+        return loc.barberIdCannotBeEmpty;
+
+      case BarberErrorCode.userIdEmpty:
+        return loc.userIdCannotBeEmpty;
+
+      case BarberErrorCode.shopIdEmpty:
+        return loc.barberShopIdCannotBeEmpty;
+
+      case BarberErrorCode.nameEmpty:
+        return loc.barberNameCannotBeEmpty;
+
+      case BarberErrorCode.userNotFound:
+        return loc.barberUserNotFound;
+
+      case BarberErrorCode.userNotBarber:
+        return loc.selectedUserIsNotBarber;
+
+      case BarberErrorCode.assignedAnotherShop:
+        return loc.barberAssignedToAnotherShop;
+
+      case BarberErrorCode.assignedThisShop:
+        return loc.barberAlreadyAssignedToShop;
+
+      case BarberErrorCode.barberNotFound:
+        return loc.barberNotFound;
+
+      case BarberErrorCode.barberUserIdMissing:
+        return loc.barberUserIdMissing;
+
+      case BarberErrorCode.barberShopIdMissing:
+        return loc.barberShopIdMissing;
+
+      case BarberErrorCode.profileNotFound:
+        return loc.barberProfileNotFound;
+
+      case BarberErrorCode.unknown:
+        return loc.unknownError;
+    }
   }
 
   @override
@@ -135,7 +179,7 @@ class OwnerBarbersPage extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(state.message),
+                          Text(_barberErrorMessage(state.code, loc)),
                           const SizedBox(height: 12),
                           ElevatedButton(
                             onPressed: () => _refresh(context),
@@ -266,12 +310,15 @@ class _BarberFormDialog extends StatefulWidget {
 class _BarberFormDialogState extends State<_BarberFormDialog> {
   late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
+
   String? _error;
 
   @override
   void initState() {
     super.initState();
+
     _nameController = TextEditingController(text: widget.barber.name);
+
     _phoneController = TextEditingController(text: widget.barber.phone ?? '');
   }
 
@@ -287,7 +334,9 @@ class _BarberFormDialogState extends State<_BarberFormDialog> {
     final name = _nameController.text.trim();
 
     if (name.isEmpty) {
-      setState(() => _error = loc.barberNameRequired);
+      setState(() {
+        _error = loc.barberNameRequired;
+      });
       return;
     }
 
@@ -318,7 +367,7 @@ class _BarberFormDialogState extends State<_BarberFormDialog> {
             ),
             if (_error != null) ...[
               const SizedBox(height: 8),
-              Text(_error!, style: TextStyle(color: Colors.red)),
+              Text(_error!, style: const TextStyle(color: Colors.red)),
             ],
           ],
         ),

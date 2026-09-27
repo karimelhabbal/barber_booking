@@ -12,7 +12,7 @@ abstract interface class AuthRepository {
 
   Future<void> resendOtp();
 
-  Future<User> verifyOtp({required String code});
+  Future<User> verifyOtp({required String code, required bool isRegistration});
 
   Future<User> loginWithEmail({
     required String email,

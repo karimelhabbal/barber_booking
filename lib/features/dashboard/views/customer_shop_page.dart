@@ -11,6 +11,37 @@ class CustomerShopPage extends StatelessWidget {
 
   final BarberShop shop;
 
+  String _barberErrorMessage(BarberErrorCode code, AppLocalizations loc) {
+    switch (code) {
+      case BarberErrorCode.barberIdEmpty:
+        return loc.barberIdCannotBeEmpty;
+      case BarberErrorCode.userIdEmpty:
+        return loc.userIdCannotBeEmpty;
+      case BarberErrorCode.shopIdEmpty:
+        return loc.barberShopIdCannotBeEmpty;
+      case BarberErrorCode.nameEmpty:
+        return loc.barberNameCannotBeEmpty;
+      case BarberErrorCode.userNotFound:
+        return loc.barberUserNotFound;
+      case BarberErrorCode.userNotBarber:
+        return loc.selectedUserIsNotBarber;
+      case BarberErrorCode.assignedAnotherShop:
+        return loc.barberAssignedToAnotherShop;
+      case BarberErrorCode.assignedThisShop:
+        return loc.barberAlreadyAssignedToShop;
+      case BarberErrorCode.barberNotFound:
+        return loc.barberNotFound;
+      case BarberErrorCode.barberUserIdMissing:
+        return loc.barberUserIdMissing;
+      case BarberErrorCode.barberShopIdMissing:
+        return loc.barberShopIdMissing;
+      case BarberErrorCode.profileNotFound:
+        return loc.barberProfileNotFound;
+      case BarberErrorCode.unknown:
+        return loc.unknownError;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
@@ -30,7 +61,10 @@ class CustomerShopPage extends StatelessWidget {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
-                  child: Text(state.message, textAlign: TextAlign.center),
+                  child: Text(
+                    _barberErrorMessage(state.code, loc),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               );
             }

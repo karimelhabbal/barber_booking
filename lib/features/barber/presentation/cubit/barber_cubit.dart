@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
+import '../../data/datasources/barber_remote_data_source.dart';
 import '../../domain/entities/barber.dart';
 import '../../domain/entities/barber_candidate.dart';
 import '../../domain/repositories/barber_repository.dart';
@@ -20,12 +21,12 @@ class BarberCubit extends Cubit<BarberState> {
     final trimmedShopId = barberShopId.trim();
 
     if (trimmedUserId.isEmpty) {
-      emit(const BarberError('Barber user ID cannot be empty.'));
+      emit(const BarberError(BarberErrorCode.userIdEmpty));
       return;
     }
 
     if (trimmedShopId.isEmpty) {
-      emit(const BarberError('Barber shop ID cannot be empty.'));
+      emit(const BarberError(BarberErrorCode.shopIdEmpty));
       return;
     }
 
@@ -38,13 +39,17 @@ class BarberCubit extends Cubit<BarberState> {
       );
 
       if (barber == null) {
-        emit(const BarberError('Barber profile not found.'));
+        emit(const BarberError(BarberErrorCode.profileNotFound));
         return;
       }
 
       emit(BarberProfileLoaded(barber));
+    } on BarberDataSourceException catch (error) {
+      emit(_fromDataSourceError(error));
     } on Object catch (error) {
-      emit(BarberError(error.toString()));
+      emit(
+        BarberError(BarberErrorCode.unknown, fallbackMessage: error.toString()),
+      );
     }
   }
 
@@ -59,8 +64,12 @@ class BarberCubit extends Cubit<BarberState> {
       final candidates = await _repository.getBarberCandidates();
 
       emit(BarberCandidatesLoaded(candidates));
+    } on BarberDataSourceException catch (error) {
+      emit(_fromDataSourceError(error));
     } on Object catch (error) {
-      emit(BarberError(error.toString()));
+      emit(
+        BarberError(BarberErrorCode.unknown, fallbackMessage: error.toString()),
+      );
     }
   }
 
@@ -72,7 +81,7 @@ class BarberCubit extends Cubit<BarberState> {
     final shopId = barberShopId.trim();
 
     if (shopId.isEmpty) {
-      emit(const BarberError('Barber shop ID cannot be empty.'));
+      emit(const BarberError(BarberErrorCode.shopIdEmpty));
       return;
     }
 
@@ -82,8 +91,12 @@ class BarberCubit extends Cubit<BarberState> {
       final barbers = await _repository.getShopBarbers(barberShopId: shopId);
 
       emit(BarberLoaded(barbers));
+    } on BarberDataSourceException catch (error) {
+      emit(_fromDataSourceError(error));
     } on Object catch (error) {
-      emit(BarberError(error.toString()));
+      emit(
+        BarberError(BarberErrorCode.unknown, fallbackMessage: error.toString()),
+      );
     }
   }
 
@@ -99,35 +112,23 @@ class BarberCubit extends Cubit<BarberState> {
     final trimmedName = name.trim();
 
     if (trimmedUserId.isEmpty) {
-      emit(const BarberError('Barber user ID cannot be empty.'));
+      emit(const BarberError(BarberErrorCode.userIdEmpty));
       return;
     }
 
     if (trimmedShopId.isEmpty) {
-      emit(const BarberError('Barber shop ID cannot be empty.'));
+      emit(const BarberError(BarberErrorCode.shopIdEmpty));
       return;
     }
 
     if (trimmedName.isEmpty) {
-      emit(const BarberError('Barber name cannot be empty.'));
+      emit(const BarberError(BarberErrorCode.nameEmpty));
       return;
     }
 
     emit(const BarberCreating());
 
     try {
-      final existingBarber = await _repository.getBarberByUserAndShop(
-        userId: trimmedUserId,
-        barberShopId: trimmedShopId,
-      );
-
-      if (existingBarber != null) {
-        emit(
-          const BarberError('This barber is already assigned to this shop.'),
-        );
-        return;
-      }
-
       final barber = await _repository.createBarber(
         userId: trimmedUserId,
         barberShopId: trimmedShopId,
@@ -137,14 +138,18 @@ class BarberCubit extends Cubit<BarberState> {
       );
 
       emit(BarberCreated(barber));
+    } on BarberDataSourceException catch (error) {
+      emit(_fromDataSourceError(error));
     } on Object catch (error) {
-      emit(BarberError(error.toString()));
+      emit(
+        BarberError(BarberErrorCode.unknown, fallbackMessage: error.toString()),
+      );
     }
   }
 
   Future<void> updateBarber(Barber barber) async {
     if (barber.id.trim().isEmpty) {
-      emit(const BarberError('Barber ID cannot be empty.'));
+      emit(const BarberError(BarberErrorCode.barberIdEmpty));
       return;
     }
 
@@ -167,8 +172,12 @@ class BarberCubit extends Cubit<BarberState> {
       }
 
       emit(BarberUpdated(barber));
+    } on BarberDataSourceException catch (error) {
+      emit(_fromDataSourceError(error));
     } on Object catch (error) {
-      emit(BarberError(error.toString()));
+      emit(
+        BarberError(BarberErrorCode.unknown, fallbackMessage: error.toString()),
+      );
     }
   }
 
@@ -176,7 +185,7 @@ class BarberCubit extends Cubit<BarberState> {
     final trimmedBarberId = barberId.trim();
 
     if (trimmedBarberId.isEmpty) {
-      emit(const BarberError('Barber ID cannot be empty.'));
+      emit(const BarberError(BarberErrorCode.barberIdEmpty));
       return;
     }
 
@@ -190,8 +199,13 @@ class BarberCubit extends Cubit<BarberState> {
 
     try {
       await _repository.deleteBarber(barberId: trimmedBarberId);
+    } on BarberDataSourceException catch (error) {
+      emit(_fromDataSourceError(error));
+      return;
     } on Object catch (error) {
-      emit(BarberError(error.toString()));
+      emit(
+        BarberError(BarberErrorCode.unknown, fallbackMessage: error.toString()),
+      );
       return;
     }
 
@@ -199,6 +213,47 @@ class BarberCubit extends Cubit<BarberState> {
 
     if (barberShopId != null) {
       await loadShopBarbers(barberShopId: barberShopId);
+    }
+  }
+
+  BarberError _fromDataSourceError(BarberDataSourceException error) {
+    return BarberError(_mapDataSourceErrorCode(error.code));
+  }
+
+  BarberErrorCode _mapDataSourceErrorCode(BarberDataSourceErrorCode code) {
+    switch (code) {
+      case BarberDataSourceErrorCode.barberIdEmpty:
+        return BarberErrorCode.barberIdEmpty;
+
+      case BarberDataSourceErrorCode.userIdEmpty:
+        return BarberErrorCode.userIdEmpty;
+
+      case BarberDataSourceErrorCode.shopIdEmpty:
+        return BarberErrorCode.shopIdEmpty;
+
+      case BarberDataSourceErrorCode.nameEmpty:
+        return BarberErrorCode.nameEmpty;
+
+      case BarberDataSourceErrorCode.userNotFound:
+        return BarberErrorCode.userNotFound;
+
+      case BarberDataSourceErrorCode.userNotBarber:
+        return BarberErrorCode.userNotBarber;
+
+      case BarberDataSourceErrorCode.assignedAnotherShop:
+        return BarberErrorCode.assignedAnotherShop;
+
+      case BarberDataSourceErrorCode.assignedThisShop:
+        return BarberErrorCode.assignedThisShop;
+
+      case BarberDataSourceErrorCode.barberNotFound:
+        return BarberErrorCode.barberNotFound;
+
+      case BarberDataSourceErrorCode.barberUserIdMissing:
+        return BarberErrorCode.barberUserIdMissing;
+
+      case BarberDataSourceErrorCode.barberShopIdMissing:
+        return BarberErrorCode.barberShopIdMissing;
     }
   }
 

@@ -31,7 +31,9 @@ class AuthRepositoryImpl implements AuthRepository {
       return user;
     }
 
-    return User(id: firebaseUser.uid, phone: firebaseUser.phoneNumber);
+    await _authRemoteDataSource.logout();
+
+    return null;
   }
 
   @override
@@ -76,14 +78,35 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<User> verifyOtp({required String code}) async {
+  Future<User> verifyOtp({
+    required String code,
+    required bool isRegistration,
+  }) async {
     try {
       final firebaseUser = await _authRemoteDataSource.verifyOtp(code: code);
 
-      final registrationName = _pendingRegistrationName;
-      final registrationPhone = _pendingRegistrationPhone;
+      if (isRegistration) {
+        final registrationName = _pendingRegistrationName;
+        final registrationPhone = _pendingRegistrationPhone;
 
-      if (registrationName != null && registrationName.isNotEmpty) {
+        if (registrationName == null || registrationName.isEmpty) {
+          await _authRemoteDataSource.logout();
+
+          throw const AuthRepositoryException(
+            code: 'registration-session-missing',
+          );
+        }
+
+        final existingUser = await _userRemoteDataSource.getUser(
+          userId: firebaseUser.uid,
+        );
+
+        if (existingUser != null) {
+          _clearPendingRegistration();
+
+          return existingUser;
+        }
+
         final user = await _userRemoteDataSource.createUser(
           userId: firebaseUser.uid,
           name: registrationName,
@@ -99,15 +122,13 @@ class AuthRepositoryImpl implements AuthRepository {
         userId: firebaseUser.uid,
       );
 
-      if (existingUser != null) {
-        return existingUser;
+      if (existingUser == null) {
+        await _authRemoteDataSource.logout();
+
+        throw const AuthRepositoryException(code: 'user-profile-not-found');
       }
 
-      return await _userRemoteDataSource.createUser(
-        userId: firebaseUser.uid,
-        name: '',
-        phone: firebaseUser.phoneNumber ?? '',
-      );
+      return existingUser;
     } on Object catch (error) {
       throw _mapAuthError(error);
     }

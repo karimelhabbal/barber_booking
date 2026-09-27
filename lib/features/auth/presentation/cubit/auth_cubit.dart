@@ -39,7 +39,7 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       await _authRepository.sendLoginOtp(phone: phone);
 
-      emit(AuthCodeSent(phone.trim()));
+      emit(AuthCodeSent(phoneNumber: phone.trim(), mode: AuthMode.login));
     } on Object catch (error) {
       emit(AuthError(_mapError(error)));
     }
@@ -77,7 +77,7 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       await _authRepository.sendRegistrationOtp(name: name, phone: phone);
 
-      emit(AuthCodeSent(phone.trim()));
+      emit(AuthCodeSent(phoneNumber: phone.trim(), mode: AuthMode.register));
     } on Object catch (error) {
       emit(AuthError(_mapError(error)));
     }
@@ -96,13 +96,14 @@ class AuthCubit extends Cubit<AuthState> {
     }
 
     final phoneNumber = previousState.phoneNumber;
+    final mode = previousState.mode;
 
     emit(const AuthLoading());
 
     try {
       await _authRepository.resendOtp();
 
-      emit(AuthCodeSent(phoneNumber));
+      emit(AuthCodeSent(phoneNumber: phoneNumber, mode: mode));
     } on Object catch (error) {
       emit(AuthError(_mapError(error)));
     }
@@ -113,10 +114,22 @@ class AuthCubit extends Cubit<AuthState> {
       return;
     }
 
+    final currentState = state;
+
+    if (currentState is! AuthCodeSent) {
+      emit(const AuthError('request-new-code'));
+      return;
+    }
+
+    final isRegistration = currentState.mode == AuthMode.register;
+
     emit(const AuthLoading());
 
     try {
-      final user = await _authRepository.verifyOtp(code: code);
+      final user = await _authRepository.verifyOtp(
+        code: code,
+        isRegistration: isRegistration,
+      );
 
       emit(AuthAuthenticated(user));
     } on Object catch (error) {

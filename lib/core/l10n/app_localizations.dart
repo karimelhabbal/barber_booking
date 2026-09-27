@@ -1411,6 +1411,354 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No barber users are available.'**
   String get noBarberUsersAvailable;
+
+  /// No description provided for @appointments.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointments'**
+  String get appointments;
+
+  /// No description provided for @availability.
+  ///
+  /// In en, this message translates to:
+  /// **'Availability'**
+  String get availability;
+
+  /// No description provided for @barberDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Barber Dashboard'**
+  String get barberDashboard;
+
+  /// No description provided for @noAppointmentsForDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No appointments for this date'**
+  String get noAppointmentsForDate;
+
+  /// No description provided for @noAppointmentsForDateMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'New appointments for the selected date will appear here.'**
+  String get noAppointmentsForDateMessage;
+
+  /// No description provided for @noWorkingDays.
+  ///
+  /// In en, this message translates to:
+  /// **'No working days yet'**
+  String get noWorkingDays;
+
+  /// No description provided for @noWorkingDaysHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on the days you work and set your hours to start receiving bookings.'**
+  String get noWorkingDaysHint;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @markAllAsRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all as read'**
+  String get markAllAsRead;
+
+  /// No description provided for @noNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications'**
+  String get noNotifications;
+
+  /// No description provided for @noNotificationsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts about your bookings and schedule will appear here.'**
+  String get noNotificationsMessage;
+
+  /// No description provided for @notificationsLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load notifications'**
+  String get notificationsLoadError;
+
+  /// No description provided for @unreadNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} unread'**
+  String unreadNotifications(int count);
+
+  /// No description provided for @bookNextCut.
+  ///
+  /// In en, this message translates to:
+  /// **'Book your next cut'**
+  String get bookNextCut;
+
+  /// No description provided for @searchServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Search services'**
+  String get searchServices;
+
+  /// No description provided for @seeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get seeAll;
+
+  /// No description provided for @viewTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'View team'**
+  String get viewTeam;
+
+  /// No description provided for @topBarbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Top barbers'**
+  String get topBarbers;
+
+  /// No description provided for @noServicesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No services match your search.'**
+  String get noServicesFound;
+
+  /// No description provided for @categoryAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get categoryAll;
+
+  /// No description provided for @categoryHaircut.
+  ///
+  /// In en, this message translates to:
+  /// **'Haircut'**
+  String get categoryHaircut;
+
+  /// No description provided for @categoryBeard.
+  ///
+  /// In en, this message translates to:
+  /// **'Beard'**
+  String get categoryBeard;
+
+  /// No description provided for @categoryShave.
+  ///
+  /// In en, this message translates to:
+  /// **'Shave'**
+  String get categoryShave;
+
+  /// No description provided for @categoryPackages.
+  ///
+  /// In en, this message translates to:
+  /// **'Packages'**
+  String get categoryPackages;
+
+  /// No description provided for @createBarberShop.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Barber Shop'**
+  String get createBarberShop;
+
+  /// No description provided for @shopName.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop name'**
+  String get shopName;
+
+  /// No description provided for @enterBarberShopName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter barber shop name'**
+  String get enterBarberShopName;
+
+  /// No description provided for @shopNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop name is required.'**
+  String get shopNameRequired;
+
+  /// No description provided for @address.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get address;
+
+  /// No description provided for @userSessionNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'User session is not available.'**
+  String get userSessionNotAvailable;
+
+  /// No description provided for @onlyOwnerCanCreateBarberShop.
+  ///
+  /// In en, this message translates to:
+  /// **'Only an owner can create a barber shop.'**
+  String get onlyOwnerCanCreateBarberShop;
+
+  /// No description provided for @barberShopCreatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Barber shop created successfully.'**
+  String get barberShopCreatedSuccessfully;
+
+  /// No description provided for @noAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account?'**
+  String get noAccount;
+
+  /// No description provided for @createAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get createAccount;
+
+  /// No description provided for @hasAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get hasAccount;
+
+  /// No description provided for @signIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get signIn;
+
+  /// No description provided for @otpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter verification code'**
+  String get otpTitle;
+
+  /// No description provided for @otpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code we sent to'**
+  String get otpSubtitle;
+
+  /// No description provided for @otpResendAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'You can resend the code now'**
+  String get otpResendAvailable;
+
+  /// No description provided for @otpResendIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code in'**
+  String get otpResendIn;
+
+  /// No description provided for @barberIdCannotBeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Barber ID cannot be empty.'**
+  String get barberIdCannotBeEmpty;
+
+  /// No description provided for @userIdCannotBeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'User ID cannot be empty.'**
+  String get userIdCannotBeEmpty;
+
+  /// No description provided for @barberShopIdCannotBeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Barber shop ID cannot be empty.'**
+  String get barberShopIdCannotBeEmpty;
+
+  /// No description provided for @barberNameCannotBeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Barber name cannot be empty.'**
+  String get barberNameCannotBeEmpty;
+
+  /// No description provided for @barberUserNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Barber user data could not be found.'**
+  String get barberUserNotFound;
+
+  /// No description provided for @selectedUserIsNotBarber.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected user is not a barber.'**
+  String get selectedUserIsNotBarber;
+
+  /// No description provided for @barberAssignedToAnotherShop.
+  ///
+  /// In en, this message translates to:
+  /// **'This barber is assigned to another shop.'**
+  String get barberAssignedToAnotherShop;
+
+  /// No description provided for @barberAlreadyAssignedToShop.
+  ///
+  /// In en, this message translates to:
+  /// **'This barber is already assigned to this shop.'**
+  String get barberAlreadyAssignedToShop;
+
+  /// No description provided for @barberNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Barber not found.'**
+  String get barberNotFound;
+
+  /// No description provided for @barberUserIdMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Barber user ID is missing.'**
+  String get barberUserIdMissing;
+
+  /// No description provided for @barberShopIdMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Barber shop ID is missing.'**
+  String get barberShopIdMissing;
+
+  /// No description provided for @barberProfileNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Barber profile not found.'**
+  String get barberProfileNotFound;
+
+  /// No description provided for @unknownError.
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred.'**
+  String get unknownError;
+
+  /// No description provided for @barberDashboardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Barber Dashboard'**
+  String get barberDashboardTitle;
+
+  /// No description provided for @barberAccountNotAssignedToShop.
+  ///
+  /// In en, this message translates to:
+  /// **'Your barber account is not assigned to a shop.'**
+  String get barberAccountNotAssignedToShop;
+
+  /// No description provided for @shopUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop unavailable'**
+  String get shopUnavailable;
+
+  /// No description provided for @barberWorkspaceUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Your barber workspace is currently unavailable. Please make sure your shop is active and your account is assigned to it.'**
+  String get barberWorkspaceUnavailable;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get tryAgain;
 }
 
 class _AppLocalizationsDelegate

@@ -697,4 +697,189 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noBarberUsersAvailable => 'No barber users are available.';
+
+  @override
+  String get appointments => 'Appointments';
+
+  @override
+  String get availability => 'Availability';
+
+  @override
+  String get barberDashboard => 'Barber Dashboard';
+
+  @override
+  String get noAppointmentsForDate => 'No appointments for this date';
+
+  @override
+  String get noAppointmentsForDateMessage =>
+      'New appointments for the selected date will appear here.';
+
+  @override
+  String get noWorkingDays => 'No working days yet';
+
+  @override
+  String get noWorkingDaysHint =>
+      'Turn on the days you work and set your hours to start receiving bookings.';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get markAllAsRead => 'Mark all as read';
+
+  @override
+  String get noNotifications => 'No notifications';
+
+  @override
+  String get noNotificationsMessage =>
+      'Alerts about your bookings and schedule will appear here.';
+
+  @override
+  String get notificationsLoadError => 'Unable to load notifications';
+
+  @override
+  String unreadNotifications(int count) {
+    return '$count unread';
+  }
+
+  @override
+  String get bookNextCut => 'Book your next cut';
+
+  @override
+  String get searchServices => 'Search services';
+
+  @override
+  String get seeAll => 'See all';
+
+  @override
+  String get viewTeam => 'View team';
+
+  @override
+  String get topBarbers => 'Top barbers';
+
+  @override
+  String get noServicesFound => 'No services match your search.';
+
+  @override
+  String get categoryAll => 'All';
+
+  @override
+  String get categoryHaircut => 'Haircut';
+
+  @override
+  String get categoryBeard => 'Beard';
+
+  @override
+  String get categoryShave => 'Shave';
+
+  @override
+  String get categoryPackages => 'Packages';
+
+  @override
+  String get createBarberShop => 'Create Barber Shop';
+
+  @override
+  String get shopName => 'Shop name';
+
+  @override
+  String get enterBarberShopName => 'Enter barber shop name';
+
+  @override
+  String get shopNameRequired => 'Shop name is required.';
+
+  @override
+  String get address => 'Address';
+
+  @override
+  String get userSessionNotAvailable => 'User session is not available.';
+
+  @override
+  String get onlyOwnerCanCreateBarberShop =>
+      'Only an owner can create a barber shop.';
+
+  @override
+  String get barberShopCreatedSuccessfully =>
+      'Barber shop created successfully.';
+
+  @override
+  String get noAccount => 'Don\'t have an account?';
+
+  @override
+  String get createAccount => 'Create account';
+
+  @override
+  String get hasAccount => 'Already have an account?';
+
+  @override
+  String get signIn => 'Sign in';
+
+  @override
+  String get otpTitle => 'Enter verification code';
+
+  @override
+  String get otpSubtitle => 'Enter the 6-digit code we sent to';
+
+  @override
+  String get otpResendAvailable => 'You can resend the code now';
+
+  @override
+  String get otpResendIn => 'Resend code in';
+
+  @override
+  String get barberIdCannotBeEmpty => 'Barber ID cannot be empty.';
+
+  @override
+  String get userIdCannotBeEmpty => 'User ID cannot be empty.';
+
+  @override
+  String get barberShopIdCannotBeEmpty => 'Barber shop ID cannot be empty.';
+
+  @override
+  String get barberNameCannotBeEmpty => 'Barber name cannot be empty.';
+
+  @override
+  String get barberUserNotFound => 'Barber user data could not be found.';
+
+  @override
+  String get selectedUserIsNotBarber => 'The selected user is not a barber.';
+
+  @override
+  String get barberAssignedToAnotherShop =>
+      'This barber is assigned to another shop.';
+
+  @override
+  String get barberAlreadyAssignedToShop =>
+      'This barber is already assigned to this shop.';
+
+  @override
+  String get barberNotFound => 'Barber not found.';
+
+  @override
+  String get barberUserIdMissing => 'Barber user ID is missing.';
+
+  @override
+  String get barberShopIdMissing => 'Barber shop ID is missing.';
+
+  @override
+  String get barberProfileNotFound => 'Barber profile not found.';
+
+  @override
+  String get unknownError => 'An unexpected error occurred.';
+
+  @override
+  String get barberDashboardTitle => 'Barber Dashboard';
+
+  @override
+  String get barberAccountNotAssignedToShop =>
+      'Your barber account is not assigned to a shop.';
+
+  @override
+  String get shopUnavailable => 'Shop unavailable';
+
+  @override
+  String get barberWorkspaceUnavailable =>
+      'Your barber workspace is currently unavailable. Please make sure your shop is active and your account is assigned to it.';
+
+  @override
+  String get tryAgain => 'Try Again';
 }

@@ -165,9 +165,12 @@ class _OwnerServicesView extends StatelessWidget {
                   return Card(
                     child: ListTile(
                       title: Text(service.name),
-                      subtitle: Text(
-                        '${service.durationMinutes} min | '
-                        '${service.price.toStringAsFixed(2)} EGP',
+                      subtitle: Row(
+                        children: [
+                          Text('${service.price.toStringAsFixed(2)} EGP'),
+                          const SizedBox(width: 8),
+                          Text('• ${service.durationMinutes} min'),
+                        ],
                       ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -301,15 +304,18 @@ class _ServiceFormDialogState extends State<_ServiceFormDialog> {
               controller: _nameController,
               decoration: InputDecoration(labelText: loc.name),
             ),
+            SizedBox(height: 8),
             TextField(
               controller: _descriptionController,
               decoration: InputDecoration(labelText: loc.description),
             ),
+            SizedBox(height: 8),
             TextField(
               controller: _durationController,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(labelText: loc.durationMinutes),
             ),
+            SizedBox(height: 8),
             TextField(
               controller: _priceController,
               keyboardType: const TextInputType.numberWithOptions(

@@ -15,6 +15,37 @@ class OwnerScheduleBarbersPage extends StatelessWidget {
 
   final String barberShopId;
 
+  String _barberErrorMessage(BarberErrorCode code, AppLocalizations loc) {
+    switch (code) {
+      case BarberErrorCode.barberIdEmpty:
+        return loc.barberIdCannotBeEmpty;
+      case BarberErrorCode.userIdEmpty:
+        return loc.userIdCannotBeEmpty;
+      case BarberErrorCode.shopIdEmpty:
+        return loc.barberShopIdCannotBeEmpty;
+      case BarberErrorCode.nameEmpty:
+        return loc.barberNameCannotBeEmpty;
+      case BarberErrorCode.userNotFound:
+        return loc.barberUserNotFound;
+      case BarberErrorCode.userNotBarber:
+        return loc.selectedUserIsNotBarber;
+      case BarberErrorCode.assignedAnotherShop:
+        return loc.barberAssignedToAnotherShop;
+      case BarberErrorCode.assignedThisShop:
+        return loc.barberAlreadyAssignedToShop;
+      case BarberErrorCode.barberNotFound:
+        return loc.barberNotFound;
+      case BarberErrorCode.barberUserIdMissing:
+        return loc.barberUserIdMissing;
+      case BarberErrorCode.barberShopIdMissing:
+        return loc.barberShopIdMissing;
+      case BarberErrorCode.profileNotFound:
+        return loc.barberProfileNotFound;
+      case BarberErrorCode.unknown:
+        return loc.unknownError;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -50,7 +81,10 @@ class OwnerScheduleBarbersPage extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(state.message),
+                          Text(
+                            _barberErrorMessage(state.code, loc),
+                            textAlign: TextAlign.center,
+                          ),
                           const SizedBox(height: 12),
                           ElevatedButton(
                             onPressed: () => context

@@ -1,31 +1,51 @@
 part of '../barber_dashboard_page.dart';
 
-class _BarberDashboardScaffold extends StatelessWidget {
-  const _BarberDashboardScaffold({
+/// Dashboard section of the barber workspace.
+///
+/// Keeps the existing booking loading and status handling of the barber
+/// dashboard; only the standalone navigation chrome is replaced by the
+/// workspace shell (logout now lives in the Settings section).
+class BarberDashboardTab extends StatelessWidget {
+  const BarberDashboardTab({
+    super.key,
     required this.barberId,
     required this.barberName,
     required this.shop,
-    required this.onLogout,
   });
 
   final String barberId;
   final String barberName;
   final BarberShop shop;
-  final Future<void> Function(BuildContext context) onLogout;
+
+  void _openNotifications(BuildContext context) {
+    final authState = context.read<AuthCubit>().state;
+
+    if (authState is! AuthAuthenticated) {
+      return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => NotificationsPage(recipientId: authState.user.id),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return BlocProvider(
       create: (_) => getIt<BookingCubit>()
         ..loadBarberBookingsForDate(barberId: barberId, date: DateTime.now()),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Barber Dashboard'),
+          title: Text(loc.barberDashboard),
           actions: [
             IconButton(
-              onPressed: () => onLogout(context),
-              icon: const Icon(Icons.logout),
-              tooltip: 'Logout',
+              onPressed: () => _openNotifications(context),
+              icon: const Icon(Icons.notifications_outlined),
+              tooltip: loc.notifications,
             ),
           ],
         ),
@@ -59,7 +79,7 @@ class _BarberDashboardScaffold extends StatelessWidget {
                   padding: const EdgeInsets.all(24),
                   children: [
                     const SizedBox(height: 100),
-                    const Icon(Icons.error_outline, size: 48),
+                    const Icon(Icons.error_outline_rounded, size: 48),
                     const SizedBox(height: 16),
                     Text(state.message, textAlign: TextAlign.center),
                     const SizedBox(height: 16),

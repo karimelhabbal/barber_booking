@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:barber_booking/core/l10n/app_localizations.dart';
 import 'package:barber_booking/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:barber_booking/features/settings/settings_cubit.dart';
-import 'package:barber_booking/core/theme/app_theme.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -19,7 +18,7 @@ class SettingsPage extends StatelessWidget {
             : 'en';
 
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           appBar: AppBar(title: Text(loc.settings)),
           body: ListView(
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
@@ -59,6 +58,7 @@ class SettingsPage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Card(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 child: ListTile(
                   leading: const Icon(Icons.logout_outlined),
                   title: Text(loc.logout),
@@ -87,6 +87,7 @@ class _SettingsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

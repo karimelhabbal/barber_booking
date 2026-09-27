@@ -3,6 +3,26 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/barber_candidate_model.dart';
 import '../models/barber_model.dart';
 
+enum BarberDataSourceErrorCode {
+  barberIdEmpty,
+  userIdEmpty,
+  shopIdEmpty,
+  nameEmpty,
+  userNotFound,
+  userNotBarber,
+  assignedAnotherShop,
+  assignedThisShop,
+  barberNotFound,
+  barberUserIdMissing,
+  barberShopIdMissing,
+}
+
+class BarberDataSourceException implements Exception {
+  const BarberDataSourceException(this.code);
+
+  final BarberDataSourceErrorCode code;
+}
+
 abstract interface class BarberRemoteDataSource {
   Future<BarberModel?> getBarber({required String barberId});
 
@@ -41,14 +61,14 @@ class BarberRemoteDataSourceImpl implements BarberRemoteDataSource {
     final trimmedBarberId = barberId.trim();
 
     if (trimmedBarberId.isEmpty) {
-      throw ArgumentError('Barber ID cannot be empty.');
+      throw const BarberDataSourceException(
+        BarberDataSourceErrorCode.barberIdEmpty,
+      );
     }
 
     final document = await _barbersCollection.doc(trimmedBarberId).get();
 
-    if (!document.exists) {
-      return null;
-    }
+    if (!document.exists) return null;
 
     return BarberModel.fromFirestore(document);
   }
@@ -60,7 +80,9 @@ class BarberRemoteDataSourceImpl implements BarberRemoteDataSource {
     final trimmedBarberShopId = barberShopId.trim();
 
     if (trimmedBarberShopId.isEmpty) {
-      throw ArgumentError('Barber shop ID cannot be empty.');
+      throw const BarberDataSourceException(
+        BarberDataSourceErrorCode.shopIdEmpty,
+      );
     }
 
     final snapshot = await _barbersCollection
@@ -84,20 +106,99 @@ class BarberRemoteDataSourceImpl implements BarberRemoteDataSource {
     final trimmedName = name.trim();
 
     if (trimmedUserId.isEmpty) {
-      throw ArgumentError('User ID cannot be empty.');
+      throw const BarberDataSourceException(
+        BarberDataSourceErrorCode.userIdEmpty,
+      );
     }
 
     if (trimmedBarberShopId.isEmpty) {
-      throw ArgumentError('Barber shop ID cannot be empty.');
+      throw const BarberDataSourceException(
+        BarberDataSourceErrorCode.shopIdEmpty,
+      );
     }
 
     if (trimmedName.isEmpty) {
-      throw ArgumentError('Barber name cannot be empty.');
+      throw const BarberDataSourceException(
+        BarberDataSourceErrorCode.nameEmpty,
+      );
+    }
+
+    final userReference = _firestore.collection('users').doc(trimmedUserId);
+
+    final userSnapshot = await userReference.get();
+
+    if (!userSnapshot.exists) {
+      throw const BarberDataSourceException(
+        BarberDataSourceErrorCode.userNotFound,
+      );
+    }
+
+    final userData = userSnapshot.data();
+
+    if (userData?['role'] != 'barber') {
+      throw const BarberDataSourceException(
+        BarberDataSourceErrorCode.userNotBarber,
+      );
+    }
+
+    final currentShopId = (userData?['barberShopId'] as String?)?.trim();
+
+    if (currentShopId != null &&
+        currentShopId.isNotEmpty &&
+        currentShopId != trimmedBarberShopId) {
+      throw const BarberDataSourceException(
+        BarberDataSourceErrorCode.assignedAnotherShop,
+      );
+    }
+
+    final existingBarber = await getBarberByUserAndShop(
+      userId: trimmedUserId,
+      barberShopId: trimmedBarberShopId,
+    );
+
+    if (existingBarber != null && existingBarber.isActive) {
+      throw const BarberDataSourceException(
+        BarberDataSourceErrorCode.assignedThisShop,
+      );
+    }
+
+    final now = DateTime.now();
+    final batch = _firestore.batch();
+
+    if (existingBarber != null) {
+      final barberReference = _barbersCollection.doc(existingBarber.id);
+
+      batch.set(barberReference, {
+        'userId': trimmedUserId,
+        'barberShopId': trimmedBarberShopId,
+        'name': trimmedName,
+        'phone': phone?.trim(),
+        'imageUrl': imageUrl?.trim(),
+        'isActive': true,
+        'createdAt': Timestamp.fromDate(existingBarber.createdAt),
+        'updatedAt': Timestamp.fromDate(now),
+      }, SetOptions(merge: true));
+
+      if (currentShopId == null || currentShopId.isEmpty) {
+        batch.update(userReference, {'barberShopId': trimmedBarberShopId});
+      }
+
+      await batch.commit();
+
+      return BarberModel(
+        id: existingBarber.id,
+        userId: trimmedUserId,
+        barberShopId: trimmedBarberShopId,
+        name: trimmedName,
+        phone: phone?.trim(),
+        imageUrl: imageUrl?.trim(),
+        isActive: true,
+        createdAt: existingBarber.createdAt,
+        updatedAt: now,
+      );
     }
 
     final reference = _barbersCollection.doc();
-
-    final now = DateTime.now();
 
     final barber = BarberModel(
       id: reference.id,
@@ -111,7 +212,13 @@ class BarberRemoteDataSourceImpl implements BarberRemoteDataSource {
       updatedAt: now,
     );
 
-    await reference.set(barber.toFirestore());
+    batch.set(reference, barber.toFirestore());
+
+    if (currentShopId == null || currentShopId.isEmpty) {
+      batch.update(userReference, {'barberShopId': trimmedBarberShopId});
+    }
+
+    await batch.commit();
 
     return barber;
   }
@@ -128,13 +235,64 @@ class BarberRemoteDataSourceImpl implements BarberRemoteDataSource {
     final trimmedBarberId = barberId.trim();
 
     if (trimmedBarberId.isEmpty) {
-      throw ArgumentError('Barber ID cannot be empty.');
+      throw const BarberDataSourceException(
+        BarberDataSourceErrorCode.barberIdEmpty,
+      );
     }
 
-    await _barbersCollection.doc(trimmedBarberId).set({
+    final barberReference = _barbersCollection.doc(trimmedBarberId);
+
+    final barberSnapshot = await barberReference.get();
+
+    if (!barberSnapshot.exists) {
+      throw const BarberDataSourceException(
+        BarberDataSourceErrorCode.barberNotFound,
+      );
+    }
+
+    final barberData = barberSnapshot.data();
+
+    final userId = (barberData?['userId'] as String?)?.trim();
+    final barberShopId = (barberData?['barberShopId'] as String?)?.trim();
+
+    if (userId == null || userId.isEmpty) {
+      throw const BarberDataSourceException(
+        BarberDataSourceErrorCode.barberUserIdMissing,
+      );
+    }
+
+    if (barberShopId == null || barberShopId.isEmpty) {
+      throw const BarberDataSourceException(
+        BarberDataSourceErrorCode.barberShopIdMissing,
+      );
+    }
+
+    final userReference = _firestore.collection('users').doc(userId);
+
+    final userSnapshot = await userReference.get();
+
+    if (!userSnapshot.exists) {
+      throw const BarberDataSourceException(
+        BarberDataSourceErrorCode.userNotFound,
+      );
+    }
+
+    final userData = userSnapshot.data();
+
+    final currentUserShopId = (userData?['barberShopId'] as String?)?.trim();
+
+    final batch = _firestore.batch();
+
+    batch.set(barberReference, {
       'isActive': false,
       'updatedAt': Timestamp.fromDate(DateTime.now()),
     }, SetOptions(merge: true));
+
+    if (currentUserShopId == barberShopId) {
+      batch.update(userReference, {'barberShopId': null});
+    }
+
+    await batch.commit();
   }
 
   @override
@@ -142,6 +300,7 @@ class BarberRemoteDataSourceImpl implements BarberRemoteDataSource {
     final snapshot = await _firestore
         .collection('users')
         .where('role', isEqualTo: 'barber')
+        .where('barberShopId', isEqualTo: null)
         .get();
 
     return snapshot.docs.map(BarberCandidateModel.fromFirestore).toList();
@@ -156,11 +315,15 @@ class BarberRemoteDataSourceImpl implements BarberRemoteDataSource {
     final trimmedBarberShopId = barberShopId.trim();
 
     if (trimmedUserId.isEmpty) {
-      throw ArgumentError('User ID cannot be empty.');
+      throw const BarberDataSourceException(
+        BarberDataSourceErrorCode.userIdEmpty,
+      );
     }
 
     if (trimmedBarberShopId.isEmpty) {
-      throw ArgumentError('Barber shop ID cannot be empty.');
+      throw const BarberDataSourceException(
+        BarberDataSourceErrorCode.shopIdEmpty,
+      );
     }
 
     final snapshot = await _barbersCollection
