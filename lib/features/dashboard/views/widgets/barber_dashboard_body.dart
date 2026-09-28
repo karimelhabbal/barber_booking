@@ -19,41 +19,57 @@ class _BarberDashboardBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+
     final activeBookings =
         bookings
             .where((booking) => booking.status != BookingStatus.cancelled)
             .toList()
-          ..sort(
-            (a, b) =>
-                _timeToMinutes(a.startTime)
-                    .compareTo(_timeToMinutes(b.startTime)),
-          );
+          ..sort(_compareBookings);
 
-    final pendingCount = activeBookings
+    final today = DateTime.now();
+    final todayStart = DateTime(today.year, today.month, today.day);
+    final tomorrowStart = todayStart.add(const Duration(days: 1));
+
+    final todayBookings = activeBookings.where((booking) {
+      return _isSameDay(booking.bookingDate, todayStart);
+    }).toList();
+
+    final pendingCount = todayBookings
         .where((booking) => booking.status == BookingStatus.pending)
         .length;
 
-    final confirmedCount = activeBookings
+    final confirmedCount = todayBookings
         .where((booking) => booking.status == BookingStatus.confirmed)
         .length;
 
-    final completedCount = activeBookings
+    final completedCount = todayBookings
         .where((booking) => booking.status == BookingStatus.completed)
         .length;
 
-    final now = TimeOfDay.now();
-    final nowMinutes = (now.hour * 60) + now.minute;
+    final now = DateTime.now();
 
     final upcomingBookings = activeBookings.where((booking) {
-      return _timeToMinutes(booking.startTime) >= nowMinutes &&
-          booking.status != BookingStatus.completed;
+      if (booking.status == BookingStatus.completed) {
+        return false;
+      }
+
+      final bookingDate = DateTime(
+        booking.bookingDate.year,
+        booking.bookingDate.month,
+        booking.bookingDate.day,
+      );
+
+      final startMinutes = _timeToMinutes(booking.startTime);
+
+      final bookingStart = bookingDate.add(Duration(minutes: startMinutes));
+
+      return !bookingStart.isBefore(now);
     }).toList();
 
     return RefreshIndicator(
       onRefresh: () {
-        return context.read<BookingCubit>().loadBarberBookingsForDate(
+        return context.read<BookingCubit>().loadBarberBookings(
           barberId: barberId,
-          date: DateTime.now(),
         );
       },
       child: SafeArea(
@@ -71,7 +87,7 @@ class _BarberDashboardBody extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             _SummaryGrid(
-              total: activeBookings.length,
+              total: todayBookings.length,
               pending: pendingCount,
               confirmed: confirmedCount,
               completed: completedCount,
@@ -138,6 +154,34 @@ class _BarberDashboardBody extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  static bool _isSameDay(DateTime value, DateTime day) {
+    return value.year == day.year &&
+        value.month == day.month &&
+        value.day == day.day;
+  }
+
+  static int _compareBookings(Booking a, Booking b) {
+    final aDate = DateTime(
+      a.bookingDate.year,
+      a.bookingDate.month,
+      a.bookingDate.day,
+    );
+
+    final bDate = DateTime(
+      b.bookingDate.year,
+      b.bookingDate.month,
+      b.bookingDate.day,
+    );
+
+    final dateComparison = aDate.compareTo(bDate);
+
+    if (dateComparison != 0) {
+      return dateComparison;
+    }
+
+    return _timeToMinutes(a.startTime).compareTo(_timeToMinutes(b.startTime));
   }
 
   static int _timeToMinutes(String value) {

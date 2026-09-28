@@ -435,5 +435,15 @@
       "type": "String"
     }
   }
+},
+"tomorrow": "غدًا",
+"dayAfterTomorrow": "بعد غد",
+"nextWeekday": "{weekday} القادم",
+"@nextWeekday": {
+  "placeholders": {
+    "weekday": {
+      "type": "String"
+    }
+  }
 }
 }

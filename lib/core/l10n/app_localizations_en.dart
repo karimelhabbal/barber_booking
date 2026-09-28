@@ -915,4 +915,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String welcomeBarber(String name) {
     return 'Welcome, $name';
   }
+
+  @override
+  String get tomorrow => 'Tomorrow';
+
+  @override
+  String get dayAfterTomorrow => 'Day after tomorrow';
+
+  @override
+  String nextWeekday(String weekday) {
+    return 'Next $weekday';
+  }
 }

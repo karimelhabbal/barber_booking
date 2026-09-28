@@ -402,6 +402,16 @@
       "type": "String"
     }
   }
+},
+"tomorrow": "Tomorrow",
+"dayAfterTomorrow": "Day after tomorrow",
+"nextWeekday": "Next {weekday}",
+"@nextWeekday": {
+  "placeholders": {
+    "weekday": {
+      "type": "String"
+    }
+  }
 }
 
 }

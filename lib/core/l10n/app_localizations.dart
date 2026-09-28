@@ -1819,6 +1819,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Welcome, {name}'**
   String welcomeBarber(String name);
+
+  /// No description provided for @tomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get tomorrow;
+
+  /// No description provided for @dayAfterTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Day after tomorrow'**
+  String get dayAfterTomorrow;
+
+  /// No description provided for @nextWeekday.
+  ///
+  /// In en, this message translates to:
+  /// **'Next {weekday}'**
+  String nextWeekday(String weekday);
 }
 
 class _AppLocalizationsDelegate

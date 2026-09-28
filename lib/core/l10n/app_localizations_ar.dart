@@ -900,4 +900,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String welcomeBarber(String name) {
     return 'مرحبًا، $name';
   }
+
+  @override
+  String get tomorrow => 'غدًا';
+
+  @override
+  String get dayAfterTomorrow => 'بعد غد';
+
+  @override
+  String nextWeekday(String weekday) {
+    return '$weekday القادم';
+  }
 }

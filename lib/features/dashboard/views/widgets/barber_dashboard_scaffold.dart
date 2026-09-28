@@ -36,8 +36,8 @@ class BarberDashboardTab extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
 
     return BlocProvider(
-      create: (_) => getIt<BookingCubit>()
-        ..loadBarberBookingsForDate(barberId: barberId, date: DateTime.now()),
+      create: (_) =>
+          getIt<BookingCubit>()..loadBarberBookings(barberId: barberId),
       child: Scaffold(
         appBar: AppBar(
           title: Text(loc.barberDashboard),
@@ -52,9 +52,8 @@ class BarberDashboardTab extends StatelessWidget {
         body: BlocConsumer<BookingCubit, BookingState>(
           listener: (context, state) {
             if (state is BookingCancelled || state is BookingStatusUpdated) {
-              context.read<BookingCubit>().loadBarberBookingsForDate(
+              context.read<BookingCubit>().loadBarberBookings(
                 barberId: barberId,
-                date: DateTime.now(),
               );
             }
           },
@@ -69,9 +68,8 @@ class BarberDashboardTab extends StatelessWidget {
             if (state is BookingError) {
               return RefreshIndicator(
                 onRefresh: () {
-                  return context.read<BookingCubit>().loadBarberBookingsForDate(
+                  return context.read<BookingCubit>().loadBarberBookings(
                     barberId: barberId,
-                    date: DateTime.now(),
                   );
                 },
                 child: ListView(

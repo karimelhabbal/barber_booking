@@ -17,6 +17,8 @@ class _BookingCard extends StatelessWidget {
         booking.status == BookingStatus.pending ||
         booking.status == BookingStatus.confirmed;
 
+    final dateLabel = _bookingDateLabel(context, booking.bookingDate, loc);
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -109,9 +111,10 @@ class _BookingCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${booking.startTime} • ${booking.endTime}',
+                    '$dateLabel · ${booking.startTime} – ${booking.endTime}',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -123,6 +126,42 @@ class _BookingCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _bookingDateLabel(
+    BuildContext context,
+    DateTime bookingDate,
+    AppLocalizations loc,
+  ) {
+    final now = DateTime.now();
+
+    final today = DateTime(now.year, now.month, now.day);
+
+    final date = DateTime(bookingDate.year, bookingDate.month, bookingDate.day);
+
+    final difference = date.difference(today).inDays;
+
+    if (difference == 0) {
+      return loc.today;
+    }
+
+    if (difference == 1) {
+      return loc.tomorrow;
+    }
+
+    if (difference == 2) {
+      return loc.dayAfterTomorrow;
+    }
+
+    if (difference > 2 && difference <= 7) {
+      final locale = Localizations.localeOf(context).toString();
+
+      final weekday = DateFormat('EEEE', locale).format(date);
+
+      return loc.nextWeekday(weekday);
+    }
+
+    return MaterialLocalizations.of(context).formatMediumDate(date);
   }
 
   String _statusActionText(BookingStatus status, AppLocalizations loc) {
