@@ -83,10 +83,7 @@ class BarberDashboardTab extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text(state.message, textAlign: TextAlign.center),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Pull down to try again.',
-                      textAlign: TextAlign.center,
-                    ),
+                    Text(loc.pullDownToTryAgain, textAlign: TextAlign.center),
                   ],
                 ),
               );

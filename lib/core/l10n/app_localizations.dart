@@ -467,7 +467,7 @@ abstract class AppLocalizations {
   /// No description provided for @noShow.
   ///
   /// In en, this message translates to:
-  /// **'No show'**
+  /// **'No-show'**
   String get noShow;
 
   /// No description provided for @loadingBarbers.
@@ -641,7 +641,7 @@ abstract class AppLocalizations {
   /// No description provided for @noUpcomingBookings.
   ///
   /// In en, this message translates to:
-  /// **'No upcoming bookings.'**
+  /// **'No upcoming bookings'**
   String get noUpcomingBookings;
 
   /// No description provided for @noUpcomingAppointments.
@@ -1759,6 +1759,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Try Again'**
   String get tryAgain;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @upcomingBookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming bookings'**
+  String get upcomingBookings;
+
+  /// No description provided for @noRemainingAppointmentsToday.
+  ///
+  /// In en, this message translates to:
+  /// **'You have no remaining appointments for today.'**
+  String get noRemainingAppointmentsToday;
+
+  /// No description provided for @pullDownToTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull down to try again.'**
+  String get pullDownToTryAgain;
+
+  /// No description provided for @bookingActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions'**
+  String get bookingActions;
+
+  /// No description provided for @rejectCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject / cancel'**
+  String get rejectCancel;
+
+  /// No description provided for @complete.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get complete;
+
+  /// No description provided for @markNoShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark no-show'**
+  String get markNoShow;
+
+  /// No description provided for @total.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get total;
+
+  /// Welcome message shown to the barber on the dashboard
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome, {name}'**
+  String welcomeBarber(String name);
 }
 
 class _AppLocalizationsDelegate

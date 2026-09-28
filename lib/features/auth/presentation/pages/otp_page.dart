@@ -101,8 +101,6 @@ class _OtpPageState extends State<OtpPage> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
 
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {

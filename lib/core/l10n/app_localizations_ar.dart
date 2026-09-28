@@ -194,7 +194,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get completed => 'مكتمل';
 
   @override
-  String get cancelled => 'ملغى';
+  String get cancelled => 'ملغي';
 
   @override
   String get noShow => 'لم يحضر';
@@ -284,7 +284,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get upcoming => 'القادمة';
 
   @override
-  String get noUpcomingBookings => 'لا توجد حجوزات قادمة.';
+  String get noUpcomingBookings => 'لا توجد حجوزات قادمة';
 
   @override
   String get noUpcomingAppointments => 'لا توجد مواعيد قادمة حاليًا.';
@@ -868,4 +868,36 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get tryAgain => 'حاول مرة أخرى';
+
+  @override
+  String get today => 'اليوم';
+
+  @override
+  String get upcomingBookings => 'الحجوزات القادمة';
+
+  @override
+  String get noRemainingAppointmentsToday => 'لا توجد مواعيد متبقية لك اليوم.';
+
+  @override
+  String get pullDownToTryAgain => 'اسحب للأسفل للمحاولة مرة أخرى.';
+
+  @override
+  String get bookingActions => 'الإجراءات';
+
+  @override
+  String get rejectCancel => 'رفض / إلغاء';
+
+  @override
+  String get complete => 'إكمال';
+
+  @override
+  String get markNoShow => 'تسجيل عدم الحضور';
+
+  @override
+  String get total => 'الإجمالي';
+
+  @override
+  String welcomeBarber(String name) {
+    return 'مرحبًا، $name';
+  }
 }

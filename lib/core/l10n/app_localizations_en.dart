@@ -203,7 +203,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancelled => 'Cancelled';
 
   @override
-  String get noShow => 'No show';
+  String get noShow => 'No-show';
 
   @override
   String get loadingBarbers => 'Loading barbers...';
@@ -296,7 +296,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get upcoming => 'Upcoming';
 
   @override
-  String get noUpcomingBookings => 'No upcoming bookings.';
+  String get noUpcomingBookings => 'No upcoming bookings';
 
   @override
   String get noUpcomingAppointments =>
@@ -882,4 +882,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tryAgain => 'Try Again';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get upcomingBookings => 'Upcoming bookings';
+
+  @override
+  String get noRemainingAppointmentsToday =>
+      'You have no remaining appointments for today.';
+
+  @override
+  String get pullDownToTryAgain => 'Pull down to try again.';
+
+  @override
+  String get bookingActions => 'Actions';
+
+  @override
+  String get rejectCancel => 'Reject / cancel';
+
+  @override
+  String get complete => 'Complete';
+
+  @override
+  String get markNoShow => 'Mark no-show';
+
+  @override
+  String get total => 'Total';
+
+  @override
+  String welcomeBarber(String name) {
+    return 'Welcome, $name';
+  }
 }

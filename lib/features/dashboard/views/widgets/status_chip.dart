@@ -8,24 +8,25 @@ class _StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     String text;
 
     switch (status) {
       case BookingStatus.pending:
-        text = 'Pending';
+        text = loc.pending;
         break;
       case BookingStatus.confirmed:
-        text = 'Confirmed';
+        text = loc.confirmed;
         break;
       case BookingStatus.completed:
-        text = 'Completed';
+        text = loc.completed;
         break;
       case BookingStatus.cancelled:
-        text = 'Cancelled';
+        text = loc.cancelled;
         break;
       case BookingStatus.noShow:
-        text = 'No-show';
+        text = loc.noShow;
         break;
     }
 

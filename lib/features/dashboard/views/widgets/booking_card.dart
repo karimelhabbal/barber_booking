@@ -11,6 +11,7 @@ class _BookingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final loc = AppLocalizations.of(context)!;
 
     final canChangeStatus =
         booking.status == BookingStatus.pending ||
@@ -69,7 +70,7 @@ class _BookingCard extends StatelessWidget {
                       ),
                       if (canChangeStatus)
                         PopupMenuButton<BookingStatus>(
-                          tooltip: 'Actions',
+                          tooltip: loc.bookingActions,
                           padding: EdgeInsets.zero,
                           icon: const Icon(Icons.more_vert_rounded),
                           onSelected: (status) {
@@ -91,7 +92,7 @@ class _BookingCard extends StatelessWidget {
                                 .map(
                                   (status) => PopupMenuItem<BookingStatus>(
                                     value: status,
-                                    child: Text(_statusActionText(status)),
+                                    child: Text(_statusActionText(status, loc)),
                                   ),
                                 )
                                 .toList();
@@ -124,18 +125,18 @@ class _BookingCard extends StatelessWidget {
     );
   }
 
-  String _statusActionText(BookingStatus status) {
+  String _statusActionText(BookingStatus status, AppLocalizations loc) {
     switch (status) {
       case BookingStatus.confirmed:
-        return 'Confirm';
+        return loc.confirm;
       case BookingStatus.cancelled:
-        return 'Reject / cancel';
+        return loc.rejectCancel;
       case BookingStatus.completed:
-        return 'Complete';
+        return loc.complete;
       case BookingStatus.noShow:
-        return 'Mark no-show';
+        return loc.markNoShow;
       case BookingStatus.pending:
-        return 'Pending';
+        return loc.pending;
     }
   }
 }

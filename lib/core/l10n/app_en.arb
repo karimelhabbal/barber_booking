@@ -377,7 +377,32 @@
 "barberAccountNotAssignedToShop": "Your barber account is not assigned to a shop.",
 "shopUnavailable": "Shop unavailable",
 "barberWorkspaceUnavailable": "Your barber workspace is currently unavailable. Please make sure your shop is active and your account is assigned to it.",
-"tryAgain": "Try Again"
+"tryAgain": "Try Again",
+"today": "Today",
+"upcomingBookings": "Upcoming bookings",
+"noUpcomingBookings": "No upcoming bookings",
+"noRemainingAppointmentsToday": "You have no remaining appointments for today.",
+"pullDownToTryAgain": "Pull down to try again.",
+"bookingActions": "Actions",
+"confirm": "Confirm",
+"rejectCancel": "Reject / cancel",
+"complete": "Complete",
+"markNoShow": "Mark no-show",
+"pending": "Pending",
+"confirmed": "Confirmed",
+"completed": "Completed",
+"cancelled": "Cancelled",
+"noShow": "No-show",
+"total": "Total",
+"welcomeBarber": "Welcome, {name}",
+"@welcomeBarber": {
+  "description": "Welcome message shown to the barber on the dashboard",
+  "placeholders": {
+    "name": {
+      "type": "String"
+    }
+  }
+}
 
 }
 

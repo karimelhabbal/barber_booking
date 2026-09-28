@@ -18,6 +18,7 @@ class _BarberDashboardBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final activeBookings =
         bookings
             .where((booking) => booking.status != BookingStatus.cancelled)
@@ -64,7 +65,7 @@ class _BarberDashboardBody extends StatelessWidget {
             _WelcomeCard(barberName: barberName, shopName: shop.name),
             const SizedBox(height: 24),
             Text(
-              'Today',
+              loc.today,
               style: Theme.of(context).textTheme.titleLarge
                   ?.copyWith(fontWeight: FontWeight.w700),
             ),
@@ -80,7 +81,7 @@ class _BarberDashboardBody extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Upcoming bookings',
+                    loc.upcomingBookings,
                     style: Theme.of(context).textTheme.titleLarge
                         ?.copyWith(fontWeight: FontWeight.w700),
                   ),
@@ -109,14 +110,14 @@ class _BarberDashboardBody extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
                       Text(
-                        'No upcoming bookings',
+                        loc.noUpcomingBookings,
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w700),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'You have no remaining appointments for today.',
+                        loc.noRemainingAppointmentsToday,
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,

@@ -410,5 +410,30 @@
 "barberAccountNotAssignedToShop": "حساب الحلاق الخاص بك غير مرتبط بمتجر.",
 "shopUnavailable": "المتجر غير متاح",
 "barberWorkspaceUnavailable": "مساحة عمل الحلاق الخاصة بك غير متاحة حاليًا. يرجى التأكد من أن المتجر نشط وأن حسابك مرتبط به.",
-"tryAgain": "حاول مرة أخرى"
+"tryAgain": "حاول مرة أخرى",
+"today": "اليوم",
+"upcomingBookings": "الحجوزات القادمة",
+"noUpcomingBookings": "لا توجد حجوزات قادمة",
+"noRemainingAppointmentsToday": "لا توجد مواعيد متبقية لك اليوم.",
+"pullDownToTryAgain": "اسحب للأسفل للمحاولة مرة أخرى.",
+"bookingActions": "الإجراءات",
+"confirm": "تأكيد",
+"rejectCancel": "رفض / إلغاء",
+"complete": "إكمال",
+"markNoShow": "تسجيل عدم الحضور",
+"pending": "قيد الانتظار",
+"confirmed": "مؤكد",
+"completed": "مكتمل",
+"cancelled": "ملغي",
+"noShow": "لم يحضر",
+"total": "الإجمالي",
+"welcomeBarber": "مرحبًا، {name}",
+"@welcomeBarber": {
+  "description": "رسالة ترحيب تظهر للحلاق في لوحة التحكم",
+  "placeholders": {
+    "name": {
+      "type": "String"
+    }
+  }
+}
 }

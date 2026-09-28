@@ -15,6 +15,8 @@ class _SummaryGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final isWide = constraints.maxWidth >= 520;
@@ -28,22 +30,22 @@ class _SummaryGrid extends StatelessWidget {
           childAspectRatio: isWide ? 1.45 : 1.55,
           children: [
             _SummaryCard(
-              title: 'Total',
+              title: loc.total,
               value: total,
               icon: Icons.calendar_today_rounded,
             ),
             _SummaryCard(
-              title: 'Pending',
+              title: loc.pending,
               value: pending,
               icon: Icons.schedule_rounded,
             ),
             _SummaryCard(
-              title: 'Confirmed',
+              title: loc.confirmed,
               value: confirmed,
               icon: Icons.check_circle_outline_rounded,
             ),
             _SummaryCard(
-              title: 'Completed',
+              title: loc.completed,
               value: completed,
               icon: Icons.done_all_rounded,
             ),
