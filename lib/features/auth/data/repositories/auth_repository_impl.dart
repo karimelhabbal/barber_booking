@@ -84,7 +84,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }) async {
     try {
       final firebaseUser = await _authRemoteDataSource.verifyOtp(code: code);
-
+      print('AUTH DEBUG: Firebase UID = ${firebaseUser.uid}');
+      print('AUTH DEBUG: Firebase phone = ${firebaseUser.phoneNumber}');
+      print('AUTH DEBUG: isRegistration = $isRegistration');
       if (isRegistration) {
         final registrationName = _pendingRegistrationName;
         final registrationPhone = _pendingRegistrationPhone;
@@ -101,6 +103,7 @@ class AuthRepositoryImpl implements AuthRepository {
           userId: firebaseUser.uid,
         );
 
+        print('AUTH DEBUG: Firestore user = $existingUser');
         if (existingUser != null) {
           _clearPendingRegistration();
 

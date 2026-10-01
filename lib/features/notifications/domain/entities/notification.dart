@@ -10,6 +10,7 @@ enum NotificationType {
   bookingRejected,
   bookingCancelled,
   bookingCompleted,
+  bookingNoShow,
   appointmentReminder,
   scheduleChanged,
   general,

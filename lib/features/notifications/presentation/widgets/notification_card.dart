@@ -101,9 +101,9 @@ class NotificationCard extends StatelessWidget {
                     ],
                     const SizedBox(height: 6),
                     Text(
-                      DateFormat.yMMMd()
-                          .add_Hm()
-                          .format(notification.createdAt.toLocal()),
+                      DateFormat.yMMMd().add_Hm().format(
+                        notification.createdAt.toLocal(),
+                      ),
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -130,6 +130,8 @@ class NotificationCard extends StatelessWidget {
         return Icons.event_busy_outlined;
       case NotificationType.bookingCompleted:
         return Icons.done_all_rounded;
+      case NotificationType.bookingNoShow:
+        return Icons.warning_amber_outlined;
       case NotificationType.appointmentReminder:
         return Icons.alarm_outlined;
       case NotificationType.scheduleChanged:

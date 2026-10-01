@@ -35,8 +35,8 @@ import '../../features/booking/domain/services/availability_service.dart';
 import '../../features/booking/domain/usecases/create_booking.dart';
 import '../../features/booking/domain/usecases/get_available_slots.dart';
 import '../../features/booking/presentation/cubit/booking_cubit.dart';
-
-import '../../features/notifications/data/repositories/in_memory_notification_repository.dart';
+import '../../features/notifications/data/datasources/notification_remote_data_source.dart';
+import '../../features/notifications/data/repositories/notification_repository_impl.dart';
 import '../../features/notifications/domain/repositories/notification_repository.dart';
 import '../../features/notifications/presentation/cubit/notifications_cubit.dart';
 
@@ -188,8 +188,15 @@ void configureDependencies() {
   // Notifications
   // ---------------------------------------------------------------------------
 
+  getIt.registerLazySingleton<NotificationRemoteDataSource>(
+    () =>
+        NotificationRemoteDataSourceImpl(firestore: getIt<FirebaseFirestore>()),
+  );
+
   getIt.registerLazySingleton<NotificationRepository>(
-    () => InMemoryNotificationRepository(),
+    () => NotificationRepositoryImpl(
+      remoteDataSource: getIt<NotificationRemoteDataSource>(),
+    ),
   );
 
   getIt.registerFactory<NotificationsCubit>(

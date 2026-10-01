@@ -160,6 +160,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         phoneNumber: normalizedPhone,
         forceResendingToken: forceResendingToken,
         verificationCompleted: (credential) async {
+          debugPrint('OTP DEBUG: verificationCompleted');
+          debugPrint(
+            'OTP DEBUG: credential verificationId=${credential.verificationId}',
+          );
+          debugPrint('OTP DEBUG: credential smsCode=${credential.smsCode}');
           if (requestId != _requestId) {
             return;
           }
@@ -194,6 +199,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           }
         },
         codeSent: (verificationId, resendToken) {
+          debugPrint('OTP DEBUG: codeSent');
+          debugPrint('OTP DEBUG: verificationId=$verificationId');
+          debugPrint('OTP DEBUG: resendToken=$resendToken');
           if (requestId != _requestId) {
             return;
           }
@@ -258,8 +266,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           verificationId: verificationId,
           smsCode: normalizedCode,
         );
+        debugPrint('OTP DEBUG: manual verify');
+        debugPrint('OTP DEBUG: code=$normalizedCode');
+        debugPrint('OTP DEBUG: verificationId=$verificationId');
 
         await _firebaseAuth.signInWithCredential(credential);
+        debugPrint('OTP DEBUG: manual sign-in SUCCESS');
       }
 
       if (requestId != _requestId) {

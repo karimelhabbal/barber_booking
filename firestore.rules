@@ -599,6 +599,33 @@ match /barbers/{barberId}/bookingLocks/{lockId} {
     );
 }
 
+// ============================================================
+// Notifications
+// ============================================================
+
+match /notifications/{notificationId} {
+
+  // Users can read only notifications addressed to themselves.
+  allow read: if signedIn()
+    && resource.data.recipientId == request.auth.uid;
+
+  // Client cannot create notifications.
+  // Notification creation will be handled later by the
+  // appropriate backend/data layer.
+
+  allow create: if false;
+
+  // User can mark only his own notification as read.
+  // No other notification fields may be changed.
+  allow update: if signedIn()
+    && resource.data.recipientId == request.auth.uid
+    && request.resource.data.diff(resource.data)
+        .affectedKeys()
+        .hasOnly(['isRead']);
+
+  // Notifications are not deleted by the client.
+  allow delete: if false;
+}
 
 // ============================================================
 // Default Deny

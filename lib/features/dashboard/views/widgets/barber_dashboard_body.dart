@@ -28,7 +28,7 @@ class _BarberDashboardBody extends StatelessWidget {
 
     final today = DateTime.now();
     final todayStart = DateTime(today.year, today.month, today.day);
-    final tomorrowStart = todayStart.add(const Duration(days: 1));
+    todayStart.add(const Duration(days: 1));
 
     final todayBookings = activeBookings.where((booking) {
       return _isSameDay(booking.bookingDate, todayStart);
