@@ -194,7 +194,10 @@ class BookingCubit extends Cubit<BookingState> {
     }
   }
 
-  Future<void> cancelBooking({required String bookingId}) async {
+  Future<void> cancelBooking({
+    required String bookingId,
+    required CancelledBy cancelledBy,
+  }) async {
     final trimmedBookingId = bookingId.trim();
 
     if (trimmedBookingId.isEmpty) {
@@ -205,7 +208,10 @@ class BookingCubit extends Cubit<BookingState> {
     emit(BookingCancelling(trimmedBookingId));
 
     try {
-      await _repository.cancelBooking(bookingId: trimmedBookingId);
+      await _repository.cancelBooking(
+        bookingId: trimmedBookingId,
+        cancelledBy: cancelledBy,
+      );
 
       emit(BookingCancelled(trimmedBookingId));
     } catch (e) {
@@ -220,8 +226,11 @@ class BookingCubit extends Cubit<BookingState> {
     );
   }
 
-  Future<void> rejectBooking({required String bookingId}) {
-    return cancelBooking(bookingId: bookingId);
+  Future<void> rejectBooking({
+    required String bookingId,
+    required CancelledBy cancelledBy,
+  }) {
+    return cancelBooking(bookingId: bookingId, cancelledBy: cancelledBy);
   }
 
   Future<void> completeBooking({required String bookingId}) {
@@ -241,6 +250,7 @@ class BookingCubit extends Cubit<BookingState> {
   Future<void> _updateBarberBookingStatus({
     required String bookingId,
     required BookingStatus status,
+    CancelledBy? cancelledBy,
   }) async {
     final trimmedBookingId = bookingId.trim();
 
@@ -255,6 +265,7 @@ class BookingCubit extends Cubit<BookingState> {
       await _repository.updateBookingStatus(
         bookingId: trimmedBookingId,
         status: status,
+        cancelledBy: cancelledBy,
       );
 
       emit(BookingStatusUpdated(bookingId: trimmedBookingId, status: status));

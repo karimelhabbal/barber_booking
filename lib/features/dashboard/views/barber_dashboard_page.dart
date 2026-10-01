@@ -267,6 +267,7 @@ class BarberDashboardPage extends StatelessWidget {
               return BarberWorkspaceShell(
                 barberId: barber.id,
                 barberName: barber.name,
+                recipientId: user.id,
                 shop: shopState.shop,
               );
             },

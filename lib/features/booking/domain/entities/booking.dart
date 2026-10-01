@@ -2,6 +2,9 @@ import 'package:equatable/equatable.dart';
 
 enum BookingStatus { pending, confirmed, completed, cancelled, noShow }
 
+/// Who performed a booking cancellation, when known.
+enum CancelledBy { customer, barber, owner }
+
 class Booking extends Equatable {
   final String id;
   final String customerId;
@@ -14,6 +17,9 @@ class Booking extends Equatable {
   final String endTime;
 
   final BookingStatus status;
+
+  /// Set only when [status] is cancelled.
+  final CancelledBy? cancelledBy;
 
   final String serviceName;
   final int serviceDurationMinutes;
@@ -42,6 +48,7 @@ class Booking extends Equatable {
     required this.barberName,
     required this.createdAt,
     required this.updatedAt,
+    this.cancelledBy,
   });
 
   Booking copyWith({
@@ -61,6 +68,7 @@ class Booking extends Equatable {
     String? barberName,
     DateTime? createdAt,
     DateTime? updatedAt,
+    CancelledBy? cancelledBy,
   }) {
     return Booking(
       id: id ?? this.id,
@@ -80,6 +88,7 @@ class Booking extends Equatable {
       barberName: barberName ?? this.barberName,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      cancelledBy: cancelledBy ?? this.cancelledBy,
     );
   }
 
@@ -94,6 +103,7 @@ class Booking extends Equatable {
     startTime,
     endTime,
     status,
+    cancelledBy,
     serviceName,
     serviceDurationMinutes,
     servicePrice,

@@ -1,30 +1,52 @@
-import 'package:barber_booking/core/di/injection.dart';
 import 'package:barber_booking/core/l10n/app_localizations.dart';
 import 'package:barber_booking/core/widgets/empty_view.dart';
 import 'package:barber_booking/core/widgets/error_view.dart';
 import 'package:barber_booking/core/widgets/loading_view.dart';
+import 'package:barber_booking/features/notifications/domain/entities/notification.dart';
 import 'package:barber_booking/features/notifications/presentation/cubit/notifications_cubit.dart';
 import 'package:barber_booking/features/notifications/presentation/widgets/notification_card.dart';
+import 'package:barber_booking/features/notifications/services/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 /// Shared notifications screen for customers, owners and barbers.
 ///
 /// The screen is role agnostic: the caller only supplies the authenticated
 /// user id used to scope the notifications, so there is no per-role screen.
-class NotificationsPage extends StatelessWidget {
+/// It uses the single global [NotificationsCubit] so the unread badge, push
+/// updates and this list always share one source of truth.
+class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key, required this.recipientId});
 
   /// Id of the user the notifications belong to.
   final String recipientId;
 
   @override
+  State<NotificationsPage> createState() => _NotificationsPageState();
+}
+
+class _NotificationsPageState extends State<NotificationsPage> {
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+
+      // The global cubit already loads on start; refreshing here keeps the
+      // screen current when it is opened from a notification tap.
+      context.read<NotificationsCubit>().loadNotifications(
+        recipientId: widget.recipientId,
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<NotificationsCubit>()
-        ..loadNotifications(recipientId: recipientId),
-      child: _NotificationsView(recipientId: recipientId),
-    );
+    return _NotificationsView(recipientId: widget.recipientId);
   }
 }
 
@@ -36,6 +58,24 @@ class _NotificationsView extends StatelessWidget {
   Future<void> _refresh(BuildContext context) {
     return context.read<NotificationsCubit>().loadNotifications(
       recipientId: recipientId,
+    );
+  }
+
+  void _openNotification(BuildContext context, AppNotification notification) {
+    context.read<NotificationsCubit>().markAsRead(notification.id);
+
+    final bookingId = notification.bookingId?.trim() ?? '';
+
+    if (bookingId.isEmpty ||
+        !NotificationService.bookingNotificationTypes.contains(
+          notification.type.name,
+        )) {
+      return;
+    }
+
+    context.push(
+      '${NotificationService.bookingDetailsRoute}'
+      '?bookingId=${Uri.encodeComponent(bookingId)}',
     );
   }
 
@@ -120,9 +160,7 @@ class _NotificationsView extends StatelessWidget {
                 for (final notification in state.notifications) ...[
                   NotificationCard(
                     notification: notification,
-                    onTap: () => context.read<NotificationsCubit>().markAsRead(
-                      notification.id,
-                    ),
+                    onTap: () => _openNotification(context, notification),
                   ),
                   const SizedBox(height: 12),
                 ],

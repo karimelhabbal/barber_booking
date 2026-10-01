@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
 
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
@@ -39,6 +40,7 @@ import '../../features/notifications/data/datasources/notification_remote_data_s
 import '../../features/notifications/data/repositories/notification_repository_impl.dart';
 import '../../features/notifications/domain/repositories/notification_repository.dart';
 import '../../features/notifications/presentation/cubit/notifications_cubit.dart';
+import '../../features/notifications/services/notification_service.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -69,7 +71,10 @@ void configureDependencies() {
   );
 
   getIt.registerFactory<AuthCubit>(
-    () => AuthCubit(authRepository: getIt<AuthRepository>()),
+    () => AuthCubit(
+      authRepository: getIt<AuthRepository>(),
+      notificationsCubit: getIt<NotificationsCubit>(),
+    ),
   );
 
   // ---------------------------------------------------------------------------
@@ -199,7 +204,24 @@ void configureDependencies() {
     ),
   );
 
-  getIt.registerFactory<NotificationsCubit>(
-    () => NotificationsCubit(repository: getIt<NotificationRepository>()),
+  getIt.registerLazySingleton<FirebaseMessaging>(
+    () => FirebaseMessaging.instance,
+  );
+
+  getIt.registerLazySingleton<NotificationService>(
+    () => NotificationService(
+      firebaseAuth: getIt<fb.FirebaseAuth>(),
+      messaging: getIt<FirebaseMessaging>(),
+      repository: getIt<NotificationRepository>(),
+    ),
+  );
+
+  // One global instance shared by every role: it backs the notification list,
+  // the unread badge and the foreground push refresh.
+  getIt.registerLazySingleton<NotificationsCubit>(
+    () => NotificationsCubit(
+      repository: getIt<NotificationRepository>(),
+      notificationService: getIt<NotificationService>(),
+    ),
   );
 }

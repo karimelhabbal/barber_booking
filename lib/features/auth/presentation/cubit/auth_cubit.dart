@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
+import '../../../notifications/presentation/cubit/notifications_cubit.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -8,12 +9,13 @@ import '../../domain/repositories/auth_repository.dart';
 part 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
-  AuthCubit({required this._authRepository})
+  AuthCubit({required this._authRepository, required this._notificationsCubit})
     : super(const AuthCheckingSession()) {
     _restoreSession();
   }
 
   final AuthRepository _authRepository;
+  final NotificationsCubit _notificationsCubit;
 
   Future<void> _restoreSession() async {
     try {
@@ -21,11 +23,25 @@ class AuthCubit extends Cubit<AuthState> {
 
       if (user != null) {
         emit(AuthAuthenticated(user));
+        await _startNotifications(user);
       } else {
         emit(const AuthUnauthenticated());
       }
     } on Object catch (error) {
       emit(AuthError(_mapError(error)));
+    }
+  }
+
+  /// Starts the notification session for [user] without ever breaking auth.
+  Future<void> _startNotifications(User user) async {
+    try {
+      await _notificationsCubit.start(
+        userId: user.id,
+        role: user.role,
+        shopId: user.barberShopId,
+      );
+    } on Object catch (_) {
+      // Push registration failures must not affect authentication.
     }
   }
 
@@ -62,6 +78,7 @@ class AuthCubit extends Cubit<AuthState> {
       );
 
       emit(AuthAuthenticated(user));
+      await _startNotifications(user);
     } on Object catch (error) {
       emit(AuthError(_mapError(error)));
     }
@@ -132,6 +149,7 @@ class AuthCubit extends Cubit<AuthState> {
       );
 
       emit(AuthAuthenticated(user));
+      await _startNotifications(user);
     } on Object catch (error) {
       emit(AuthError(_mapError(error)));
     }
@@ -145,6 +163,10 @@ class AuthCubit extends Cubit<AuthState> {
     emit(const AuthLoading());
 
     try {
+      // Stop notifications and drop this device's token BEFORE signing out,
+      // otherwise the previous account could keep receiving pushes here.
+      await _notificationsCubit.stop();
+
       await _authRepository.logout();
 
       emit(const AuthUnauthenticated());

@@ -91,6 +91,19 @@ allow update: if signedIn()
   );
 
   allow delete: if false;
+
+  // ----------------------------------------------------------
+  // Devices (FCM registration tokens)
+  //
+  // A device token document belongs to exactly one user, and only
+  // that user may read or write it. The backend (Cloud Functions)
+  // uses the Admin SDK and is not subject to these rules.
+  // ----------------------------------------------------------
+
+  match /devices/{token} {
+    allow read, write: if signedIn()
+      && request.auth.uid == userId;
+  }
 }
 
 
@@ -389,6 +402,7 @@ match /bookings/{bookingId} {
     && resource.data.customerId == request.auth.uid
     && resource.data.status == 'pending'
     && request.resource.data.status == 'cancelled'
+    && request.resource.data.cancelledBy == 'customer'
 
     && request.resource.data.customerId
         == resource.data.customerId
@@ -448,6 +462,23 @@ match /bookings/{bookingId} {
     && request.resource.data.createdAt == resource.data.createdAt
     && request.resource.data.updatedAt is timestamp
 
+    // Only cancellation writes the actor; every other status update must
+    // leave it untouched.
+    && (
+      (
+        request.resource.data.status == 'cancelled'
+        && request.resource.data.cancelledBy == 'barber'
+      )
+      ||
+      (
+        request.resource.data.status != 'cancelled'
+        && (
+          !('cancelledBy' in request.resource.data)
+          || request.resource.data.cancelledBy == null
+        )
+      )
+    )
+
     && (
       (
         resource.data.status == 'pending'
@@ -489,6 +520,23 @@ match /bookings/{bookingId} {
     && request.resource.data.barberName == resource.data.barberName
     && request.resource.data.createdAt == resource.data.createdAt
     && request.resource.data.updatedAt is timestamp
+
+    // Only cancellation writes the actor; every other status update must
+    // leave it untouched.
+    && (
+      (
+        request.resource.data.status == 'cancelled'
+        && request.resource.data.cancelledBy == 'owner'
+      )
+      ||
+      (
+        request.resource.data.status != 'cancelled'
+        && (
+          !('cancelledBy' in request.resource.data)
+          || request.resource.data.cancelledBy == null
+        )
+      )
+    )
 
     && (
       (
@@ -609,9 +657,9 @@ match /notifications/{notificationId} {
   allow read: if signedIn()
     && resource.data.recipientId == request.auth.uid;
 
-  // Client cannot create notifications.
-  // Notification creation will be handled later by the
-  // appropriate backend/data layer.
+  // Client cannot create notifications: every push notification has a
+  // matching Firestore notification document written server-side by
+  // Cloud Functions (Admin SDK bypasses these rules).
 
   allow create: if false;
 

@@ -38,8 +38,8 @@ class AppNotification extends Equatable {
   final String title;
   final String body;
 
-  /// Related booking, when the notification is about one. Kept for future
-  /// deep-linking; no navigation is performed yet.
+  /// Related booking, when the notification is about one. Notification taps
+  /// route to `/booking-details?bookingId=<id>`.
   final String? bookingId;
 
   final DateTime createdAt;

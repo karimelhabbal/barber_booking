@@ -40,7 +40,10 @@ class _OwnerBookingsView extends StatelessWidget {
       case BookingStatus.confirmed:
         return cubit.confirmBooking(bookingId: bookingId);
       case BookingStatus.cancelled:
-        return cubit.rejectBooking(bookingId: bookingId);
+        return cubit.rejectBooking(
+          bookingId: bookingId,
+          cancelledBy: CancelledBy.owner,
+        );
       case BookingStatus.completed:
         return cubit.completeBooking(bookingId: bookingId);
       case BookingStatus.noShow:

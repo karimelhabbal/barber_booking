@@ -14,4 +14,15 @@ abstract interface class NotificationRepository {
   Future<void> markAsRead({required String notificationId});
 
   Future<void> markAllAsRead({required String recipientId});
+
+  Future<void> registerDeviceToken({
+    required String userId,
+    required String token,
+    required String platform,
+  });
+
+  Future<void> unregisterDeviceToken({
+    required String userId,
+    required String token,
+  });
 }

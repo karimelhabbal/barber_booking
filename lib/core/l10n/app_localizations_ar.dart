@@ -269,6 +269,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get myBookings => 'حجوزاتي';
 
   @override
+  String get bookingDetails => 'تفاصيل الحجز';
+
+  @override
+  String get bookingNotFound => 'لم يتم العثور على الحجز.';
+
+  @override
   String get loadingBookings => 'جارٍ تحميل الحجوزات...';
 
   @override

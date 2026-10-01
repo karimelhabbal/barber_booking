@@ -46,4 +46,21 @@ class InMemoryNotificationRepository implements NotificationRepository {
       _notifications[index] = notification.copyWith(isRead: true);
     }
   }
+
+  @override
+  Future<void> registerDeviceToken({
+    required String userId,
+    required String token,
+    required String platform,
+  }) async {
+    // Device tokens are only meaningful with a real backend.
+  }
+
+  @override
+  Future<void> unregisterDeviceToken({
+    required String userId,
+    required String token,
+  }) async {
+    // Device tokens are only meaningful with a real backend.
+  }
 }

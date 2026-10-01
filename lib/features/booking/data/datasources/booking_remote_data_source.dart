@@ -31,11 +31,15 @@ abstract interface class BookingRemoteDataSource {
 
   Future<BookingModel> createBooking({required BookingModel booking});
 
-  Future<void> cancelBooking({required String bookingId});
+  Future<void> cancelBooking({
+    required String bookingId,
+    required CancelledBy cancelledBy,
+  });
 
   Future<void> updateBookingStatus({
     required String bookingId,
     required BookingStatus status,
+    CancelledBy? cancelledBy,
   });
 }
 
@@ -108,10 +112,7 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
     // segment and carries no customer, service, or pricing data, so customer
     // availability never reads the top-level bookings collection.
     final snapshot = await _bookingLocksCollection(trimmedBarberId)
-        .where(
-          'date',
-          isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
-        )
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
         .where('date', isLessThan: Timestamp.fromDate(startOfNextDay))
         .get();
 
@@ -328,7 +329,10 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
   }
 
   @override
-  Future<void> cancelBooking({required String bookingId}) async {
+  Future<void> cancelBooking({
+    required String bookingId,
+    required CancelledBy cancelledBy,
+  }) async {
     final trimmedBookingId = bookingId.trim();
 
     if (trimmedBookingId.isEmpty) {
@@ -377,6 +381,7 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
 
       transaction.update(bookingReference, {
         'status': 'cancelled',
+        'cancelledBy': BookingModel.cancelledByToFirestore(cancelledBy),
         'updatedAt': Timestamp.fromDate(DateTime.now()),
       });
 
@@ -404,6 +409,7 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
   Future<void> updateBookingStatus({
     required String bookingId,
     required BookingStatus status,
+    CancelledBy? cancelledBy,
   }) async {
     final trimmedBookingId = bookingId.trim();
 

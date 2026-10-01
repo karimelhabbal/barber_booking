@@ -52,7 +52,10 @@ class _CustomerBookingsView extends StatelessWidget {
     );
 
     if (shouldCancel == true && context.mounted) {
-      await context.read<BookingCubit>().cancelBooking(bookingId: booking.id);
+      await context.read<BookingCubit>().cancelBooking(
+        bookingId: booking.id,
+        cancelledBy: CancelledBy.customer,
+      );
     }
   }
 

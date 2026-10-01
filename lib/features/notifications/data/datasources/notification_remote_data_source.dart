@@ -10,6 +10,21 @@ abstract interface class NotificationRemoteDataSource {
   Future<void> markAsRead({required String notificationId});
 
   Future<void> markAllAsRead({required String recipientId});
+
+  /// Stores/refreshes the FCM registration token of the current device under
+  /// `users/{userId}/devices/{token}`.
+  Future<void> registerDeviceToken({
+    required String userId,
+    required String token,
+    required String platform,
+  });
+
+  /// Removes the FCM registration token of the current device. Called before
+  /// signing out so the previous account stops receiving pushes on this device.
+  Future<void> unregisterDeviceToken({
+    required String userId,
+    required String token,
+  });
 }
 
 class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
@@ -19,6 +34,10 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
 
   CollectionReference<Map<String, dynamic>> get _notifications =>
       _firestore.collection('notifications');
+
+  CollectionReference<Map<String, dynamic>> _devicesCollection(String userId) {
+    return _firestore.collection('users').doc(userId).collection('devices');
+  }
 
   @override
   Future<List<NotificationModel>> loadNotifications({
@@ -57,5 +76,40 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
     }
 
     await batch.commit();
+  }
+
+  @override
+  Future<void> registerDeviceToken({
+    required String userId,
+    required String token,
+    required String platform,
+  }) async {
+    final trimmedUserId = userId.trim();
+    final trimmedToken = token.trim();
+
+    if (trimmedUserId.isEmpty || trimmedToken.isEmpty) {
+      return;
+    }
+
+    await _devicesCollection(trimmedUserId).doc(trimmedToken).set({
+      'token': trimmedToken,
+      'platform': platform,
+      'updatedAt': Timestamp.fromDate(DateTime.now()),
+    }, SetOptions(merge: true));
+  }
+
+  @override
+  Future<void> unregisterDeviceToken({
+    required String userId,
+    required String token,
+  }) async {
+    final trimmedUserId = userId.trim();
+    final trimmedToken = token.trim();
+
+    if (trimmedUserId.isEmpty || trimmedToken.isEmpty) {
+      return;
+    }
+
+    await _devicesCollection(trimmedUserId).doc(trimmedToken).delete();
   }
 }

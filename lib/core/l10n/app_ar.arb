@@ -85,6 +85,8 @@
   "keep": "احتفاظ",
   "cancel": "إلغاء",
   "myBookings": "حجوزاتي",
+  "bookingDetails": "تفاصيل الحجز",
+  "bookingNotFound": "لم يتم العثور على الحجز.",
   "loadingBookings": "جارٍ تحميل الحجوزات...",
   "loadBookingsError": "تعذر تحميل الحجوزات.",
   "noBookingsYet": "لا توجد حجوزات بعد.",

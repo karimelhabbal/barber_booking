@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../auth/domain/entities/user.dart';
 import '../../domain/entities/notification.dart';
 import '../../domain/repositories/notification_repository.dart';
+import '../../services/notification_service.dart';
 
 part 'notifications_state.dart';
 
@@ -11,12 +16,68 @@ part 'notifications_state.dart';
 /// It is role agnostic: the caller supplies the authenticated user id as the
 /// recipient, so there is no separate customer/owner/barber implementation.
 class NotificationsCubit extends Cubit<NotificationsState> {
-  NotificationsCubit({required this._repository})
-    : super(const NotificationsInitial());
+  NotificationsCubit({
+    required this._repository,
+    required this._notificationService,
+  }) : super(const NotificationsInitial());
 
   final NotificationRepository _repository;
+  final NotificationService _notificationService;
 
   String _recipientId = '';
+  StreamSubscription<RemoteMessage>? _foregroundSubscription;
+
+  /// Id of the user the loaded notifications belong to (empty before [start]).
+  String get recipientId => _recipientId;
+
+  bool get isStarted => _recipientId.isNotEmpty;
+
+  /// Starts the notification session for the authenticated user.
+  ///
+  /// Registers this device for push notifications, keeps the list in sync with
+  /// foreground pushes, then loads the notifications.
+  ///
+  /// [role] and [shopId] are part of the notification session contract; the
+  /// current backend scopes notifications by recipient id only, so they are
+  /// not required to fetch or subscribe.
+  Future<void> start({
+    required String userId,
+    required UserRole role,
+    String? shopId,
+  }) async {
+    final trimmedUserId = userId.trim();
+
+    if (trimmedUserId.isEmpty) {
+      return;
+    }
+
+    _recipientId = trimmedUserId;
+
+    _foregroundSubscription ??= _notificationService.foregroundMessages.listen(
+      (_) => loadNotifications(recipientId: trimmedUserId),
+    );
+
+    await _notificationService.registerDevice(userId: trimmedUserId);
+
+    await loadNotifications(recipientId: trimmedUserId);
+  }
+
+  /// Stops the notification session before signing out.
+  ///
+  /// Removes this device's token so the previous account stops receiving
+  /// pushes here once another user signs in on the same device.
+  Future<void> stop() async {
+    await _foregroundSubscription?.cancel();
+    _foregroundSubscription = null;
+
+    await _notificationService.unregisterDevice();
+
+    _recipientId = '';
+
+    if (!isClosed) {
+      emit(const NotificationsInitial());
+    }
+  }
 
   Future<void> loadNotifications({required String recipientId}) async {
     final trimmedRecipientId = recipientId.trim();

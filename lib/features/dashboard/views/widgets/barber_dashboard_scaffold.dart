@@ -105,6 +105,7 @@ class BarberDashboardTab extends StatelessWidget {
                   case BookingStatus.cancelled:
                     return context.read<BookingCubit>().rejectBooking(
                       bookingId: bookingId,
+                      cancelledBy: CancelledBy.barber,
                     );
                   case BookingStatus.completed:
                     return context.read<BookingCubit>().completeBooking(

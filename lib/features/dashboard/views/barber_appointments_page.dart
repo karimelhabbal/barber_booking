@@ -91,7 +91,10 @@ class _BarberAppointmentsViewState extends State<_BarberAppointmentsView> {
         );
 
       case BookingStatus.cancelled:
-        return context.read<BookingCubit>().rejectBooking(bookingId: bookingId);
+        return context.read<BookingCubit>().rejectBooking(
+          bookingId: bookingId,
+          cancelledBy: CancelledBy.barber,
+        );
 
       case BookingStatus.completed:
         return context.read<BookingCubit>().completeBooking(

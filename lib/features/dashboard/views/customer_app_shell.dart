@@ -5,6 +5,7 @@ import '../../../core/l10n/app_localizations.dart';
 import '../../auth/presentation/cubit/auth_cubit.dart';
 import '../../booking/views/customer_bookings_page.dart';
 import '../../notifications/presentation/pages/notifications_page.dart';
+import '../../notifications/presentation/widgets/notification_badge.dart';
 import '../../settings/views/settings_page.dart';
 import 'customer_dashboard_page.dart';
 
@@ -53,8 +54,12 @@ class _CustomerAppShellState extends State<CustomerAppShell> {
             label: loc.bookings,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.notifications_outlined),
-            activeIcon: Icon(Icons.notifications),
+            icon: const NotificationBadge(
+              child: Icon(Icons.notifications_outlined),
+            ),
+            activeIcon: const NotificationBadge(
+              child: Icon(Icons.notifications),
+            ),
             label: loc.notifications,
           ),
           BottomNavigationBarItem(

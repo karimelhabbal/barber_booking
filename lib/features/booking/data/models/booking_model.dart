@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../domain/entities/booking.dart';
 
+export '../../domain/entities/booking.dart' show CancelledBy;
+
 class BookingModel extends Booking {
   const BookingModel({
     required super.id,
@@ -20,6 +22,7 @@ class BookingModel extends Booking {
     required super.barberName,
     required super.createdAt,
     required super.updatedAt,
+    super.cancelledBy,
   });
 
   factory BookingModel.fromFirestore(
@@ -51,6 +54,7 @@ class BookingModel extends Booking {
       barberName: data['barberName'] as String? ?? '',
       createdAt: _readTimestamp(data['createdAt'], fieldName: 'createdAt'),
       updatedAt: _readTimestamp(data['updatedAt'], fieldName: 'updatedAt'),
+      cancelledBy: _parseCancelledBy(data['cancelledBy']),
     );
   }
 
@@ -72,6 +76,7 @@ class BookingModel extends Booking {
       barberName: booking.barberName,
       createdAt: booking.createdAt,
       updatedAt: booking.updatedAt,
+      cancelledBy: booking.cancelledBy,
     );
   }
 
@@ -85,6 +90,7 @@ class BookingModel extends Booking {
       'startTime': startTime,
       'endTime': endTime,
       'status': statusToFirestore(status),
+      'cancelledBy': cancelledByToFirestore(cancelledBy),
       'serviceName': serviceName,
       'serviceDurationMinutes': serviceDurationMinutes,
       'servicePrice': servicePrice,
@@ -141,6 +147,33 @@ class BookingModel extends Booking {
 
       case BookingStatus.noShow:
         return 'noShow';
+    }
+  }
+
+  static CancelledBy? _parseCancelledBy(Object? value) {
+    switch (value) {
+      case 'customer':
+        return CancelledBy.customer;
+      case 'barber':
+        return CancelledBy.barber;
+      case 'owner':
+        return CancelledBy.owner;
+      default:
+        // Legacy documents predate the actor field.
+        return null;
+    }
+  }
+
+  static String? cancelledByToFirestore(CancelledBy? value) {
+    switch (value) {
+      case CancelledBy.customer:
+        return 'customer';
+      case CancelledBy.barber:
+        return 'barber';
+      case CancelledBy.owner:
+        return 'owner';
+      case null:
+        return null;
     }
   }
 }

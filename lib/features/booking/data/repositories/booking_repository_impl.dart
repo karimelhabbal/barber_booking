@@ -58,18 +58,26 @@ class BookingRepositoryImpl implements BookingRepository {
   }
 
   @override
-  Future<void> cancelBooking({required String bookingId}) {
-    return _remoteDataSource.cancelBooking(bookingId: bookingId);
+  Future<void> cancelBooking({
+    required String bookingId,
+    required CancelledBy cancelledBy,
+  }) {
+    return _remoteDataSource.cancelBooking(
+      bookingId: bookingId,
+      cancelledBy: cancelledBy,
+    );
   }
 
   @override
   Future<void> updateBookingStatus({
     required String bookingId,
     required BookingStatus status,
+    CancelledBy? cancelledBy,
   }) {
     return _remoteDataSource.updateBookingStatus(
       bookingId: bookingId,
       status: status,
+      cancelledBy: cancelledBy,
     );
   }
 }

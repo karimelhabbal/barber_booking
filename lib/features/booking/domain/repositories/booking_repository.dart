@@ -23,10 +23,14 @@ abstract interface class BookingRepository {
 
   Future<Booking> createBooking({required Booking booking});
 
-  Future<void> cancelBooking({required String bookingId});
+  Future<void> cancelBooking({
+    required String bookingId,
+    required CancelledBy cancelledBy,
+  });
 
   Future<void> updateBookingStatus({
     required String bookingId,
     required BookingStatus status,
+    CancelledBy? cancelledBy,
   });
 }

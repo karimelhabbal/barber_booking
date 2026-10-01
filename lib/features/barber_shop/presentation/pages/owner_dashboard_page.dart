@@ -18,6 +18,7 @@ import 'package:barber_booking/features/booking/presentation/cubit/booking_cubit
 import 'package:barber_booking/features/booking/presentation/cubit/booking_state.dart';
 import 'package:barber_booking/features/booking/views/owner_bookings_page.dart';
 import 'package:barber_booking/features/notifications/presentation/pages/notifications_page.dart';
+import 'package:barber_booking/features/notifications/presentation/widgets/notification_badge.dart';
 import 'package:barber_booking/features/schedule/presentation/pages/owner_schedule_barbers_page.dart';
 import 'package:barber_booking/features/service/domain/entities/service.dart';
 import 'package:barber_booking/features/service/presentation/cubit/service_cubit.dart';
@@ -112,6 +113,7 @@ class _OwnerWorkspaceState extends State<_OwnerWorkspace> {
               OwnerServicesPage(shopId: shop.id),
               OwnerBookingsPage(shopId: shop.id),
               OwnerScheduleBarbersPage(barberShopId: shop.id),
+              NotificationsPage(recipientId: widget.ownerId),
             ],
           ),
           bottomNavigationBar: BottomNavigationBar(
@@ -143,6 +145,15 @@ class _OwnerWorkspaceState extends State<_OwnerWorkspace> {
                 icon: const Icon(Icons.schedule_outlined),
                 activeIcon: const Icon(Icons.schedule),
                 label: loc.ownerNavSchedule,
+              ),
+              BottomNavigationBarItem(
+                icon: const NotificationBadge(
+                  child: Icon(Icons.notifications_outlined),
+                ),
+                activeIcon: const NotificationBadge(
+                  child: Icon(Icons.notifications),
+                ),
+                label: loc.notifications,
               ),
             ],
           ),

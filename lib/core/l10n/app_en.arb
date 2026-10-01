@@ -104,6 +104,8 @@
   "cancel": "Cancel",
 
   "myBookings": "My bookings",
+  "bookingDetails": "Booking details",
+  "bookingNotFound": "Booking not found.",
   "loadingBookings": "Loading bookings...",
   "loadBookingsError": "Unable to load bookings.",
   "noBookingsYet": "No bookings yet.",

@@ -608,6 +608,18 @@ abstract class AppLocalizations {
   /// **'My bookings'**
   String get myBookings;
 
+  /// No description provided for @bookingDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking details'**
+  String get bookingDetails;
+
+  /// No description provided for @bookingNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking not found.'**
+  String get bookingNotFound;
+
   /// No description provided for @loadingBookings.
   ///
   /// In en, this message translates to:

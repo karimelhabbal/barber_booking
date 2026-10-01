@@ -10,7 +10,9 @@ import 'package:barber_booking/features/auth/presentation/pages/login_page.dart'
 import 'package:barber_booking/features/auth/presentation/pages/otp_page.dart';
 import 'package:barber_booking/features/auth/presentation/pages/register_page.dart';
 import 'package:barber_booking/features/auth/presentation/pages/splash_page.dart';
+import 'package:barber_booking/features/booking/views/booking_details_page.dart';
 import 'package:barber_booking/features/dashboard/views/dashboard_page.dart';
+import 'package:barber_booking/features/notifications/presentation/pages/notifications_page.dart';
 
 class AppRouter {
   AppRouter({required this._authCubit}) {
@@ -62,6 +64,32 @@ class AppRouter {
           path: '/dashboard',
           builder: (context, state) {
             return _authProvider(const DashboardPage());
+          },
+        ),
+        // Booking-related notification taps land here with
+        // `?bookingId=<id>`; other notifications land on `/notifications`.
+        GoRoute(
+          path: '/notifications',
+          builder: (context, state) {
+            final authState = _authCubit.state;
+
+            final recipientId = authState is AuthAuthenticated
+                ? authState.user.id
+                : '';
+
+            return _authProvider(NotificationsPage(recipientId: recipientId));
+          },
+        ),
+        // Minimal booking-details destination for notification taps.
+        // Reuses the existing booking repository/model; Firestore rules
+        // decide which booking the signed-in user may read.
+        GoRoute(
+          path: '/booking-details',
+          builder: (context, state) {
+            final bookingId =
+                state.uri.queryParameters['bookingId']?.trim() ?? '';
+
+            return _authProvider(BookingDetailsPage(bookingId: bookingId));
           },
         ),
       ],

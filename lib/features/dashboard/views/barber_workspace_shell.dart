@@ -1,5 +1,7 @@
 import 'package:barber_booking/core/l10n/app_localizations.dart';
 import 'package:barber_booking/features/barber_shop/domain/entities/barber_shop.dart';
+import 'package:barber_booking/features/notifications/presentation/pages/notifications_page.dart';
+import 'package:barber_booking/features/notifications/presentation/widgets/notification_badge.dart';
 import 'package:barber_booking/features/settings/views/settings_page.dart';
 import 'package:flutter/material.dart';
 
@@ -17,11 +19,17 @@ class BarberWorkspaceShell extends StatefulWidget {
     super.key,
     required this.barberId,
     required this.barberName,
+    required this.recipientId,
     required this.shop,
   });
 
   final String barberId;
   final String barberName;
+
+  /// Authenticated user id used to scope notifications (the barber's auth uid,
+  /// not the barber document id).
+  final String recipientId;
+
   final BarberShop shop;
 
   @override
@@ -71,6 +79,13 @@ class _BarberWorkspaceShellState extends State<BarberWorkspaceShell> {
         page: BarberAvailabilityPage(barberId: widget.barberId),
       ),
       _WorkspaceSection(
+        label: loc.notifications,
+        icon: Icons.notifications_outlined,
+        selectedIcon: Icons.notifications,
+        showsUnreadBadge: true,
+        page: NotificationsPage(recipientId: widget.recipientId),
+      ),
+      _WorkspaceSection(
         label: loc.settings,
         icon: Icons.settings_outlined,
         selectedIcon: Icons.settings,
@@ -80,9 +95,7 @@ class _BarberWorkspaceShellState extends State<BarberWorkspaceShell> {
 
     final content = IndexedStack(
       index: _selectedIndex,
-      children: [
-        for (final section in sections) section.page,
-      ],
+      children: [for (final section in sections) section.page],
     );
 
     return LayoutBuilder(
@@ -99,8 +112,8 @@ class _BarberWorkspaceShellState extends State<BarberWorkspaceShell> {
                     destinations: [
                       for (final section in sections)
                         NavigationRailDestination(
-                          icon: Icon(section.icon),
-                          selectedIcon: Icon(section.selectedIcon),
+                          icon: _sectionIcon(section, selected: false),
+                          selectedIcon: _sectionIcon(section, selected: true),
                           label: _SectionLabel(label: section.label),
                         ),
                     ],
@@ -121,8 +134,8 @@ class _BarberWorkspaceShellState extends State<BarberWorkspaceShell> {
             destinations: [
               for (final section in sections)
                 NavigationDestination(
-                  icon: Icon(section.icon),
-                  selectedIcon: Icon(section.selectedIcon),
+                  icon: _sectionIcon(section, selected: false),
+                  selectedIcon: _sectionIcon(section, selected: true),
                   label: section.label,
                 ),
             ],
@@ -139,12 +152,26 @@ class _WorkspaceSection {
     required this.icon,
     required this.selectedIcon,
     required this.page,
+    this.showsUnreadBadge = false,
   });
 
   final String label;
   final IconData icon;
   final IconData selectedIcon;
   final Widget page;
+  final bool showsUnreadBadge;
+}
+
+/// Builds a section icon, optionally wrapped with the unread notifications
+/// badge.
+Widget _sectionIcon(_WorkspaceSection section, {required bool selected}) {
+  final icon = Icon(selected ? section.selectedIcon : section.icon);
+
+  if (!section.showsUnreadBadge) {
+    return icon;
+  }
+
+  return NotificationBadge(child: icon);
 }
 
 /// Keeps rail labels from overflowing on narrow windows or in RTL.
@@ -155,10 +182,6 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      label,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-    );
+    return Text(label, maxLines: 1, overflow: TextOverflow.ellipsis);
   }
 }

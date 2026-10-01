@@ -280,6 +280,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myBookings => 'My bookings';
 
   @override
+  String get bookingDetails => 'Booking details';
+
+  @override
+  String get bookingNotFound => 'Booking not found.';
+
+  @override
   String get loadingBookings => 'Loading bookings...';
 
   @override
