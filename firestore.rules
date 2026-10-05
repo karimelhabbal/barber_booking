@@ -301,6 +301,51 @@ match /barberShops/{shopId}/services/{serviceId} {
 // Bookings
 // ============================================================
 
+match /bookingPayments/{paymentId} {
+  allow read: if signedIn()
+    && resource.data.customerId == request.auth.uid;
+
+  allow read: if signedIn()
+    && resource.data.ownerId == request.auth.uid;
+
+  allow create, update, delete: if false;
+}
+
+match /shopPaymentSettings/{shopId} {
+  allow read: if signedIn();
+  allow create, update, delete: if false;
+}
+
+match /ownerPaymentSettings/{ownerId} {
+  allow read, write: if false;
+}
+
+match /subscriptionPlans/{planId} {
+  allow read: if signedIn();
+  allow create, update, delete: if false;
+}
+
+match /ownerSubscriptions/{ownerId} {
+  allow read: if signedIn()
+    && resource.data.ownerId == request.auth.uid;
+
+  allow create, update, delete: if false;
+}
+
+match /subscriptionPayments/{paymentId} {
+  allow read: if signedIn()
+    && resource.data.ownerId == request.auth.uid;
+
+  allow create, update, delete: if false;
+}
+
+match /payoutDestinations/{ownerId} {
+  allow read: if signedIn()
+    && resource.data.ownerId == request.auth.uid;
+
+  allow create, update, delete: if false;
+}
+
 match /bookings/{bookingId} {
 
   // Customer reads his own bookings.

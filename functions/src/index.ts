@@ -19,6 +19,7 @@ const db = getFirestore();
 
 setGlobalOptions({
   maxInstances: 10,
+  region: "europe-west1",
 });
 
 type BookingData = {
@@ -817,6 +818,8 @@ function buildReminderBody(booking: BookingData, prefix: string): string {
  * (`reminderSent`), and `onBookingUpdated` re-arms the flag when the
  * appointment date/time changes.
  */
+export { confirmCashPayment, createBookingPayment, createSubscriptionCheckout, getShopPaymentOptions, paymobWebhook, paymentReturn, refreshPaymentStatus, setPayoutDestination } from "./payment/callables";
+
 export const bookingReminders = onSchedule(
   {
     schedule: "every 5 minutes",

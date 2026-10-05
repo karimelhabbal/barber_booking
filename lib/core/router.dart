@@ -13,6 +13,9 @@ import 'package:barber_booking/features/auth/presentation/pages/splash_page.dart
 import 'package:barber_booking/features/booking/views/booking_details_page.dart';
 import 'package:barber_booking/features/dashboard/views/dashboard_page.dart';
 import 'package:barber_booking/features/notifications/presentation/pages/notifications_page.dart';
+import 'package:barber_booking/features/payment/presentation/pages/booking_payment_page.dart';
+import 'package:barber_booking/features/payment/presentation/pages/payout_destination_page.dart';
+import 'package:barber_booking/features/payment/presentation/pages/subscription_page.dart';
 
 class AppRouter {
   AppRouter({required this._authCubit}) {
@@ -64,6 +67,42 @@ class AppRouter {
           path: '/dashboard',
           builder: (context, state) {
             return _authProvider(const DashboardPage());
+          },
+        ),
+        GoRoute(
+          path: '/payment/booking',
+          builder: (context, state) {
+            final bookingId = state.uri.queryParameters['bookingId'] ?? '';
+            final shopId = state.uri.queryParameters['shopId'] ?? '';
+            final total =
+                int.tryParse(
+                  state.uri.queryParameters['totalPiasters'] ?? '',
+                ) ??
+                0;
+
+            return _authProvider(
+              BookingPaymentPage(
+                bookingId: bookingId,
+                shopId: shopId,
+                totalPiasters: total,
+              ),
+            );
+          },
+        ),
+        GoRoute(
+          path: '/payment/subscription',
+          builder: (context, state) {
+            final ownerId = state.uri.queryParameters['ownerId'] ?? '';
+
+            return _authProvider(SubscriptionPage(ownerId: ownerId));
+          },
+        ),
+        GoRoute(
+          path: '/payment/payout-destination',
+          builder: (context, state) {
+            final ownerId = state.uri.queryParameters['ownerId'] ?? '';
+
+            return _authProvider(PayoutDestinationPage(ownerId: ownerId));
           },
         ),
         // Booking-related notification taps land here with

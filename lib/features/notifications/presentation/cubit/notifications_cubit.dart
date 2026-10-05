@@ -67,15 +67,24 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   /// Removes this device's token so the previous account stops receiving
   /// pushes here once another user signs in on the same device.
   Future<void> stop() async {
+    // Local state is cleared first and unconditionally so signing out can never
+    // stay stuck in AuthLoading on a hanging FCM/Firestore call.
     await _foregroundSubscription?.cancel();
     _foregroundSubscription = null;
-
-    await _notificationService.unregisterDevice();
 
     _recipientId = '';
 
     if (!isClosed) {
       emit(const NotificationsInitial());
+    }
+
+    try {
+      // Best-effort device cleanup, hard capped so it can never block logout.
+      await _notificationService
+          .unregisterDevice()
+          .timeout(const Duration(seconds: 3));
+    } on Object catch (_) {
+      // Cleanup failures and timeouts must never block authentication logout.
     }
   }
 

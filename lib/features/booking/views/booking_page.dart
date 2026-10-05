@@ -8,6 +8,7 @@ import 'package:barber_booking/features/booking/domain/entities/booking.dart';
 import 'package:barber_booking/features/booking/presentation/cubit/booking_cubit.dart';
 import 'package:barber_booking/features/booking/presentation/cubit/booking_state.dart';
 import 'package:barber_booking/features/booking/views/customer_bookings_page.dart';
+import 'package:barber_booking/features/payment/presentation/pages/booking_payment_page.dart';
 import 'package:barber_booking/features/service/domain/entities/service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -179,168 +180,183 @@ class _BookingFlowState extends State<_BookingFlow> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-              Text(
-                widget.service.name,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 4),
-              Text(loc.barber, style: Theme.of(context).textTheme.bodySmall),
-              const SizedBox(height: 2),
-              Text(widget.barber.name),
-              const SizedBox(height: 16),
-              Text(loc.date, style: Theme.of(context).textTheme.bodySmall),
-              const SizedBox(height: 4),
-              Card(
-                child: ListTile(
-                  title: Text(_formatDate(_selectedDate)),
-                  trailing: const Icon(Icons.calendar_today),
-                  onTap: isCreating || isCreated ? null : _pickDate,
+                Text(
+                  widget.service.name,
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-              ),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed:
-                    isCreating || isCreated || state is AvailabilityLoading
-                    ? null
-                    : _loadSlots,
-                child: Text(loc.showAvailableSlots),
-              ),
-              const SizedBox(height: 16),
-              Text(loc.time, style: Theme.of(context).textTheme.bodySmall),
-              if (state is AvailabilityLoading) ...[
-                const SizedBox(height: 24),
-                const Center(child: CircularProgressIndicator()),
-              ],
-              if (state is BookingError) ...[
+                const SizedBox(height: 4),
+                Text(loc.barber, style: Theme.of(context).textTheme.bodySmall),
+                const SizedBox(height: 2),
+                Text(widget.barber.name),
                 const SizedBox(height: 16),
-                Text(state.message, textAlign: TextAlign.center),
-              ],
-              if (state is AvailabilityLoaded && !_isAvailabilityStale) ...[
+                Text(loc.date, style: Theme.of(context).textTheme.bodySmall),
+                const SizedBox(height: 4),
+                Card(
+                  child: ListTile(
+                    title: Text(_formatDate(_selectedDate)),
+                    trailing: const Icon(Icons.calendar_today),
+                    onTap: isCreating || isCreated ? null : _pickDate,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed:
+                      isCreating || isCreated || state is AvailabilityLoading
+                      ? null
+                      : _loadSlots,
+                  child: Text(loc.showAvailableSlots),
+                ),
                 const SizedBox(height: 16),
-                if (slots.isEmpty)
+                Text(loc.time, style: Theme.of(context).textTheme.bodySmall),
+                if (state is AvailabilityLoading) ...[
+                  const SizedBox(height: 24),
+                  const Center(child: CircularProgressIndicator()),
+                ],
+                if (state is BookingError) ...[
+                  const SizedBox(height: 16),
+                  Text(state.message, textAlign: TextAlign.center),
+                ],
+                if (state is AvailabilityLoaded && !_isAvailabilityStale) ...[
+                  const SizedBox(height: 16),
+                  if (slots.isEmpty)
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          loc.noAvailableSlots,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    )
+                  else
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: slots.map((slot) {
+                        return ChoiceChip(
+                          label: Text(
+                            '${_formatTime(slot.start)} - ${_formatTime(slot.end)}',
+                          ),
+                          selected: _selectedSlot == slot,
+                          onSelected: isCreating || isCreated
+                              ? null
+                              : (_) => setState(() => _selectedSlot = slot),
+                        );
+                      }).toList(),
+                    ),
+                ],
+                if (_selectedSlot != null && !isCreated) ...[
+                  const SizedBox(height: 24),
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
-                      child: Text(
-                        loc.noAvailableSlots,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  )
-                else
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: slots.map((slot) {
-                      return ChoiceChip(
-                        label: Text(
-                          '${_formatTime(slot.start)} - ${_formatTime(slot.end)}',
-                        ),
-                        selected: _selectedSlot == slot,
-                        onSelected: isCreating || isCreated
-                            ? null
-                            : (_) => setState(() => _selectedSlot = slot),
-                      );
-                    }).toList(),
-                  ),
-              ],
-              if (_selectedSlot != null && !isCreated) ...[
-                const SizedBox(height: 24),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(loc.confirmAppointment),
-                        const SizedBox(height: 8),
-                        Text(
-                          widget.service.name,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Text(loc.barber),
-                            const SizedBox(width: 8),
-                            Expanded(child: Text(widget.barber.name)),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '${_formatDate(_selectedDate)} ${loc.at} '
-                          '${_formatTime(_selectedSlot!.start)} - '
-                          '${_formatTime(_selectedSlot!.end)}',
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '${widget.service.durationMinutes} ${loc.minutes}',
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Text(loc.price),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                widget.service.price.toStringAsFixed(2),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        ElevatedButton(
-                          onPressed: isCreating ? null : _createBooking,
-                          child: Text(
-                            isCreating ? loc.creating : loc.confirmBooking,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(loc.confirmAppointment),
+                          const SizedBox(height: 8),
+                          Text(
+                            widget.service.name,
+                            style: Theme.of(context).textTheme.titleMedium,
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-              if (state is BookingCreated) ...[
-                const SizedBox(height: 24),
-                Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        Text(loc.bookingCreated, textAlign: TextAlign.center),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () {
-                            final authState = context.read<AuthCubit>().state;
-
-                            if (authState is! AuthAuthenticated) {
-                              return;
-                            }
-
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => CustomerBookingsPage(
-                                  customerId: authState.user.id,
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Text(loc.barber),
+                              const SizedBox(width: 8),
+                              Expanded(child: Text(widget.barber.name)),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${_formatDate(_selectedDate)} ${loc.at} '
+                            '${_formatTime(_selectedSlot!.start)} - '
+                            '${_formatTime(_selectedSlot!.end)}',
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${widget.service.durationMinutes} ${loc.minutes}',
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Text(loc.price),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  widget.service.price.toStringAsFixed(2),
                                 ),
                               ),
-                            );
-                          },
-                          child: Text(loc.myBookings),
-                        ),
-                        const SizedBox(height: 8),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context)
-                                .popUntil((route) => route.isFirst);
-                          },
-                          child: Text(loc.dashboard),
-                        ),
-                      ],
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          ElevatedButton(
+                            onPressed: isCreating ? null : _createBooking,
+                            child: Text(
+                              isCreating ? loc.creating : loc.confirmBooking,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
+                ],
+                if (state is BookingCreated) ...[
+                  const SizedBox(height: 24),
+                  Card(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          Text(loc.bookingCreated, textAlign: TextAlign.center),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).push<void>(
+                                BookingPaymentPage.route(
+                                  bookingId: state.booking.id,
+                                  shopId: state.booking.shopId,
+                                  totalPiasters:
+                                      (state.booking.servicePrice * 100)
+                                          .round(),
+                                ),
+                              );
+                            },
+                            child: Text(loc.confirm),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              final authState = context.read<AuthCubit>().state;
+
+                              if (authState is! AuthAuthenticated) {
+                                return;
+                              }
+
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => CustomerBookingsPage(
+                                    customerId: authState.user.id,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Text(loc.myBookings),
+                          ),
+                          const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context)
+                                  .popUntil((route) => route.isFirst);
+                            },
+                            child: Text(loc.dashboard),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ],
-            ],
             ),
           );
         },

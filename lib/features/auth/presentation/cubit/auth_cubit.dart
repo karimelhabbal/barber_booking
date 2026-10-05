@@ -163,9 +163,11 @@ class AuthCubit extends Cubit<AuthState> {
     emit(const AuthLoading());
 
     try {
-      // Stop notifications and drop this device's token BEFORE signing out,
-      // otherwise the previous account could keep receiving pushes here.
-      await _notificationsCubit.stop();
+      try {
+        await _notificationsCubit.stop();
+      } on Object catch (_) {
+        // Notification cleanup is best effort.
+      }
 
       await _authRepository.logout();
 

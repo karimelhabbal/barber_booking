@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
@@ -36,6 +37,19 @@ import '../../features/booking/domain/services/availability_service.dart';
 import '../../features/booking/domain/usecases/create_booking.dart';
 import '../../features/booking/domain/usecases/get_available_slots.dart';
 import '../../features/booking/presentation/cubit/booking_cubit.dart';
+
+import '../../features/payment/data/datasources/payment_remote_data_source.dart';
+import '../../features/payment/data/repositories/booking_payment_repository_impl.dart';
+import '../../features/payment/data/repositories/payout_destination_repository_impl.dart';
+import '../../features/payment/data/repositories/subscription_repository_impl.dart';
+import '../../features/payment/domain/repositories/booking_payment_repository.dart';
+import '../../features/payment/domain/repositories/payout_destination_repository.dart';
+import '../../features/payment/domain/repositories/subscription_repository.dart';
+import '../../features/payment/payment_config.dart';
+import '../../features/payment/presentation/cubit/booking_payment_cubit.dart';
+import '../../features/payment/presentation/cubit/payout_destination_cubit.dart';
+import '../../features/payment/presentation/cubit/subscription_cubit.dart';
+
 import '../../features/notifications/data/datasources/notification_remote_data_source.dart';
 import '../../features/notifications/data/repositories/notification_repository_impl.dart';
 import '../../features/notifications/domain/repositories/notification_repository.dart';
@@ -187,6 +201,43 @@ void configureDependencies() {
       getAvailableSlots: getIt<GetAvailableSlots>(),
       createBooking: getIt<CreateBooking>(),
     ),
+  );
+
+  // ---------------------------------------------------------------------------
+  // Payment
+  // ---------------------------------------------------------------------------
+
+  getIt.registerLazySingleton<PaymentRemoteDataSource>(
+    () => PaymentRemoteDataSource(
+      firestore: getIt<FirebaseFirestore>(),
+      functions: FirebaseFunctions.instanceFor(
+        region: PaymentConfig.functionsRegion,
+      ),
+    ),
+  );
+
+  getIt.registerLazySingleton<BookingPaymentRepository>(
+    () => BookingPaymentRepositoryImpl(getIt<PaymentRemoteDataSource>()),
+  );
+
+  getIt.registerLazySingleton<SubscriptionRepository>(
+    () => SubscriptionRepositoryImpl(getIt<PaymentRemoteDataSource>()),
+  );
+
+  getIt.registerLazySingleton<PayoutDestinationRepository>(
+    () => PayoutDestinationRepositoryImpl(getIt<PaymentRemoteDataSource>()),
+  );
+
+  getIt.registerFactory<BookingPaymentCubit>(
+    () => BookingPaymentCubit(getIt<BookingPaymentRepository>()),
+  );
+
+  getIt.registerFactory<SubscriptionCubit>(
+    () => SubscriptionCubit(getIt<SubscriptionRepository>()),
+  );
+
+  getIt.registerFactory<PayoutDestinationCubit>(
+    () => PayoutDestinationCubit(getIt<PayoutDestinationRepository>()),
   );
 
   // ---------------------------------------------------------------------------
