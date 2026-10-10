@@ -3,6 +3,21 @@ import 'package:barber_booking/core/l10n/app_localizations.dart';
 extension AuthErrorLocalizer on String {
   String localizedMessage(AppLocalizations loc) {
     switch (this) {
+      case 'invalid-credentials': return loc.invalidCredentials;
+      case 'account-already-exists': return loc.accountAlreadyExists;
+      case 'user-profile-not-found': return loc.userProfileNotFound;
+      case 'barber-access-denied': return loc.barberAccessDenied;
+      case 'email-not-confirmed':
+        return loc.emailNotConfirmed;
+      case 'email-confirmation-required':
+        return loc.emailConfirmationRequired;
+      case 'invalid-email':
+        return loc.invalidEmail;
+      case 'weak-password':
+        return loc.weakPassword;
+      case 'auth-service-unavailable':
+        return loc.authServiceUnavailable;
+      case 'oauth-cancelled': return loc.oauthCancelled;
       case 'invalid-name':
         return loc.invalidName;
 

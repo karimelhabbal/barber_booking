@@ -13,6 +13,7 @@ enum NotificationType {
   bookingNoShow,
   appointmentReminder,
   scheduleChanged,
+  paymentSuccess,
   general,
 }
 

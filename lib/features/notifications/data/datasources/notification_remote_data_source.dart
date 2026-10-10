@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/notification_model.dart';
 
@@ -11,16 +11,12 @@ abstract interface class NotificationRemoteDataSource {
 
   Future<void> markAllAsRead({required String recipientId});
 
-  /// Stores/refreshes the FCM registration token of the current device under
-  /// `users/{userId}/devices/{token}`.
   Future<void> registerDeviceToken({
     required String userId,
     required String token,
     required String platform,
   });
 
-  /// Removes the FCM registration token of the current device. Called before
-  /// signing out so the previous account stops receiving pushes on this device.
   Future<void> unregisterDeviceToken({
     required String userId,
     required String token,
@@ -28,54 +24,47 @@ abstract interface class NotificationRemoteDataSource {
 }
 
 class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
-  NotificationRemoteDataSourceImpl({required this._firestore});
+  NotificationRemoteDataSourceImpl({required this._client});
 
-  final FirebaseFirestore _firestore;
-
-  CollectionReference<Map<String, dynamic>> get _notifications =>
-      _firestore.collection('notifications');
-
-  CollectionReference<Map<String, dynamic>> _devicesCollection(String userId) {
-    return _firestore.collection('users').doc(userId).collection('devices');
-  }
+  final SupabaseClient _client;
 
   @override
   Future<List<NotificationModel>> loadNotifications({
     required String recipientId,
   }) async {
-    final snapshot = await _notifications
-        .where('recipientId', isEqualTo: recipientId)
-        .orderBy('createdAt', descending: true)
-        .get();
+    final rows = await _client
+        .from('notifications')
+        .select(
+          'id, recipient_id, type, title, body, booking_id, created_at, is_read',
+        )
+        .eq('recipient_id', recipientId)
+        .order('created_at', ascending: false);
 
-    return snapshot.docs
-        .map(NotificationModel.fromFirestore)
-        .toList(growable: false);
+    return rows.map(NotificationModel.fromJson).toList(growable: false);
   }
 
   @override
   Future<void> markAsRead({required String notificationId}) async {
-    await _notifications.doc(notificationId).update({'isRead': true});
+    final updated = await _client
+        .from('notifications')
+        .update({'is_read': true})
+        .eq('id', notificationId)
+        .select('id')
+        .maybeSingle();
+
+    if (updated == null) {
+      throw StateError('Notification was not found or cannot be updated.');
+    }
   }
 
   @override
   Future<void> markAllAsRead({required String recipientId}) async {
-    final snapshot = await _notifications
-        .where('recipientId', isEqualTo: recipientId)
-        .where('isRead', isEqualTo: false)
-        .get();
-
-    if (snapshot.docs.isEmpty) {
-      return;
-    }
-
-    final batch = _firestore.batch();
-
-    for (final document in snapshot.docs) {
-      batch.update(document.reference, {'isRead': true});
-    }
-
-    await batch.commit();
+    await _client
+        .from('notifications')
+        .update({'is_read': true})
+        .eq('recipient_id', recipientId)
+        .eq('is_read', false)
+        .select('id');
   }
 
   @override
@@ -91,11 +80,14 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
       return;
     }
 
-    await _devicesCollection(trimmedUserId).doc(trimmedToken).set({
-      'token': trimmedToken,
-      'platform': platform,
-      'updatedAt': Timestamp.fromDate(DateTime.now()),
-    }, SetOptions(merge: true));
+    if (_client.auth.currentUser?.id != trimmedUserId) {
+      throw StateError('Cannot register a device token for another user.');
+    }
+
+    await _client.rpc(
+      'register_device_token',
+      params: {'p_token': trimmedToken, 'p_platform': platform},
+    );
   }
 
   @override
@@ -110,6 +102,10 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
       return;
     }
 
-    await _devicesCollection(trimmedUserId).doc(trimmedToken).delete();
+    await _client
+        .from('device_tokens')
+        .delete()
+        .eq('user_id', trimmedUserId)
+        .eq('token', trimmedToken);
   }
 }

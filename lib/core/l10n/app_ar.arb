@@ -20,8 +20,8 @@
   "invalidPhoneNumber": "رقم الهاتف غير صحيح",
   "invalidVerificationCode": "رمز التحقق غير صحيح",
   "sessionExpired": "انتهت صلاحية الرمز، اطلب رمزًا جديدًا",
-  "tooManyRequests": "محاولات كثيرة، يرجى الانتظار قبل المحاولة مرة أخرى",
-  "networkRequestFailed": "تحقق من اتصالك بالإنترنت وحاول مرة أخرى",
+  "tooManyRequests": "تم تجاوز عدد المحاولات. حاول مرة أخرى بعد قليل.",
+  "networkRequestFailed": "تعذر الاتصال بالخادم. تحقق من اتصال الإنترنت وحاول مرة أخرى.",
   "operationNotAllowed": "تسجيل الدخول بالهاتف غير مفعّل لهذا المشروع",
   "unauthorizedDomain": "هذا النطاق غير مصرح له بتسجيل الدخول بالهاتف",
   "captchaCheckFailed": "فشل التحقق من reCAPTCHA، حاول مرة أخرى",
@@ -31,7 +31,7 @@
   "verifyCodeFailed": "تعذر التحقق من الرمز، حاول مرة أخرى",
   "requestNewCode": "اطلب رمز تحقق جديد وحاول مرة أخرى",
   "logoutFailed": "تعذر تسجيل الخروج، حاول مرة أخرى",
-  "genericAuthError": "حدث خطأ في المصادقة، حاول مرة أخرى",
+  "genericAuthError": "حدث خطأ في المصادقة. حاول مرة أخرى.",
   "resendCode": "إعادة إرسال الرمز",
   "name": "الاسم",
   "verifyCode": "تحقق من الرمز",
@@ -441,11 +441,31 @@
 "tomorrow": "غدًا",
 "dayAfterTomorrow": "بعد غد",
 "nextWeekday": "{weekday} القادم",
-"@nextWeekday": {
+  "@nextWeekday": {
   "placeholders": {
     "weekday": {
       "type": "String"
     }
   }
-}
+},
+"authWelcome": "مرحباً بعودتك",
+"authSubtitle": "إطلالتك القادمة تبدأ من هنا.",
+"authOrEmail": "أو المتابعة بالبريد الإلكتروني",
+"emailAddress": "البريد الإلكتروني",
+"password": "كلمة المرور",
+"invalidEmail": "يرجى إدخال بريد إلكتروني صالح.",
+"passwordTooShort": "يجب ألا تقل كلمة المرور عن 6 أحرف.",
+"hasAccountAction": "لديك حساب؟ سجل الدخول",
+"noAccountAction": "جديد هنا؟ أنشئ حساباً",
+"barberSignIn": "دخول فريق الحلاقة",
+"invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+"accountAlreadyExists": "البريد الإلكتروني مستخدم بالفعل. جرّب تسجيل الدخول.",
+"userProfileNotFound": "تعذر العثور على ملف حسابك.",
+"barberAccessDenied": "هذا الحساب لا يملك صلاحية الحلاق.",
+"oauthCancelled": "تم إلغاء تسجيل الدخول.",
+"customerSignIn": "دخول العملاء",
+  "emailNotConfirmed": "يرجى تأكيد بريدك الإلكتروني قبل تسجيل الدخول.",
+  "emailConfirmationRequired": "يرجى تأكيد بريدك الإلكتروني أولًا.",
+  "weakPassword": "كلمة المرور ضعيفة. استخدم كلمة مرور أقوى.",
+  "authServiceUnavailable": "خدمة المصادقة غير متاحة حاليًا. حاول مرة أخرى لاحقًا."
 }

@@ -51,13 +51,22 @@ class NotificationsCubit extends Cubit<NotificationsState> {
       return;
     }
 
-    _recipientId = trimmedUserId;
+    if (_recipientId != trimmedUserId) {
+      await _foregroundSubscription?.cancel();
+      _recipientId = trimmedUserId;
+      _foregroundSubscription = _notificationService.foregroundMessages.listen(
+        (_) {
+          final currentRecipientId = _recipientId;
+          if (currentRecipientId.isNotEmpty) {
+            loadNotifications(recipientId: currentRecipientId);
+          }
+        },
+      );
+    }
 
-    _foregroundSubscription ??= _notificationService.foregroundMessages.listen(
-      (_) => loadNotifications(recipientId: trimmedUserId),
-    );
-
+    await _notificationService.initialize();
     await _notificationService.registerDevice(userId: trimmedUserId);
+    _notificationService.tryConsumePendingTap();
 
     await loadNotifications(recipientId: trimmedUserId);
   }
@@ -68,7 +77,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   /// pushes here once another user signs in on the same device.
   Future<void> stop() async {
     // Local state is cleared first and unconditionally so signing out can never
-    // stay stuck in AuthLoading on a hanging FCM/Firestore call.
+    // stay stuck in AuthLoading on a hanging FCM/Supabase call.
     await _foregroundSubscription?.cancel();
     _foregroundSubscription = null;
 
@@ -80,9 +89,9 @@ class NotificationsCubit extends Cubit<NotificationsState> {
 
     try {
       // Best-effort device cleanup, hard capped so it can never block logout.
-      await _notificationService
-          .unregisterDevice()
-          .timeout(const Duration(seconds: 3));
+      await _notificationService.unregisterDevice().timeout(
+        const Duration(seconds: 3),
+      );
     } on Object catch (_) {
       // Cleanup failures and timeouts must never block authentication logout.
     }

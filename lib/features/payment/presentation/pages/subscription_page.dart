@@ -62,7 +62,7 @@ class SubscriptionPage extends StatelessWidget {
                 return PaymentStatusView(
                   kind: PaymentStatusKind.failure,
                   failure: state.failure,
-                  onRetry: cubit.backToReady,
+                  onRetry: () => cubit.load(ownerId),
                 );
               case SubscriptionFlow.ready:
               case SubscriptionFlow.submitting:

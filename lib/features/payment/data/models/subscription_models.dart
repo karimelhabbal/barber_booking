@@ -34,7 +34,7 @@ class SubscriptionModels {
     return SubscriptionPayment(
       id: snap.id,
       planId: (d['planId'] as String?) ?? '',
-      amount: readInt(d['amount']),
+      amount: readInt(d['amountPiasters'] ?? d['amount']),
       status: parseSubscriptionPaymentStatus(d['status'] as String?),
     );
   }

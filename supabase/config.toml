@@ -1,0 +1,10 @@
+project_id = "fdvnqqjekkhtxobvcbqx"
+
+# The notification dispatcher authenticates its own scheduled invocation using a
+# shared secret stored in Supabase Vault (see migration
+# 20261008213220_notification_dispatcher_schedule.sql). pg_cron/pg_net calls it
+# with that secret as a Bearer token rather than a Supabase JWT, so platform JWT
+# verification must be disabled for this function; the function enforces auth
+# itself and rejects unauthenticated callers with 401.
+[functions.dispatch-notifications]
+verify_jwt = false

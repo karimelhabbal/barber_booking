@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/schedule_exception_model.dart';
 import '../models/weekly_schedule_model.dart';
@@ -40,26 +40,34 @@ abstract interface class ScheduleRemoteDataSource {
 }
 
 class ScheduleRemoteDataSourceImpl implements ScheduleRemoteDataSource {
-  ScheduleRemoteDataSourceImpl({required this._firestore});
+  ScheduleRemoteDataSourceImpl({required this._supabase});
 
-  final FirebaseFirestore _firestore;
+  final SupabaseClient _supabase;
 
-  CollectionReference<Map<String, dynamic>> _scheduleCollection(
-    String barberId,
-  ) {
-    return _firestore
-        .collection('barbers')
-        .doc(barberId)
-        .collection('weeklySchedule');
+  Future<Map<String, dynamic>> _weeklySchedule(String barberId) async {
+    final row = await _supabase
+        .from('barbers')
+        .select('weekly_schedule')
+        .eq('id', barberId)
+        .maybeSingle();
+    if (row == null) throw StateError('Barber $barberId does not exist.');
+    final value = row['weekly_schedule'];
+    return value is Map
+        ? Map<String, dynamic>.from(value)
+        : <String, dynamic>{};
   }
 
-  CollectionReference<Map<String, dynamic>> _exceptionsCollection(
+  Future<void> _saveWeeklySchedule(
     String barberId,
-  ) {
-    return _firestore
-        .collection('barbers')
-        .doc(barberId)
-        .collection('scheduleExceptions');
+    Map<String, dynamic> schedule,
+  ) async {
+    await _supabase
+        .from('barbers')
+        .update({
+          'weekly_schedule': schedule,
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        })
+        .eq('id', barberId);
   }
 
   String _dayId(int dayOfWeek) {
@@ -75,33 +83,28 @@ class ScheduleRemoteDataSourceImpl implements ScheduleRemoteDataSource {
     required String barberId,
   }) async {
     final trimmedBarberId = barberId.trim();
-
     if (trimmedBarberId.isEmpty) {
       throw ArgumentError('Barber ID cannot be empty.');
     }
-
-    final snapshot = await _scheduleCollection(trimmedBarberId).get();
-
+    final storedSchedule = await _weeklySchedule(trimmedBarberId);
     final schedules = <WeeklyScheduleModel>[];
-
-    for (final document in snapshot.docs) {
-      final dayOfWeek = int.tryParse(document.id);
-
-      if (dayOfWeek == null || dayOfWeek < 1 || dayOfWeek > 7) {
+    for (final entry in storedSchedule.entries) {
+      final dayOfWeek = int.tryParse(entry.key);
+      if (dayOfWeek == null ||
+          dayOfWeek < 1 ||
+          dayOfWeek > 7 ||
+          entry.value is! Map) {
         continue;
       }
-
       schedules.add(
-        WeeklyScheduleModel.fromFirestore(
-          document,
+        WeeklyScheduleModel.fromSupabaseJson(
+          Map<String, dynamic>.from(entry.value as Map),
           barberId: trimmedBarberId,
           dayOfWeek: dayOfWeek,
         ),
       );
     }
-
     schedules.sort((a, b) => a.dayOfWeek.compareTo(b.dayOfWeek));
-
     return schedules;
   }
 
@@ -111,16 +114,12 @@ class ScheduleRemoteDataSourceImpl implements ScheduleRemoteDataSource {
     required int dayOfWeek,
   }) async {
     final trimmedBarberId = barberId.trim();
-
     if (trimmedBarberId.isEmpty) {
       throw ArgumentError('Barber ID cannot be empty.');
     }
-
-    final document = await _scheduleCollection(trimmedBarberId)
-        .doc(_dayId(dayOfWeek))
-        .get();
-
-    if (!document.exists) {
+    final storedSchedule = await _weeklySchedule(trimmedBarberId);
+    final daySchedule = storedSchedule[_dayId(dayOfWeek)];
+    if (daySchedule is! Map) {
       return WeeklyScheduleModel(
         barberId: trimmedBarberId,
         dayOfWeek: dayOfWeek,
@@ -130,9 +129,8 @@ class ScheduleRemoteDataSourceImpl implements ScheduleRemoteDataSource {
         breaks: const [],
       );
     }
-
-    return WeeklyScheduleModel.fromFirestore(
-      document,
+    return WeeklyScheduleModel.fromSupabaseJson(
+      Map<String, dynamic>.from(daySchedule),
       barberId: trimmedBarberId,
       dayOfWeek: dayOfWeek,
     );
@@ -146,40 +144,26 @@ class ScheduleRemoteDataSourceImpl implements ScheduleRemoteDataSource {
       throw ArgumentError('Barber ID cannot be empty.');
     }
 
-    await _scheduleCollection(barberId)
-        .doc(_dayId(schedule.dayOfWeek))
-        .set(schedule.toFirestore());
+    final storedSchedule = await _weeklySchedule(barberId);
+    storedSchedule[_dayId(schedule.dayOfWeek)] = schedule.toSupabaseJson();
+    await _saveWeeklySchedule(barberId, storedSchedule);
   }
 
   @override
   Future<void> saveWeeklySchedule({
     required List<WeeklyScheduleModel> schedules,
   }) async {
-    if (schedules.isEmpty) {
-      return;
-    }
-
+    if (schedules.isEmpty) return;
     final barberId = schedules.first.barberId.trim();
-
-    if (barberId.isEmpty) {
-      throw ArgumentError('Barber ID cannot be empty.');
-    }
-
-    final batch = _firestore.batch();
-
-    final collection = _scheduleCollection(barberId);
-
+    if (barberId.isEmpty) throw ArgumentError('Barber ID cannot be empty.');
+    final storedSchedule = await _weeklySchedule(barberId);
     for (final schedule in schedules) {
       if (schedule.barberId.trim() != barberId) {
         throw ArgumentError('All schedules must belong to the same barber.');
       }
-
-      final reference = collection.doc(_dayId(schedule.dayOfWeek));
-
-      batch.set(reference, schedule.toFirestore());
+      storedSchedule[_dayId(schedule.dayOfWeek)] = schedule.toSupabaseJson();
     }
-
-    await batch.commit();
+    await _saveWeeklySchedule(barberId, storedSchedule);
   }
 
   @override
@@ -198,20 +182,15 @@ class ScheduleRemoteDataSourceImpl implements ScheduleRemoteDataSource {
       throw ArgumentError('From date cannot be after to date.');
     }
 
-    final snapshot = await _exceptionsCollection(trimmedBarberId)
-        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(from))
-        .where('date', isLessThanOrEqualTo: Timestamp.fromDate(to))
-        .orderBy('date')
-        .get();
+    final rows = await _supabase
+        .from('schedule_exceptions')
+        .select()
+        .eq('barber_id', trimmedBarberId)
+        .gte('date', _exceptionIdForDate(from))
+        .lte('date', _exceptionIdForDate(to))
+        .order('date', ascending: true);
 
-    return snapshot.docs
-        .map(
-          (document) => ScheduleExceptionModel.fromFirestore(
-            document,
-            barberId: trimmedBarberId,
-          ),
-        )
-        .toList();
+    return rows.map(ScheduleExceptionModel.fromSupabaseJson).toList();
   }
 
   String _exceptionIdForDate(DateTime date) {
@@ -234,8 +213,6 @@ class ScheduleRemoteDataSourceImpl implements ScheduleRemoteDataSource {
 
     final exceptionId = _exceptionIdForDate(exception.date);
 
-    final reference = _exceptionsCollection(barberId).doc(exceptionId);
-
     final createdException = ScheduleExceptionModel(
       id: exceptionId,
       barberId: barberId,
@@ -251,20 +228,25 @@ class ScheduleRemoteDataSourceImpl implements ScheduleRemoteDataSource {
       reason: exception.reason?.trim(),
     );
 
-    await _firestore.runTransaction((transaction) async {
-      final snapshot = await transaction.get(reference);
+    final existing = await _supabase
+        .from('schedule_exceptions')
+        .select('id')
+        .eq('barber_id', barberId)
+        .eq('id', exceptionId)
+        .maybeSingle();
 
-      if (snapshot.exists) {
-        throw StateError(
-          'A schedule exception already exists for '
-          '${createdException.date.year}-'
-          '${createdException.date.month.toString().padLeft(2, '0')}-'
-          '${createdException.date.day.toString().padLeft(2, '0')}.',
-        );
-      }
+    if (existing != null) {
+      throw StateError(
+        'A schedule exception already exists for '
+        '${createdException.date.year}-'
+        '${createdException.date.month.toString().padLeft(2, '0')}-'
+        '${createdException.date.day.toString().padLeft(2, '0')}.',
+      );
+    }
 
-      transaction.set(reference, createdException.toFirestore());
-    });
+    await _supabase
+        .from('schedule_exceptions')
+        .insert(createdException.toSupabaseJson());
 
     return createdException;
   }
@@ -286,10 +268,6 @@ class ScheduleRemoteDataSourceImpl implements ScheduleRemoteDataSource {
 
     final newExceptionId = _exceptionIdForDate(exception.date);
 
-    final oldReference = _exceptionsCollection(barberId).doc(oldExceptionId);
-
-    final newReference = _exceptionsCollection(barberId).doc(newExceptionId);
-
     final updatedException = ScheduleExceptionModel(
       id: newExceptionId,
       barberId: barberId,
@@ -305,30 +283,40 @@ class ScheduleRemoteDataSourceImpl implements ScheduleRemoteDataSource {
       reason: exception.reason?.trim(),
     );
 
-    await _firestore.runTransaction((transaction) async {
-      final oldSnapshot = await transaction.get(oldReference);
+    final existing = await _supabase
+        .from('schedule_exceptions')
+        .select('id')
+        .eq('barber_id', barberId)
+        .eq('id', oldExceptionId)
+        .maybeSingle();
 
-      if (!oldSnapshot.exists) {
-        throw StateError('Schedule exception $oldExceptionId does not exist.');
+    if (existing == null) {
+      throw StateError('Schedule exception $oldExceptionId does not exist.');
+    }
+
+    if (oldExceptionId != newExceptionId) {
+      final conflict = await _supabase
+          .from('schedule_exceptions')
+          .select('id')
+          .eq('barber_id', barberId)
+          .eq('id', newExceptionId)
+          .maybeSingle();
+
+      if (conflict != null) {
+        throw StateError(
+          'A schedule exception already exists for '
+          '${updatedException.date.year}-'
+          '${updatedException.date.month.toString().padLeft(2, '0')}-'
+          '${updatedException.date.day.toString().padLeft(2, '0')}.',
+        );
       }
+    }
 
-      if (oldExceptionId != newExceptionId) {
-        final newSnapshot = await transaction.get(newReference);
-
-        if (newSnapshot.exists) {
-          throw StateError(
-            'A schedule exception already exists for '
-            '${updatedException.date.year}-'
-            '${updatedException.date.month.toString().padLeft(2, '0')}-'
-            '${updatedException.date.day.toString().padLeft(2, '0')}.',
-          );
-        }
-
-        transaction.delete(oldReference);
-      }
-
-      transaction.set(newReference, updatedException.toFirestore());
-    });
+    await _supabase
+        .from('schedule_exceptions')
+        .update(updatedException.toSupabaseJson())
+        .eq('barber_id', barberId)
+        .eq('id', oldExceptionId);
 
     return updatedException;
   }
@@ -349,8 +337,10 @@ class ScheduleRemoteDataSourceImpl implements ScheduleRemoteDataSource {
       throw ArgumentError('Schedule exception ID cannot be empty.');
     }
 
-    await _exceptionsCollection(trimmedBarberId)
-        .doc(trimmedExceptionId)
-        .delete();
+    await _supabase
+        .from('schedule_exceptions')
+        .delete()
+        .eq('barber_id', trimmedBarberId)
+        .eq('id', trimmedExceptionId);
   }
 }

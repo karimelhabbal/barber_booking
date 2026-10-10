@@ -1,4 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:math';
+
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/barber_candidate_model.dart';
 import '../models/barber_model.dart';
@@ -49,48 +51,42 @@ abstract interface class BarberRemoteDataSource {
 }
 
 class BarberRemoteDataSourceImpl implements BarberRemoteDataSource {
-  BarberRemoteDataSourceImpl({required this._firestore});
+  BarberRemoteDataSourceImpl({required this._supabase});
 
-  final FirebaseFirestore _firestore;
-
-  CollectionReference<Map<String, dynamic>> get _barbersCollection =>
-      _firestore.collection('barbers');
+  final SupabaseClient _supabase;
 
   @override
   Future<BarberModel?> getBarber({required String barberId}) async {
-    final trimmedBarberId = barberId.trim();
-
-    if (trimmedBarberId.isEmpty) {
+    final id = barberId.trim();
+    if (id.isEmpty) {
       throw const BarberDataSourceException(
         BarberDataSourceErrorCode.barberIdEmpty,
       );
     }
-
-    final document = await _barbersCollection.doc(trimmedBarberId).get();
-
-    if (!document.exists) return null;
-
-    return BarberModel.fromFirestore(document);
+    final row = await _supabase
+        .from('barbers')
+        .select()
+        .eq('id', id)
+        .maybeSingle();
+    return row == null ? null : BarberModel.fromSupabase(row);
   }
 
   @override
   Future<List<BarberModel>> getShopBarbers({
     required String barberShopId,
   }) async {
-    final trimmedBarberShopId = barberShopId.trim();
-
-    if (trimmedBarberShopId.isEmpty) {
+    final shopId = barberShopId.trim();
+    if (shopId.isEmpty) {
       throw const BarberDataSourceException(
         BarberDataSourceErrorCode.shopIdEmpty,
       );
     }
-
-    final snapshot = await _barbersCollection
-        .where('barberShopId', isEqualTo: trimmedBarberShopId)
-        .where('isActive', isEqualTo: true)
-        .get();
-
-    return snapshot.docs.map(BarberModel.fromFirestore).toList();
+    final rows = await _supabase
+        .from('barbers')
+        .select()
+        .eq('barber_shop_id', shopId)
+        .eq('is_active', true);
+    return rows.map(BarberModel.fromSupabase).toList();
   }
 
   @override
@@ -101,209 +97,140 @@ class BarberRemoteDataSourceImpl implements BarberRemoteDataSource {
     String? phone,
     String? imageUrl,
   }) async {
-    final trimmedUserId = userId.trim();
-    final trimmedBarberShopId = barberShopId.trim();
-    final trimmedName = name.trim();
-
-    if (trimmedUserId.isEmpty) {
+    final uid = userId.trim(),
+        shopId = barberShopId.trim(),
+        barberName = name.trim();
+    if (uid.isEmpty) {
       throw const BarberDataSourceException(
         BarberDataSourceErrorCode.userIdEmpty,
       );
     }
-
-    if (trimmedBarberShopId.isEmpty) {
+    if (shopId.isEmpty) {
       throw const BarberDataSourceException(
         BarberDataSourceErrorCode.shopIdEmpty,
       );
     }
-
-    if (trimmedName.isEmpty) {
+    if (barberName.isEmpty) {
       throw const BarberDataSourceException(
         BarberDataSourceErrorCode.nameEmpty,
       );
     }
-
-    final userReference = _firestore.collection('users').doc(trimmedUserId);
-
-    final userSnapshot = await userReference.get();
-
-    if (!userSnapshot.exists) {
+    final profile = await _supabase
+        .from('profiles')
+        .select('id,role,barber_shop_id')
+        .eq('id', uid)
+        .maybeSingle();
+    if (profile == null) {
       throw const BarberDataSourceException(
         BarberDataSourceErrorCode.userNotFound,
       );
     }
-
-    final userData = userSnapshot.data();
-
-    if (userData?['role'] != 'barber') {
+    if (profile['role'] != 'barber') {
       throw const BarberDataSourceException(
         BarberDataSourceErrorCode.userNotBarber,
       );
     }
-
-    final currentShopId = (userData?['barberShopId'] as String?)?.trim();
-
-    if (currentShopId != null &&
-        currentShopId.isNotEmpty &&
-        currentShopId != trimmedBarberShopId) {
+    final currentShop = (profile['barber_shop_id'] as String?)?.trim();
+    if (currentShop != null &&
+        currentShop.isNotEmpty &&
+        currentShop != shopId) {
       throw const BarberDataSourceException(
         BarberDataSourceErrorCode.assignedAnotherShop,
       );
     }
-
-    final existingBarber = await getBarberByUserAndShop(
-      userId: trimmedUserId,
-      barberShopId: trimmedBarberShopId,
+    final existing = await getBarberByUserAndShop(
+      userId: uid,
+      barberShopId: shopId,
     );
-
-    if (existingBarber != null && existingBarber.isActive) {
+    if (existing != null && existing.isActive) {
       throw const BarberDataSourceException(
         BarberDataSourceErrorCode.assignedThisShop,
       );
     }
-
     final now = DateTime.now();
-    final batch = _firestore.batch();
-
-    if (existingBarber != null) {
-      final barberReference = _barbersCollection.doc(existingBarber.id);
-
-      batch.set(barberReference, {
-        'userId': trimmedUserId,
-        'barberShopId': trimmedBarberShopId,
-        'name': trimmedName,
-        'phone': phone?.trim(),
-        'imageUrl': imageUrl?.trim(),
-        'isActive': true,
-        'createdAt': Timestamp.fromDate(existingBarber.createdAt),
-        'updatedAt': Timestamp.fromDate(now),
-      }, SetOptions(merge: true));
-
-      if (currentShopId == null || currentShopId.isEmpty) {
-        batch.update(userReference, {'barberShopId': trimmedBarberShopId});
-      }
-
-      await batch.commit();
-
-      return BarberModel(
-        id: existingBarber.id,
-        userId: trimmedUserId,
-        barberShopId: trimmedBarberShopId,
-        name: trimmedName,
-        phone: phone?.trim(),
-        imageUrl: imageUrl?.trim(),
-        isActive: true,
-        createdAt: existingBarber.createdAt,
-        updatedAt: now,
-      );
-    }
-
-    final reference = _barbersCollection.doc();
-
     final barber = BarberModel(
-      id: reference.id,
-      userId: trimmedUserId,
-      barberShopId: trimmedBarberShopId,
-      name: trimmedName,
+      id: existing?.id ?? _newBarberId(),
+      userId: uid,
+      barberShopId: shopId,
+      name: barberName,
       phone: phone?.trim(),
       imageUrl: imageUrl?.trim(),
       isActive: true,
-      createdAt: now,
+      createdAt: existing?.createdAt ?? now,
       updatedAt: now,
     );
-
-    batch.set(reference, barber.toFirestore());
-
-    if (currentShopId == null || currentShopId.isEmpty) {
-      batch.update(userReference, {'barberShopId': trimmedBarberShopId});
+    if (existing == null) {
+      await _supabase.from('barbers').insert(barber.toSupabase());
+    } else {
+      await _supabase
+          .from('barbers')
+          .update(barber.toSupabase())
+          .eq('id', barber.id);
     }
-
-    await batch.commit();
-
+    await _assignBarberProfile(uid, shopId);
     return barber;
   }
 
   @override
   Future<void> updateBarber(BarberModel barber) async {
-    await _barbersCollection
-        .doc(barber.id)
-        .set(barber.toFirestore(), SetOptions(merge: true));
+    await _supabase.from('barbers').update({
+      'name': barber.name,
+      'phone': barber.phone,
+      'image_url': barber.imageUrl,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }).eq('id', barber.id);
   }
 
   @override
   Future<void> deleteBarber({required String barberId}) async {
-    final trimmedBarberId = barberId.trim();
-
-    if (trimmedBarberId.isEmpty) {
+    final id = barberId.trim();
+    if (id.isEmpty) {
       throw const BarberDataSourceException(
         BarberDataSourceErrorCode.barberIdEmpty,
       );
     }
-
-    final barberReference = _barbersCollection.doc(trimmedBarberId);
-
-    final barberSnapshot = await barberReference.get();
-
-    if (!barberSnapshot.exists) {
+    final barber = await _supabase
+        .from('barbers')
+        .select('id,user_id,barber_shop_id')
+        .eq('id', id)
+        .maybeSingle();
+    if (barber == null) {
       throw const BarberDataSourceException(
         BarberDataSourceErrorCode.barberNotFound,
       );
     }
-
-    final barberData = barberSnapshot.data();
-
-    final userId = (barberData?['userId'] as String?)?.trim();
-    final barberShopId = (barberData?['barberShopId'] as String?)?.trim();
-
-    if (userId == null || userId.isEmpty) {
-      throw const BarberDataSourceException(
-        BarberDataSourceErrorCode.barberUserIdMissing,
-      );
-    }
-
-    if (barberShopId == null || barberShopId.isEmpty) {
-      throw const BarberDataSourceException(
-        BarberDataSourceErrorCode.barberShopIdMissing,
-      );
-    }
-
-    final userReference = _firestore.collection('users').doc(userId);
-
-    final userSnapshot = await userReference.get();
-
-    if (!userSnapshot.exists) {
+    final uid = barber['user_id'] as String,
+        shopId = barber['barber_shop_id'] as String;
+    final profile = await _supabase
+        .from('profiles')
+        .select('barber_shop_id')
+        .eq('id', uid)
+        .maybeSingle();
+    if (profile == null) {
       throw const BarberDataSourceException(
         BarberDataSourceErrorCode.userNotFound,
       );
     }
-
-    final userData = userSnapshot.data();
-
-    final currentUserShopId = (userData?['barberShopId'] as String?)?.trim();
-
-    final batch = _firestore.batch();
-
-    batch.set(barberReference, {
-      'isActive': false,
-      'updatedAt': Timestamp.fromDate(DateTime.now()),
-    }, SetOptions(merge: true));
-
-    if (currentUserShopId == barberShopId) {
-      batch.update(userReference, {'barberShopId': null});
+    await _supabase
+        .from('barbers')
+        .update({
+          'is_active': false,
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        })
+        .eq('id', id);
+    if (profile['barber_shop_id'] == shopId) {
+      await _assignBarberProfile(uid, null);
     }
-
-    await batch.commit();
   }
 
   @override
   Future<List<BarberCandidateModel>> getBarberCandidates() async {
-    final snapshot = await _firestore
-        .collection('users')
-        .where('role', isEqualTo: 'barber')
-        .where('barberShopId', isEqualTo: null)
-        .get();
-
-    return snapshot.docs.map(BarberCandidateModel.fromFirestore).toList();
+    final rows = await _supabase
+        .from('profiles')
+        .select('id,name,phone')
+        .eq('role', 'barber')
+        .isFilter('barber_shop_id', null);
+    return rows.map(BarberCandidateModel.fromJson).toList();
   }
 
   @override
@@ -311,31 +238,41 @@ class BarberRemoteDataSourceImpl implements BarberRemoteDataSource {
     required String userId,
     required String barberShopId,
   }) async {
-    final trimmedUserId = userId.trim();
-    final trimmedBarberShopId = barberShopId.trim();
-
-    if (trimmedUserId.isEmpty) {
+    final uid = userId.trim(), shopId = barberShopId.trim();
+    if (uid.isEmpty) {
       throw const BarberDataSourceException(
         BarberDataSourceErrorCode.userIdEmpty,
       );
     }
-
-    if (trimmedBarberShopId.isEmpty) {
+    if (shopId.isEmpty) {
       throw const BarberDataSourceException(
         BarberDataSourceErrorCode.shopIdEmpty,
       );
     }
-
-    final snapshot = await _barbersCollection
-        .where('userId', isEqualTo: trimmedUserId)
-        .where('barberShopId', isEqualTo: trimmedBarberShopId)
+    final row = await _supabase
+        .from('barbers')
+        .select()
+        .eq('user_id', uid)
+        .eq('barber_shop_id', shopId)
         .limit(1)
-        .get();
+        .maybeSingle();
+    return row == null ? null : BarberModel.fromSupabase(row);
+  }
 
-    if (snapshot.docs.isEmpty) {
-      return null;
-    }
+  static String _newBarberId() {
+    const alphabet =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    final random = Random.secure();
+    return List.generate(
+      24,
+      (_) => alphabet[random.nextInt(alphabet.length)],
+    ).join();
+  }
 
-    return BarberModel.fromFirestore(snapshot.docs.first);
+  Future<void> _assignBarberProfile(String userId, String? shopId) async {
+    await _supabase.rpc(
+      'assign_barber_profile_to_shop',
+      params: {'p_profile_id': userId, 'p_shop_id': shopId},
+    );
   }
 }

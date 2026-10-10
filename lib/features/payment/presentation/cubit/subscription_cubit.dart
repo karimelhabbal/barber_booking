@@ -22,10 +22,21 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     try {
       final plans = await _repo.getActivePlans();
       _subSub?.cancel();
-      _subSub = _repo.watchSubscription(ownerId).listen((s) {
-        if (isClosed) return;
-        emit(state.copyWith(subscription: s));
-      });
+      _subSub = _repo.watchSubscription(ownerId).listen(
+        (s) {
+          if (isClosed) return;
+          emit(state.copyWith(subscription: s));
+        },
+        onError: (Object _) {
+          if (isClosed) return;
+          emit(
+            state.copyWith(
+              flow: SubscriptionFlow.failed,
+              failure: const PaymentFailure(PaymentFailureCode.unavailable),
+            ),
+          );
+        },
+      );
       emit(state.copyWith(flow: SubscriptionFlow.ready, plans: plans));
     } on PaymentFailure catch (f) {
       emit(state.copyWith(flow: SubscriptionFlow.failed, failure: f));
@@ -84,18 +95,30 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         emit(state.copyWith(verifyingTooLong: true));
       }
     });
-    _paySub = _repo.watchSubscriptionPayment(session.paymentId).listen((p) {
-      if (isClosed || p == null) return;
-      if (p.status == SubscriptionPaymentStatus.paid) {
+    _paySub = _repo.watchSubscriptionPayment(session.paymentId).listen(
+      (p) {
+        if (isClosed || p == null) return;
+        if (p.status == SubscriptionPaymentStatus.paid) {
+          _cancelTracking();
+          emit(state.copyWith(flow: SubscriptionFlow.activated));
+        } else if (p.status == SubscriptionPaymentStatus.failed ||
+            p.status == SubscriptionPaymentStatus.expired ||
+            p.status == SubscriptionPaymentStatus.cancelled) {
+          _cancelTracking();
+          emit(state.copyWith(flow: SubscriptionFlow.failed));
+        }
+      },
+      onError: (Object _) {
+        if (isClosed) return;
         _cancelTracking();
-        emit(state.copyWith(flow: SubscriptionFlow.activated));
-      } else if (p.status == SubscriptionPaymentStatus.failed ||
-          p.status == SubscriptionPaymentStatus.expired ||
-          p.status == SubscriptionPaymentStatus.cancelled) {
-        _cancelTracking();
-        emit(state.copyWith(flow: SubscriptionFlow.failed));
-      }
-    });
+        emit(
+          state.copyWith(
+            flow: SubscriptionFlow.failed,
+            failure: const PaymentFailure(PaymentFailureCode.unavailable),
+          ),
+        );
+      },
+    );
   }
 
   void backToReady() {

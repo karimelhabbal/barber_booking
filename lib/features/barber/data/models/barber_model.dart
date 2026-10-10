@@ -15,6 +15,32 @@ class BarberModel extends Barber {
     required super.updatedAt,
   });
 
+  factory BarberModel.fromSupabase(Map<String, dynamic> row) {
+    return BarberModel(
+      id: row['id'] as String,
+      userId: row['user_id'] as String,
+      barberShopId: row['barber_shop_id'] as String,
+      name: row['name'] as String? ?? '',
+      phone: row['phone'] as String?,
+      imageUrl: row['image_url'] as String?,
+      isActive: row['is_active'] as bool? ?? true,
+      createdAt: DateTime.parse(row['created_at'] as String),
+      updatedAt: DateTime.parse(row['updated_at'] as String),
+    );
+  }
+
+  Map<String, dynamic> toSupabase() => {
+    'id': id,
+    'user_id': userId,
+    'barber_shop_id': barberShopId,
+    'name': name,
+    'phone': phone,
+    'image_url': imageUrl,
+    'is_active': isActive,
+    'created_at': createdAt.toUtc().toIso8601String(),
+    'updated_at': updatedAt.toUtc().toIso8601String(),
+  };
+
   factory BarberModel.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> document,
   ) {

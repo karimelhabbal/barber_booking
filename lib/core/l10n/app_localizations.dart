@@ -245,13 +245,13 @@ abstract class AppLocalizations {
   /// No description provided for @tooManyRequests.
   ///
   /// In en, this message translates to:
-  /// **'Too many attempts. Please wait before trying again.'**
+  /// **'Too many attempts. Please try again later.'**
   String get tooManyRequests;
 
   /// No description provided for @networkRequestFailed.
   ///
   /// In en, this message translates to:
-  /// **'Check your internet connection and try again.'**
+  /// **'Unable to connect to the server. Check your internet connection and try again.'**
   String get networkRequestFailed;
 
   /// No description provided for @operationNotAllowed.
@@ -311,7 +311,7 @@ abstract class AppLocalizations {
   /// No description provided for @genericAuthError.
   ///
   /// In en, this message translates to:
-  /// **'Authentication failed. Please try again.'**
+  /// **'An authentication error occurred. Please try again.'**
   String get genericAuthError;
 
   /// No description provided for @name.
@@ -1849,6 +1849,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next {weekday}'**
   String nextWeekday(String weekday);
+
+  /// No description provided for @authWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get authWelcome;
+
+  /// No description provided for @authSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your next great look starts here.'**
+  String get authSubtitle;
+
+  /// No description provided for @authOrEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'OR CONTINUE WITH EMAIL'**
+  String get authOrEmail;
+
+  /// No description provided for @emailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address'**
+  String get emailAddress;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @invalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email address.'**
+  String get invalidEmail;
+
+  /// No description provided for @passwordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 6 characters.'**
+  String get passwordTooShort;
+
+  /// No description provided for @hasAccountAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account? Sign in'**
+  String get hasAccountAction;
+
+  /// No description provided for @noAccountAction.
+  ///
+  /// In en, this message translates to:
+  /// **'New here? Create an account'**
+  String get noAccountAction;
+
+  /// No description provided for @barberSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Barber staff sign in'**
+  String get barberSignIn;
+
+  /// No description provided for @invalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'The email or password is incorrect.'**
+  String get invalidCredentials;
+
+  /// No description provided for @accountAlreadyExists.
+  ///
+  /// In en, this message translates to:
+  /// **'This email is already registered. Try signing in instead.'**
+  String get accountAlreadyExists;
+
+  /// No description provided for @userProfileNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account profile could not be found.'**
+  String get userProfileNotFound;
+
+  /// No description provided for @barberAccessDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'This account does not have barber access.'**
+  String get barberAccessDenied;
+
+  /// No description provided for @oauthCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in was cancelled.'**
+  String get oauthCancelled;
+
+  /// No description provided for @customerSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer sign in'**
+  String get customerSignIn;
+
+  /// No description provided for @emailNotConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Please confirm your email address before signing in.'**
+  String get emailNotConfirmed;
+
+  /// No description provided for @emailConfirmationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please confirm your email address first.'**
+  String get emailConfirmationRequired;
+
+  /// No description provided for @weakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Your password is too weak. Please use a stronger password.'**
+  String get weakPassword;
+
+  /// No description provided for @authServiceUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The authentication service is unavailable. Please try again later.'**
+  String get authServiceUnavailable;
 }
 
 class _AppLocalizationsDelegate

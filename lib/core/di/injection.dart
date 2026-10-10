@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../features/auth/data/datasources/user_remote_data_source.dart';
@@ -45,7 +45,6 @@ import '../../features/payment/data/repositories/subscription_repository_impl.da
 import '../../features/payment/domain/repositories/booking_payment_repository.dart';
 import '../../features/payment/domain/repositories/payout_destination_repository.dart';
 import '../../features/payment/domain/repositories/subscription_repository.dart';
-import '../../features/payment/payment_config.dart';
 import '../../features/payment/presentation/cubit/booking_payment_cubit.dart';
 import '../../features/payment/presentation/cubit/payout_destination_cubit.dart';
 import '../../features/payment/presentation/cubit/subscription_cubit.dart';
@@ -59,31 +58,20 @@ import '../../features/notifications/services/notification_service.dart';
 final GetIt getIt = GetIt.instance;
 
 void configureDependencies() {
-  getIt.registerLazySingleton<fb.FirebaseAuth>(() => fb.FirebaseAuth.instance);
-
-  getIt.registerLazySingleton<FirebaseFirestore>(
-    () => FirebaseFirestore.instance,
-  );
-
-  // ---------------------------------------------------------------------------
-  // Auth
-  // ---------------------------------------------------------------------------
+  getIt.registerLazySingleton<SupabaseClient>(() => Supabase.instance.client);
 
   getIt.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(firebaseAuth: getIt<fb.FirebaseAuth>()),
+    () => AuthRemoteDataSourceImpl(client: getIt<SupabaseClient>()),
   );
-
   getIt.registerLazySingleton<UserRemoteDataSource>(
-    () => UserRemoteDataSourceImpl(firestore: getIt<FirebaseFirestore>()),
+    () => UserRemoteDataSourceImpl(client: getIt<SupabaseClient>()),
   );
-
   getIt.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
       authRemoteDataSource: getIt<AuthRemoteDataSource>(),
       userRemoteDataSource: getIt<UserRemoteDataSource>(),
     ),
   );
-
   getIt.registerFactory<AuthCubit>(
     () => AuthCubit(
       authRepository: getIt<AuthRepository>(),
@@ -91,95 +79,61 @@ void configureDependencies() {
     ),
   );
 
-  // ---------------------------------------------------------------------------
-  // Barber Shop
-  // ---------------------------------------------------------------------------
-
   getIt.registerLazySingleton<BarberShopRemoteDataSource>(
-    () => BarberShopRemoteDataSourceImpl(firestore: getIt<FirebaseFirestore>()),
+    () => BarberShopRemoteDataSourceImpl(client: getIt<SupabaseClient>()),
   );
-
   getIt.registerLazySingleton<BarberShopRepository>(
     () => BarberShopRepositoryImpl(
       remoteDataSource: getIt<BarberShopRemoteDataSource>(),
     ),
   );
-
   getIt.registerFactory<BarberShopCubit>(
     () => BarberShopCubit(repository: getIt<BarberShopRepository>()),
   );
 
-  // ---------------------------------------------------------------------------
-  // Barber
-  // ---------------------------------------------------------------------------
-
   getIt.registerLazySingleton<BarberRemoteDataSource>(
-    () => BarberRemoteDataSourceImpl(firestore: getIt<FirebaseFirestore>()),
+    () => BarberRemoteDataSourceImpl(supabase: getIt<SupabaseClient>()),
   );
-
   getIt.registerLazySingleton<BarberRepository>(
-    () =>
-        BarberRepositoryImpl(remoteDataSource: getIt<BarberRemoteDataSource>()),
+    () => BarberRepositoryImpl(remoteDataSource: getIt<BarberRemoteDataSource>()),
   );
-
   getIt.registerFactory<BarberCubit>(
     () => BarberCubit(repository: getIt<BarberRepository>()),
   );
 
-  // ---------------------------------------------------------------------------
-  // Schedule
-  // ---------------------------------------------------------------------------
-
   getIt.registerLazySingleton<ScheduleRemoteDataSource>(
-    () => ScheduleRemoteDataSourceImpl(firestore: getIt<FirebaseFirestore>()),
+    () => ScheduleRemoteDataSourceImpl(supabase: getIt<SupabaseClient>()),
   );
-
   getIt.registerLazySingleton<ScheduleRepository>(
     () => ScheduleRepositoryImpl(
       remoteDataSource: getIt<ScheduleRemoteDataSource>(),
     ),
   );
-
   getIt.registerFactory<ScheduleCubit>(
     () => ScheduleCubit(repository: getIt<ScheduleRepository>()),
   );
 
-  // ---------------------------------------------------------------------------
-  // Service
-  // ---------------------------------------------------------------------------
-
   getIt.registerLazySingleton<ServiceRemoteDataSource>(
-    () => ServiceRemoteDataSourceImpl(firestore: getIt<FirebaseFirestore>()),
+    () => ServiceRemoteDataSourceImpl(client: getIt<SupabaseClient>()),
   );
-
   getIt.registerLazySingleton<ServiceRepository>(
-    () => ServiceRepositoryImpl(
-      remoteDataSource: getIt<ServiceRemoteDataSource>(),
-    ),
+    () => ServiceRepositoryImpl(remoteDataSource: getIt<ServiceRemoteDataSource>()),
   );
-
   getIt.registerFactory<ServiceCubit>(
     () => ServiceCubit(repository: getIt<ServiceRepository>()),
   );
 
-  // ---------------------------------------------------------------------------
-  // Booking
-  // ---------------------------------------------------------------------------
-
   getIt.registerLazySingleton<BookingRemoteDataSource>(
-    () => BookingRemoteDataSourceImpl(firestore: getIt<FirebaseFirestore>()),
+    () => BookingRemoteDataSourceImpl(client: getIt<SupabaseClient>()),
   );
-
   getIt.registerLazySingleton<BookingRepository>(
     () => BookingRepositoryImpl(
       remoteDataSource: getIt<BookingRemoteDataSource>(),
     ),
   );
-
   getIt.registerLazySingleton<AvailabilityService>(
     () => const AvailabilityService(),
   );
-
   getIt.registerLazySingleton<GetAvailableSlots>(
     () => GetAvailableSlots(
       scheduleRepository: getIt<ScheduleRepository>(),
@@ -187,14 +141,12 @@ void configureDependencies() {
       availabilityService: getIt<AvailabilityService>(),
     ),
   );
-
   getIt.registerLazySingleton<CreateBooking>(
     () => CreateBooking(
       bookingRepository: getIt<BookingRepository>(),
       getAvailableSlots: getIt<GetAvailableSlots>(),
     ),
   );
-
   getIt.registerFactory<BookingCubit>(
     () => BookingCubit(
       repository: getIt<BookingRepository>(),
@@ -203,72 +155,49 @@ void configureDependencies() {
     ),
   );
 
-  // ---------------------------------------------------------------------------
-  // Payment
-  // ---------------------------------------------------------------------------
-
   getIt.registerLazySingleton<PaymentRemoteDataSource>(
     () => PaymentRemoteDataSource(
-      firestore: getIt<FirebaseFirestore>(),
-      functions: FirebaseFunctions.instanceFor(
-        region: PaymentConfig.functionsRegion,
-      ),
+      firestore: FirebaseFirestore.instance,
+      functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
     ),
   );
-
   getIt.registerLazySingleton<BookingPaymentRepository>(
     () => BookingPaymentRepositoryImpl(getIt<PaymentRemoteDataSource>()),
   );
-
   getIt.registerLazySingleton<SubscriptionRepository>(
     () => SubscriptionRepositoryImpl(getIt<PaymentRemoteDataSource>()),
   );
-
   getIt.registerLazySingleton<PayoutDestinationRepository>(
     () => PayoutDestinationRepositoryImpl(getIt<PaymentRemoteDataSource>()),
   );
-
   getIt.registerFactory<BookingPaymentCubit>(
     () => BookingPaymentCubit(getIt<BookingPaymentRepository>()),
   );
-
   getIt.registerFactory<SubscriptionCubit>(
     () => SubscriptionCubit(getIt<SubscriptionRepository>()),
   );
-
   getIt.registerFactory<PayoutDestinationCubit>(
     () => PayoutDestinationCubit(getIt<PayoutDestinationRepository>()),
   );
 
-  // ---------------------------------------------------------------------------
-  // Notifications
-  // ---------------------------------------------------------------------------
-
   getIt.registerLazySingleton<NotificationRemoteDataSource>(
-    () =>
-        NotificationRemoteDataSourceImpl(firestore: getIt<FirebaseFirestore>()),
+    () => NotificationRemoteDataSourceImpl(client: getIt<SupabaseClient>()),
   );
-
   getIt.registerLazySingleton<NotificationRepository>(
     () => NotificationRepositoryImpl(
       remoteDataSource: getIt<NotificationRemoteDataSource>(),
     ),
   );
-
   getIt.registerLazySingleton<FirebaseMessaging>(
     () => FirebaseMessaging.instance,
   );
-
   getIt.registerLazySingleton<NotificationService>(
     () => NotificationService(
-      firebaseAuth: getIt<fb.FirebaseAuth>(),
+      supabase: getIt<SupabaseClient>(),
       messaging: getIt<FirebaseMessaging>(),
       repository: getIt<NotificationRepository>(),
     ),
   );
-
-  // One global instance shared by every role: it backs the notification list,
-  // the unread badge and the foreground push refresh.
   getIt.registerLazySingleton<NotificationsCubit>(
     () => NotificationsCubit(
       repository: getIt<NotificationRepository>(),

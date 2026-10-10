@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../domain/repositories/notification_repository.dart';
 
@@ -24,12 +24,12 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 ///
 /// * plugin / local-notification initialization,
 /// * runtime notification permission (Android 13+ and iOS),
-/// * device token registration under `users/{uid}/devices/{token}`,
+/// * device token registration in Supabase,
 /// * foreground presentation and background/terminated delivery,
 /// * notification taps (including cold start) routed through GoRouter.
 class NotificationService {
   NotificationService({
-    required this._firebaseAuth,
+    required this._supabase,
     required this._messaging,
     required this._repository,
   });
@@ -59,7 +59,7 @@ class NotificationService {
     'scheduleChanged',
   };
 
-  final fb.FirebaseAuth _firebaseAuth;
+  final SupabaseClient _supabase;
   final FirebaseMessaging _messaging;
   final NotificationRepository _repository;
 
@@ -76,6 +76,7 @@ class NotificationService {
   GoRouter? _router;
 
   String? _registeredUserId;
+  bool _authReady = false;
   bool _initialized = false;
   Map<String, dynamic>? _pendingTapData;
   int _nextLocalNotificationId = 0;
@@ -92,6 +93,7 @@ class NotificationService {
     }
 
     _initialized = true;
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
     try {
       const initializationSettings = InitializationSettings(
@@ -110,6 +112,12 @@ class NotificationService {
         onDidReceiveNotificationResponse: (response) =>
             _handlePayload(response.payload),
       );
+
+      final localLaunchDetails = await _localNotifications
+          .getNotificationAppLaunchDetails();
+      if (localLaunchDetails?.didNotificationLaunchApp ?? false) {
+        _handlePayload(localLaunchDetails?.notificationResponse?.payload);
+      }
 
       await _createAndroidChannel();
       await _requestPermission();
@@ -135,8 +143,16 @@ class NotificationService {
       final initialMessage = await _messaging.getInitialMessage();
       if (initialMessage != null) {
         _pendingTapData = Map<String, dynamic>.from(initialMessage.data);
+        tryConsumePendingTap();
       }
     } on Object catch (error, stackTrace) {
+      _initialized = false;
+      await _onMessageSubscription?.cancel();
+      await _onMessageOpenedSubscription?.cancel();
+      await _onTokenRefreshSubscription?.cancel();
+      _onMessageSubscription = null;
+      _onMessageOpenedSubscription = null;
+      _onTokenRefreshSubscription = null;
       debugPrint('NotificationService.initialize failed: $error\n$stackTrace');
     }
   }
@@ -150,6 +166,7 @@ class NotificationService {
   /// `AuthAuthenticated` is emitted.
   void attachRouter(GoRouter router) {
     _router = router;
+    tryConsumePendingTap();
   }
 
   /// Registers this device for [userId] and stores its token server-side.
@@ -162,6 +179,7 @@ class NotificationService {
 
     // Remembered so logout can remove the token even before signing out.
     _registeredUserId = trimmedUserId;
+    _authReady = true;
 
     try {
       final token = await _messaging.getToken();
@@ -182,12 +200,14 @@ class NotificationService {
 
   /// Removes this device's token for the current user.
   ///
-  /// Must be awaited before Firebase Auth signs out, otherwise the device
-  /// document can no longer be deleted by the client (security rules).
+  /// Must be awaited before Supabase Auth signs out, otherwise the device
+  /// token can no longer be removed for the previous account (RLS).
   Future<void> unregisterDevice() async {
     final userId = _registeredUserId;
 
     _registeredUserId = null;
+    _authReady = false;
+    _pendingTapData = null;
 
     if (userId == null || userId.isEmpty) {
       return;
@@ -199,10 +219,14 @@ class NotificationService {
       if (token != null && token.isNotEmpty) {
         await _repository.unregisterDeviceToken(userId: userId, token: token);
       }
-
-      await _messaging.deleteToken();
     } on Object catch (error) {
       debugPrint('NotificationService.unregisterDevice failed: $error');
+    } finally {
+      try {
+        await _messaging.deleteToken();
+      } on Object catch (error) {
+        debugPrint('NotificationService.deleteToken failed: $error');
+      }
     }
   }
 
@@ -359,7 +383,7 @@ class NotificationService {
   void _navigateForTap(Map<String, dynamic> data) {
     final router = _router;
 
-    if (router == null || _firebaseAuth.currentUser == null) {
+    if (router == null || !_authReady || _supabase.auth.currentUser == null) {
       // Not ready yet: keep the full payload pending until the session is
       // restored (cold start). It is consumed once AuthAuthenticated fires.
       _pendingTapData = Map<String, dynamic>.from(data);
@@ -386,7 +410,14 @@ class NotificationService {
       return 'web';
     }
 
-    return defaultTargetPlatform.name;
+    return switch (defaultTargetPlatform) {
+      TargetPlatform.android => 'android',
+      TargetPlatform.iOS => 'ios',
+      TargetPlatform.linux => 'linux',
+      TargetPlatform.macOS => 'macos',
+      TargetPlatform.windows => 'windows',
+      TargetPlatform.fuchsia => 'fuchsia',
+    };
   }
 
   String _dataString(Map<String, dynamic> data, String key) {

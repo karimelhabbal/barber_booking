@@ -1,17 +1,9 @@
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../../domain/entities/weekly_schedule.dart';
 
 class ScheduleBreakModel extends ScheduleBreak {
-  const ScheduleBreakModel({
-    required super.startTime,
-    required super.endTime,
-  });
+  const ScheduleBreakModel({required super.startTime, required super.endTime});
 
-  factory ScheduleBreakModel.fromMap(
-    Map<String, dynamic> data,
-  ) {
+  factory ScheduleBreakModel.fromMap(Map<String, dynamic> data) {
     return ScheduleBreakModel(
       startTime: data['startTime'] as String? ?? '',
       endTime: data['endTime'] as String? ?? '',
@@ -19,15 +11,10 @@ class ScheduleBreakModel extends ScheduleBreak {
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'startTime': startTime,
-      'endTime': endTime,
-    };
+    return {'startTime': startTime, 'endTime': endTime};
   }
 
-  factory ScheduleBreakModel.fromEntity(
-    ScheduleBreak breakItem,
-  ) {
+  factory ScheduleBreakModel.fromEntity(ScheduleBreak breakItem) {
     return ScheduleBreakModel(
       startTime: breakItem.startTime,
       endTime: breakItem.endTime,
@@ -45,26 +32,20 @@ class WeeklyScheduleModel extends WeeklySchedule {
     required super.breaks,
   });
 
-  factory WeeklyScheduleModel.fromFirestore(
-    DocumentSnapshot<Map<String, dynamic>> document, {
+  factory WeeklyScheduleModel.fromSupabaseJson(
+    Map<String, dynamic> data, {
     required String barberId,
     required int dayOfWeek,
   }) {
-    final data = document.data();
-
-    if (data == null) {
-      throw StateError(
-        'Weekly schedule document ${document.id} does not exist.',
-      );
-    }
-
     final rawBreaks = data['breaks'];
-
     final breaks = rawBreaks is List
         ? rawBreaks
-            .whereType<Map<String, dynamic>>()
-            .map(ScheduleBreakModel.fromMap)
-            .toList()
+              .whereType<Map>()
+              .map(
+                (item) =>
+                    ScheduleBreakModel.fromMap(Map<String, dynamic>.from(item)),
+              )
+              .toList()
         : <ScheduleBreakModel>[];
 
     return WeeklyScheduleModel(
@@ -77,22 +58,18 @@ class WeeklyScheduleModel extends WeeklySchedule {
     );
   }
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toSupabaseJson() {
     return {
       'isWorking': isWorking,
       'startTime': startTime,
       'endTime': endTime,
       'breaks': breaks
-          .map(
-            (item) => ScheduleBreakModel.fromEntity(item).toMap(),
-          )
+          .map((item) => ScheduleBreakModel.fromEntity(item).toMap())
           .toList(),
     };
   }
 
-  factory WeeklyScheduleModel.fromEntity(
-    WeeklySchedule schedule,
-  ) {
+  factory WeeklyScheduleModel.fromEntity(WeeklySchedule schedule) {
     return WeeklyScheduleModel(
       barberId: schedule.barberId,
       dayOfWeek: schedule.dayOfWeek,

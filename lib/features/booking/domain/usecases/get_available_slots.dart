@@ -45,10 +45,9 @@ class GetAvailableSlots {
         barberId: trimmedBarberId,
         dayOfWeek: dayOfWeek,
       ),
-      _scheduleRepository.getScheduleExceptions(
+      _loadScheduleExceptionsSafe(
         barberId: trimmedBarberId,
-        from: normalizedDate,
-        to: normalizedDate,
+        date: normalizedDate,
       ),
       // Customer availability reads booked time ranges through the secure
       // `getBarberAvailability` Cloud Function instead of querying the
@@ -78,5 +77,24 @@ class GetAvailableSlots {
       serviceDurationMinutes: serviceDurationMinutes,
       existingBookings: bookings,
     );
+  }
+
+  /// Schedule exceptions are an optional per-day override on top of the
+  /// barber's weekly schedule (stored in Supabase `schedule_exceptions`), so
+  /// load them best-effort: a transient failure falls back to the base weekly
+  /// schedule instead of failing the whole availability computation.
+  Future<List<ScheduleException>> _loadScheduleExceptionsSafe({
+    required String barberId,
+    required DateTime date,
+  }) async {
+    try {
+      return await _scheduleRepository.getScheduleExceptions(
+        barberId: barberId,
+        from: date,
+        to: date,
+      );
+    } on Object catch (_) {
+      return const <ScheduleException>[];
+    }
   }
 }

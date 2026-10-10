@@ -136,6 +136,8 @@ class NotificationCard extends StatelessWidget {
         return Icons.alarm_outlined;
       case NotificationType.scheduleChanged:
         return Icons.schedule_outlined;
+      case NotificationType.paymentSuccess:
+        return Icons.payments_outlined;
       case NotificationType.general:
         return Icons.notifications_outlined;
     }

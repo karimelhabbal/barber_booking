@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../../domain/entities/barber_candidate.dart';
 
 class BarberCandidateModel extends BarberCandidate {
@@ -9,19 +7,11 @@ class BarberCandidateModel extends BarberCandidate {
     super.phone,
   });
 
-  factory BarberCandidateModel.fromFirestore(
-    DocumentSnapshot<Map<String, dynamic>> document,
-  ) {
-    final data = document.data();
-
-    if (data == null) {
-      throw StateError('User document ${document.id} does not exist.');
-    }
-
+  factory BarberCandidateModel.fromJson(Map<String, dynamic> row) {
     return BarberCandidateModel(
-      id: document.id,
-      name: data['name'] as String? ?? '',
-      phone: data['phone'] as String?,
+      id: row['id'] as String,
+      name: row['name'] as String? ?? '',
+      phone: row['phone'] as String?,
     );
   }
 }

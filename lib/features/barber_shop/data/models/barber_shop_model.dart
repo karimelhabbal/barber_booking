@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../../domain/entities/barber_shop.dart';
 
 class BarberShopModel extends BarberShop {
@@ -17,51 +15,35 @@ class BarberShopModel extends BarberShop {
     required super.updatedAt,
   });
 
-  factory BarberShopModel.fromFirestore(
-    DocumentSnapshot<Map<String, dynamic>> document,
-  ) {
-    final data = document.data();
-
-    if (data == null) {
-      throw StateError('Barber shop document ${document.id} does not exist.');
-    }
-
+  factory BarberShopModel.fromJson(Map<String, dynamic> data) {
     return BarberShopModel(
-      id: document.id,
+      id: data['id'] as String,
       name: data['name'] as String? ?? '',
-      ownerId: data['ownerId'] as String? ?? '',
+      ownerId: data['owner_id'] as String? ?? data['ownerId'] as String? ?? '',
       phone: data['phone'] as String?,
       address: data['address'] as String?,
       description: data['description'] as String?,
-      imageUrl: data['imageUrl'] as String?,
+      imageUrl: data['image_url'] as String? ?? data['imageUrl'] as String?,
       timezone: data['timezone'] as String? ?? 'Africa/Cairo',
-      isActive: data['isActive'] as bool? ?? true,
-      createdAt: _timestampToDateTime(data['createdAt']),
-      updatedAt: _timestampToDateTime(data['updatedAt']),
+      isActive: data['is_active'] as bool? ?? data['isActive'] as bool? ?? true,
+      createdAt: DateTime.parse(data['created_at'] as String),
+      updatedAt: DateTime.parse(data['updated_at'] as String),
     );
   }
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toJson() {
     return {
       'name': name,
-      'ownerId': ownerId,
+      'owner_id': ownerId,
       'phone': phone,
       'address': address,
       'description': description,
-      'imageUrl': imageUrl,
+      'image_url': imageUrl,
       'timezone': timezone,
-      'isActive': isActive,
-      'createdAt': Timestamp.fromDate(createdAt),
-      'updatedAt': Timestamp.fromDate(updatedAt),
+      'is_active': isActive,
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt.toUtc().toIso8601String(),
     };
-  }
-
-  static DateTime _timestampToDateTime(Object? value) {
-    if (value is Timestamp) {
-      return value.toDate();
-    }
-
-    throw StateError('Expected Firestore Timestamp but received $value.');
   }
 
   factory BarberShopModel.fromEntity(BarberShop shop) {

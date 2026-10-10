@@ -1,6 +1,8 @@
 import '../entities/user.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show AuthChangeEvent;
 
 abstract interface class AuthRepository {
+  Stream<AuthChangeEvent> get authStateChanges;
   Future<User?> getCurrentUser();
 
   Future<void> sendLoginOtp({required String phone});
@@ -18,6 +20,11 @@ abstract interface class AuthRepository {
     required String email,
     required String password,
   });
+  Future<User> loginCustomerWithEmail({required String email, required String password});
+
+  Future<User> registerWithEmail({required String name, required String email, required String password});
+  Future<void> signInWithProvider(String provider);
+  Future<User?> completeSocialSignIn();
 
   Future<void> logout();
 }

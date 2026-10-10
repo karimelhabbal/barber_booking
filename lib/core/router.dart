@@ -13,6 +13,8 @@ import 'package:barber_booking/features/auth/presentation/pages/splash_page.dart
 import 'package:barber_booking/features/booking/views/booking_details_page.dart';
 import 'package:barber_booking/features/dashboard/views/dashboard_page.dart';
 import 'package:barber_booking/features/notifications/presentation/pages/notifications_page.dart';
+import 'package:barber_booking/features/notifications/services/notification_service.dart';
+import 'package:barber_booking/core/di/injection.dart';
 import 'package:barber_booking/features/payment/presentation/pages/booking_payment_page.dart';
 import 'package:barber_booking/features/payment/presentation/pages/payout_destination_page.dart';
 import 'package:barber_booking/features/payment/presentation/pages/subscription_page.dart';
@@ -120,8 +122,7 @@ class AppRouter {
           },
         ),
         // Minimal booking-details destination for notification taps.
-        // Reuses the existing booking repository/model; Firestore rules
-        // decide which booking the signed-in user may read.
+        // Reuses the existing booking repository/model and access controls.
         GoRoute(
           path: '/booking-details',
           builder: (context, state) {
@@ -138,6 +139,10 @@ class AppRouter {
         );
       },
     );
+
+    final notificationService = getIt<NotificationService>();
+    notificationService.attachRouter(router);
+    unawaited(notificationService.initialize());
   }
 
   final AuthCubit _authCubit;

@@ -1,42 +1,58 @@
+import 'dart:async';
+
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'package:barber_booking/core/di/injection.dart';
 import 'package:barber_booking/core/l10n/app_localizations.dart';
 import 'package:barber_booking/core/router.dart';
-import 'package:barber_booking/core/services/firebase_service.dart';
+import 'package:barber_booking/core/services/supabase_service.dart';
 import 'package:barber_booking/core/theme/app_theme.dart';
 import 'package:barber_booking/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:barber_booking/features/notifications/presentation/cubit/notifications_cubit.dart';
 import 'package:barber_booking/features/notifications/services/notification_service.dart';
 import 'package:barber_booking/features/settings/settings_cubit.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:barber_booking/firebase_options.dart';
 
+/// Application entry point.
+///
+/// Initialization order:
+/// 1. Flutter binding + wakelock.
+/// 2. Supabase (auth, database and notification queue backend). Configure with
+///    `--dart-define=SUPABASE_URL=...` (optional) and
+///    `--dart-define=SUPABASE_ANON_KEY=<publishable/anon key>`.
+/// 3. Firebase core only. It is still required by Firebase Cloud Messaging
+///    (push delivery) and the payment data source. Firebase Auth/Firestore are
+///    not used for sign-in or app data and are not configured here.
+/// 4. Dependency injection (`configureDependencies`).
+/// 5. Persisted settings (locale / theme mode).
+/// 6. `runApp`. `AuthCubit` restores the Supabase session, and `AppRouter`
+///    attaches the router to `NotificationService` and initializes it.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await WakelockPlus.enable();
 
-  await FirebaseService.initFirebase();
-
-  // Registered before the app starts so terminated-state messages are handled
-  // by the OS and delivered to this isolate where needed.
   try {
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    await WakelockPlus.enable();
   } on Object catch (error) {
-    debugPrint('FCM background handler registration failed: $error');
+    debugPrint('Wakelock enable failed: $error');
+  }
+
+  await SupabaseService.initialize();
+
+  // FCM (and the payment data source) need the default Firebase app. A failure
+  // here must not prevent the Supabase-backed app from starting.
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } on Object catch (error) {
+    debugPrint('Firebase initialization failed: $error');
   }
 
   configureDependencies();
-
-  // Prepares local notifications, FCM listeners and push permission.
-  // Never blocks app startup: unsupported platforms simply disable pushes.
-  try {
-    await getIt<NotificationService>().initialize();
-  } on Object catch (error) {
-    debugPrint('NotificationService initialization failed: $error');
-  }
 
   final settingsCubit = SettingsCubit();
   await settingsCubit.loadSettings();
@@ -67,6 +83,7 @@ class _MyAppState extends State<MyApp> {
   late final AuthCubit _authCubit;
   late final AppRouter _appRouter;
   late final NotificationService _notificationService;
+  StreamSubscription<AuthState>? _authSubscription;
 
   @override
   void initState() {
@@ -74,15 +91,14 @@ class _MyAppState extends State<MyApp> {
 
     _authCubit = getIt<AuthCubit>();
 
+    // Also attaches the router to NotificationService and initializes it.
     _appRouter = AppRouter(authCubit: _authCubit);
 
-    // Lets notification taps navigate through the real GoRouter.
     _notificationService = getIt<NotificationService>();
-    _notificationService.attachRouter(_appRouter.router);
 
-    // A cold-start tap is kept pending until the session is restored, then
-    // consumed here (never during the splash redirect).
-    _authCubit.stream.listen((state) {
+    // A cold-start notification tap is kept pending until the session is
+    // restored, then consumed here (never during the splash redirect).
+    _authSubscription = _authCubit.stream.listen((state) {
       if (state is AuthAuthenticated) {
         _notificationService.tryConsumePendingTap();
       }
@@ -91,6 +107,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
+    _authSubscription?.cancel();
     _authCubit.close();
     widget.settingsCubit.close();
     super.dispose();

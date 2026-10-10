@@ -1,0 +1,36 @@
+
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "barber_booking",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "--dart-define=SUPABASE_URL=https://fdvnqqjekkhtxobvcbqx.supabase.co",
+                "--dart-define=SUPABASE_ANON_KEY=sb_publishable_t-iQ0p65FRqnpyHFC8xS_g_UcCfsiIO"
+            ]
+        },
+        {
+            "name": "barber_booking (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "args": [
+                "--dart-define=SUPABASE_URL=https://fdvnqqjekkhtxobvcbqx.supabase.co",
+                "--dart-define=SUPABASE_ANON_KEY=sb_publishable_t-iQ0p65FRqnpyHFC8xS_g_UcCfsiIO"
+            ]
+        },
+        {
+            "name": "barber_booking (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "args": [
+                "--dart-define=SUPABASE_URL=https://fdvnqqjekkhtxobvcbqx.supabase.co",
+                "--dart-define=SUPABASE_ANON_KEY=sb_publishable_t-iQ0p65FRqnpyHFC8xS_g_UcCfsiIO"
+            ]
+        }
+    ]
+}
+

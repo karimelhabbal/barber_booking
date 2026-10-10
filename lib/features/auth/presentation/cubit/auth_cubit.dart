@@ -1,6 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
+import 'dart:async';
+
+import 'package:supabase_flutter/supabase_flutter.dart' as supa;
+
 import '../../../notifications/presentation/cubit/notifications_cubit.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/user.dart';
@@ -11,11 +15,72 @@ part 'auth_state.dart';
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit({required this._authRepository, required this._notificationsCubit})
     : super(const AuthCheckingSession()) {
+    _authSubscription = _authRepository.authStateChanges.listen(
+      (event) {
+        if (_awaitingOAuth && event == supa.AuthChangeEvent.signedIn) {
+          _finishOAuth();
+        }
+      },
+      onError: (Object error) {
+        // OAuth callback failures (cancelled or failed at the provider) arrive
+        // as stream errors; surface them through the existing error mapping.
+        if (!_awaitingOAuth || isClosed) return;
+        _awaitingOAuth = false;
+        emit(AuthError(_mapError(error)));
+      },
+    );
     _restoreSession();
   }
 
   final AuthRepository _authRepository;
   final NotificationsCubit _notificationsCubit;
+  late final StreamSubscription<dynamic> _authSubscription;
+  bool _awaitingOAuth = false;
+
+  Future<void> _finishOAuth() async {
+    _awaitingOAuth = false;
+    try {
+      final user = await _authRepository.completeSocialSignIn();
+      if (user == null || isClosed) return;
+      emit(AuthAuthenticated(user));
+      await _startNotifications(user);
+    } on Object catch (error) {
+      if (!isClosed) emit(AuthError(_mapError(error)));
+    }
+  }
+
+  Future<void> signInWithProvider(String provider) async {
+    if (state is AuthLoading) return;
+    emit(const AuthLoading());
+    _awaitingOAuth = true;
+    try {
+      await _authRepository.signInWithProvider(provider);
+      if (state is AuthLoading) emit(const AuthUnauthenticated());
+    } on Object catch (error) {
+      _awaitingOAuth = false;
+      emit(AuthError(_mapError(error)));
+    }
+  }
+
+  Future<void> registerWithEmail({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    if (state is AuthLoading) return;
+    emit(const AuthLoading());
+    try {
+      final user = await _authRepository.registerWithEmail(
+        name: name,
+        email: email,
+        password: password,
+      );
+      emit(AuthAuthenticated(user));
+      await _startNotifications(user);
+    } on Object catch (error) {
+      emit(AuthError(_mapError(error)));
+    }
+  }
 
   Future<void> _restoreSession() async {
     try {
@@ -175,6 +240,30 @@ class AuthCubit extends Cubit<AuthState> {
     } on Object catch (error) {
       emit(AuthError(_mapError(error)));
     }
+  }
+
+  Future<void> loginCustomerWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    if (state is AuthLoading) return;
+    emit(const AuthLoading());
+    try {
+      final user = await _authRepository.loginCustomerWithEmail(
+        email: email,
+        password: password,
+      );
+      emit(AuthAuthenticated(user));
+      await _startNotifications(user);
+    } on Object catch (error) {
+      emit(AuthError(_mapError(error)));
+    }
+  }
+
+  @override
+  Future<void> close() async {
+    await _authSubscription.cancel();
+    return super.close();
   }
 
   String _mapError(Object error) {

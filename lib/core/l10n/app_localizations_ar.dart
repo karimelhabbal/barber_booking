@@ -83,10 +83,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get tooManyRequests =>
-      'محاولات كثيرة، يرجى الانتظار قبل المحاولة مرة أخرى';
+      'تم تجاوز عدد المحاولات. حاول مرة أخرى بعد قليل.';
 
   @override
-  String get networkRequestFailed => 'تحقق من اتصالك بالإنترنت وحاول مرة أخرى';
+  String get networkRequestFailed =>
+      'تعذر الاتصال بالخادم. تحقق من اتصال الإنترنت وحاول مرة أخرى.';
 
   @override
   String get operationNotAllowed =>
@@ -118,7 +119,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get logoutFailed => 'تعذر تسجيل الخروج، حاول مرة أخرى';
 
   @override
-  String get genericAuthError => 'حدث خطأ في المصادقة، حاول مرة أخرى';
+  String get genericAuthError => 'حدث خطأ في المصادقة. حاول مرة أخرى.';
 
   @override
   String get name => 'الاسم';
@@ -917,4 +918,68 @@ class AppLocalizationsAr extends AppLocalizations {
   String nextWeekday(String weekday) {
     return '$weekday القادم';
   }
+
+  @override
+  String get authWelcome => 'مرحباً بعودتك';
+
+  @override
+  String get authSubtitle => 'إطلالتك القادمة تبدأ من هنا.';
+
+  @override
+  String get authOrEmail => 'أو المتابعة بالبريد الإلكتروني';
+
+  @override
+  String get emailAddress => 'البريد الإلكتروني';
+
+  @override
+  String get password => 'كلمة المرور';
+
+  @override
+  String get invalidEmail => 'يرجى إدخال بريد إلكتروني صالح.';
+
+  @override
+  String get passwordTooShort => 'يجب ألا تقل كلمة المرور عن 6 أحرف.';
+
+  @override
+  String get hasAccountAction => 'لديك حساب؟ سجل الدخول';
+
+  @override
+  String get noAccountAction => 'جديد هنا؟ أنشئ حساباً';
+
+  @override
+  String get barberSignIn => 'دخول فريق الحلاقة';
+
+  @override
+  String get invalidCredentials =>
+      'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+
+  @override
+  String get accountAlreadyExists =>
+      'البريد الإلكتروني مستخدم بالفعل. جرّب تسجيل الدخول.';
+
+  @override
+  String get userProfileNotFound => 'تعذر العثور على ملف حسابك.';
+
+  @override
+  String get barberAccessDenied => 'هذا الحساب لا يملك صلاحية الحلاق.';
+
+  @override
+  String get oauthCancelled => 'تم إلغاء تسجيل الدخول.';
+
+  @override
+  String get customerSignIn => 'دخول العملاء';
+
+  @override
+  String get emailNotConfirmed =>
+      'يرجى تأكيد بريدك الإلكتروني قبل تسجيل الدخول.';
+
+  @override
+  String get emailConfirmationRequired => 'يرجى تأكيد بريدك الإلكتروني أولًا.';
+
+  @override
+  String get weakPassword => 'كلمة المرور ضعيفة. استخدم كلمة مرور أقوى.';
+
+  @override
+  String get authServiceUnavailable =>
+      'خدمة المصادقة غير متاحة حاليًا. حاول مرة أخرى لاحقًا.';
 }

@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../../domain/entities/booking.dart';
 
 export '../../domain/entities/booking.dart' show CancelledBy;
@@ -25,36 +23,25 @@ class BookingModel extends Booking {
     super.cancelledBy,
   });
 
-  factory BookingModel.fromFirestore(
-    DocumentSnapshot<Map<String, dynamic>> document,
-  ) {
-    final data = document.data();
-
-    if (data == null) {
-      throw StateError('Booking document ${document.id} does not exist.');
-    }
-
+  factory BookingModel.fromJson(Map<String, dynamic> data) {
     return BookingModel(
-      id: document.id,
-      customerId: data['customerId'] as String? ?? '',
-      shopId: data['shopId'] as String? ?? '',
-      barberId: data['barberId'] as String? ?? '',
-      serviceId: data['serviceId'] as String? ?? '',
-      bookingDate: _readTimestamp(
-        data['bookingDate'],
-        fieldName: 'bookingDate',
-      ),
-      startTime: data['startTime'] as String? ?? '',
-      endTime: data['endTime'] as String? ?? '',
+      id: data['id'] as String,
+      customerId: data['customer_id'] as String? ?? '',
+      shopId: data['shop_id'] as String? ?? '',
+      barberId: data['barber_id'] as String? ?? '',
+      serviceId: data['service_id'] as String? ?? '',
+      bookingDate: _readDate(data['booking_date']),
+      startTime: data['start_time'] as String? ?? '',
+      endTime: data['end_time'] as String? ?? '',
       status: _parseStatus(data['status'] as String?),
-      serviceName: data['serviceName'] as String? ?? '',
-      serviceDurationMinutes: data['serviceDurationMinutes'] as int? ?? 0,
-      servicePrice: (data['servicePrice'] as num?)?.toDouble() ?? 0,
-      customerName: data['customerName'] as String? ?? '',
-      barberName: data['barberName'] as String? ?? '',
-      createdAt: _readTimestamp(data['createdAt'], fieldName: 'createdAt'),
-      updatedAt: _readTimestamp(data['updatedAt'], fieldName: 'updatedAt'),
-      cancelledBy: _parseCancelledBy(data['cancelledBy']),
+      serviceName: data['service_name'] as String? ?? '',
+      serviceDurationMinutes: (data['service_duration_minutes'] as num?)?.toInt() ?? 0,
+      servicePrice: (data['service_price'] as num?)?.toDouble() ?? 0,
+      customerName: data['customer_name'] as String? ?? '',
+      barberName: data['barber_name'] as String? ?? '',
+      createdAt: DateTime.parse(data['created_at'] as String),
+      updatedAt: DateTime.parse(data['updated_at'] as String),
+      cancelledBy: _parseCancelledBy(data['cancelled_by']),
     );
   }
 
@@ -80,34 +67,38 @@ class BookingModel extends Booking {
     );
   }
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toJson() {
     return {
-      'customerId': customerId,
-      'shopId': shopId,
-      'barberId': barberId,
-      'serviceId': serviceId,
-      'bookingDate': Timestamp.fromDate(bookingDate),
-      'startTime': startTime,
-      'endTime': endTime,
+      'customer_id': customerId,
+      'shop_id': shopId,
+      'barber_id': barberId,
+      'service_id': serviceId,
+      'booking_date': _dateString(bookingDate),
+      'start_time': startTime,
+      'end_time': endTime,
       'status': statusToFirestore(status),
-      'cancelledBy': cancelledByToFirestore(cancelledBy),
-      'serviceName': serviceName,
-      'serviceDurationMinutes': serviceDurationMinutes,
-      'servicePrice': servicePrice,
-      'customerName': customerName,
-      'barberName': barberName,
-      'createdAt': Timestamp.fromDate(createdAt),
-      'updatedAt': Timestamp.fromDate(updatedAt),
+      'cancelled_by': cancelledByToFirestore(cancelledBy),
+      'service_name': serviceName,
+      'service_duration_minutes': serviceDurationMinutes,
+      'service_price': servicePrice,
+      'customer_name': customerName,
+      'barber_name': barberName,
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt.toUtc().toIso8601String(),
     };
   }
 
-  static DateTime _readTimestamp(Object? value, {required String fieldName}) {
-    if (value is Timestamp) {
-      return value.toDate();
+  static DateTime _readDate(Object? value) {
+    if (value is String) {
+      final parts = value.split('-').map(int.parse).toList();
+      return DateTime(parts[0], parts[1], parts[2]);
     }
-
-    throw StateError('Booking field $fieldName must be a Firestore Timestamp.');
+    if (value is DateTime) return DateTime(value.year, value.month, value.day);
+    throw StateError('Booking date must be a PostgreSQL date, received $value.');
   }
+
+  static String _dateString(DateTime value) =>
+      '${value.year.toString().padLeft(4, '0')}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
 
   static BookingStatus _parseStatus(String? value) {
     switch (value) {

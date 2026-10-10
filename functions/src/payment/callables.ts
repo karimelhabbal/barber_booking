@@ -1,15 +1,19 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { HttpsError, onCall, onRequest } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
+import { defineString } from "firebase-functions/params";
+import { isTrustedPendingCallback, paymentNotificationPayload, providerPaymentStatus, verifyPaymobHmac } from "./payment_notification_contract.js";
 
 const db = getFirestore();
 const paymobSecretKey = defineSecret("PAYMOB_SECRET_KEY");
 const paymobPublicKey = defineSecret("PAYMOB_PUBLIC_KEY");
 const paymobHmacSecret = defineSecret("PAYMOB_HMAC_SECRET");
 const paymobIntegrationId = defineSecret("PAYMOB_INTEGRATION_ID");
+const supabaseServiceRoleKey = defineSecret("SUPABASE_SERVICE_ROLE_KEY");
+const supabaseUrl = defineString("SUPABASE_URL");
 const paymobSecrets = [paymobSecretKey, paymobPublicKey, paymobHmacSecret, paymobIntegrationId];
+const paymentWebhookSecrets = [...paymobSecrets, supabaseServiceRoleKey];
 
 const FUNCTIONS_REGION = "europe-west1";
 const FUNCTIONS_RETURN_URL =
@@ -123,6 +127,11 @@ function readDate(value: unknown): Date | null {
   return null;
 }
 
+function isStaleCheckoutReservation(data: Record<string, unknown>): boolean {
+  const createdAt = readDate(data.createdAt);
+  return createdAt !== null && Date.now() - createdAt.getTime() > 5 * 60_000;
+}
+
 function addSubscriptionInterval(start: Date, interval: string): Date | null {
   if (interval !== "monthly" && interval !== "yearly") return null;
   const year = start.getUTCFullYear() + (interval === "yearly" ? 1 : 0);
@@ -144,6 +153,21 @@ function addSubscriptionInterval(start: Date, interval: string): Date | null {
 
 function readBoolean(value: unknown): boolean {
   return value === true;
+}
+
+function isValidEgyptianIban(value: string): boolean {
+  if (!/^EG\d{27}$/.test(value)) return false;
+  const rearranged = `${value.slice(4)}${value.slice(0, 4)}`;
+  let remainder = 0;
+  for (const character of rearranged) {
+    const digits = /[A-Z]/.test(character)
+      ? String(character.charCodeAt(0) - 55)
+      : character;
+    for (const digit of digits) {
+      remainder = (remainder * 10 + Number(digit)) % 97;
+    }
+  }
+  return remainder === 1;
 }
 
 function getCheckoutUrl(publicKey: string, clientSecret: string): string {
@@ -280,33 +304,6 @@ export const createBookingPayment = onCall({ region: FUNCTIONS_REGION, secrets: 
     }
   }
 
-  const existing = await db
-    .collection("bookingPayments")
-    .where("bookingId", "==", bookingId)
-    .limit(10)
-    .get();
-
-  for (const existingDoc of existing.docs) {
-    const existingData = existingDoc.data() as Record<string, unknown>;
-    const existingStatus = readString(existingData.status);
-    const existingOwnerId = readString(existingData.ownerId);
-
-    if (existingOwnerId && existingOwnerId !== ownerId) {
-      continue;
-    }
-
-    if (
-      readString(existingData.method) === method &&
-      existingStatus !== "cancelled" &&
-      existingStatus !== "failed"
-    ) {
-      return {
-        paymentId: existingDoc.id,
-        checkoutUrl: method === "online" ? readString(existingData.checkoutUrl) || null : null,
-      };
-    }
-  }
-
   const serviceId = readString(booking.serviceId);
   if (!serviceId) {
     throw new HttpsError("failed-precondition", "booking_service_missing");
@@ -327,49 +324,72 @@ export const createBookingPayment = onCall({ region: FUNCTIONS_REGION, secrets: 
     throw new HttpsError("failed-precondition", "booking_amount_invalid");
   }
 
-  const paymentRef = db.collection("bookingPayments").doc();
+  const payments = db.collection("bookingPayments");
+  const paymentRef = payments.doc();
   const paymentId = paymentRef.id;
-  let checkoutUrl: string | null = null;
-  let providerOrderId: string | null = null;
-  if (method === "online") {
-    const account = loadPlatformPaymobAccount();
-    const billingData = await getBillingData(
-      uid,
-      readString(booking.customerName),
-      readString(request.data.billingEmail),
+  const reservation = await db.runTransaction(async (transaction) => {
+    const existing = await transaction.get(
+      payments.where("bookingId", "==", bookingId),
     );
-    const intention = await createPaymobIntention({
-      account,
-      paymentId,
-      amountPiasters: grossAmount,
-      itemName: readString(service.name) || readString(booking.serviceName) || "Barber service",
-      billingData,
+    for (const document of existing.docs) {
+      const data = document.data() as Record<string, unknown>;
+      const status = readString(data.status);
+      if (
+        readString(data.ownerId) === ownerId &&
+        !["cancelled", "failed", "expired"].includes(status)
+      ) {
+        if (
+          method === "online" &&
+          status === "pending" &&
+          !readString(data.checkoutUrl) &&
+          isStaleCheckoutReservation(data)
+        ) {
+          transaction.update(document.ref, {
+            status: "failed",
+            failureReason: "checkout_creation_timeout",
+            updatedAt: FieldValue.serverTimestamp(),
+          });
+          continue;
+        }
+        return { ref: document.ref, data, created: false };
+      }
+    }
+
+    transaction.create(paymentRef, {
+      id: paymentId,
+      bookingId,
+      shopId,
+      ownerId,
+      customerId,
+      method,
+      status: method === "online" ? "pending" : "cash_pending",
+      provider: method === "online" ? "paymob" : "cash",
+      currency: "EGP",
+      grossAmount,
+      commissionAmount: 0,
+      ownerNetAmount: grossAmount,
+      refundedAmount: 0,
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     });
-    checkoutUrl = intention.checkoutUrl;
-    providerOrderId = intention.providerOrderId;
+    return { ref: paymentRef, data: null, created: true };
+  });
+
+  if (!reservation.created) {
+    const data = reservation.data!;
+    const checkoutUrl = readString(data.checkoutUrl) || null;
+    if (
+      method === "online" &&
+      readString(data.status) === "pending" &&
+      !checkoutUrl
+    ) {
+      throw new HttpsError("unavailable", "checkout_initializing");
+    }
+    return {
+      paymentId: reservation.ref.id,
+      checkoutUrl: method === "online" ? checkoutUrl : null,
+    };
   }
-
-  const payment = {
-    id: paymentId,
-    bookingId,
-    shopId,
-    ownerId,
-    customerId,
-    method,
-    status: method === "online" ? "pending" : "cash_pending",
-    provider: method === "online" ? "paymob" : "cash",
-    currency: "EGP",
-    grossAmount,
-    commissionAmount: 0,
-    ownerNetAmount: grossAmount,
-    refundedAmount: 0,
-    ...(providerOrderId ? { providerOrderId } : {}),
-    ...(checkoutUrl ? { checkoutUrl } : {}),
-    createdAt: FieldValue.serverTimestamp(),
-    updatedAt: FieldValue.serverTimestamp(),
-  };
-
-  await paymentRef.set(payment);
 
   if (method === "cash") {
     return {
@@ -378,9 +398,37 @@ export const createBookingPayment = onCall({ region: FUNCTIONS_REGION, secrets: 
     };
   }
 
+  let intention: { checkoutUrl: string; providerOrderId: string };
+  try {
+    const account = loadPlatformPaymobAccount();
+    const billingData = await getBillingData(
+      uid,
+      readString(booking.customerName),
+      readString(request.data.billingEmail),
+    );
+    intention = await createPaymobIntention({
+      account,
+      paymentId,
+      amountPiasters: grossAmount,
+      itemName: readString(service.name) || readString(booking.serviceName) || "Barber service",
+      billingData,
+    });
+  } catch (error) {
+    await paymentRef.update({
+      status: "failed",
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+    throw error;
+  }
+
+  await paymentRef.update({
+    providerOrderId: intention.providerOrderId,
+    checkoutUrl: intention.checkoutUrl,
+    updatedAt: FieldValue.serverTimestamp(),
+  });
   return {
     paymentId,
-    checkoutUrl,
+    checkoutUrl: intention.checkoutUrl,
   };
 });
 
@@ -402,8 +450,8 @@ export const refreshPaymentStatus = onCall({ region: FUNCTIONS_REGION }, async (
   const customerId = readString(payment.customerId);
 
   if (uid !== ownerId && uid !== customerId) {
-    const role = await getRole(uid);
-    if (role !== "owner") {
+    const shopId = readString(payment.shopId);
+    if (!shopId || await resolveShopOwner(shopId) !== uid) {
       throw new HttpsError("permission-denied", "not_payment_owner");
     }
   }
@@ -442,28 +490,77 @@ export const createSubscriptionCheckout = onCall({ region: FUNCTIONS_REGION, sec
 
   const account = loadPlatformPaymobAccount();
   const billingData = await getBillingData(uid, "", readString(request.data.billingEmail));
-  const paymentRef = db.collection("subscriptionPayments").doc();
+  const payments = db.collection("subscriptionPayments");
+  const paymentRef = payments.doc();
   const paymentId = paymentRef.id;
-  const intention = await createPaymobIntention({
-    account,
-    paymentId,
-    amountPiasters,
-    itemName: readString(plan.name) || planId,
-    billingData,
-    returnParameter: "subscriptionId",
+  const reservation = await db.runTransaction(async (transaction) => {
+    const existing = await transaction.get(
+      payments.where("ownerId", "==", uid),
+    );
+    for (const document of existing.docs) {
+      const data = document.data() as Record<string, unknown>;
+      if (
+        readString(data.planId) === planId &&
+        readString(data.status) === "pending"
+      ) {
+        if (
+          !readString(data.checkoutUrl) &&
+          isStaleCheckoutReservation(data)
+        ) {
+          transaction.update(document.ref, {
+            status: "failed",
+            failureReason: "checkout_creation_timeout",
+            updatedAt: FieldValue.serverTimestamp(),
+          });
+          continue;
+        }
+        return { ref: document.ref, data, created: false };
+      }
+    }
+
+    transaction.create(paymentRef, {
+      id: paymentId,
+      ownerId: uid,
+      planId,
+      status: "pending",
+      provider: "paymob",
+      amountPiasters,
+      currency: "EGP",
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+    return { ref: paymentRef, data: null, created: true };
   });
 
-  await paymentRef.set({
-    id: paymentId,
-    ownerId: uid,
-    planId,
-    status: "pending",
-    provider: "paymob",
-    amountPiasters,
-    currency: "EGP",
+  if (!reservation.created) {
+    const checkoutUrl = readString(reservation.data?.checkoutUrl);
+    if (!checkoutUrl) {
+      throw new HttpsError("unavailable", "checkout_initializing");
+    }
+    return { paymentId: reservation.ref.id, checkoutUrl };
+  }
+
+  let intention: { checkoutUrl: string; providerOrderId: string };
+  try {
+    intention = await createPaymobIntention({
+      account,
+      paymentId,
+      amountPiasters,
+      itemName: readString(plan.name) || planId,
+      billingData,
+      returnParameter: "subscriptionId",
+    });
+  } catch (error) {
+    await paymentRef.update({
+      status: "failed",
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+    throw error;
+  }
+
+  await paymentRef.update({
     providerOrderId: intention.providerOrderId,
     checkoutUrl: intention.checkoutUrl,
-    createdAt: FieldValue.serverTimestamp(),
     updatedAt: FieldValue.serverTimestamp(),
   });
 
@@ -473,69 +570,21 @@ export const createSubscriptionCheckout = onCall({ region: FUNCTIONS_REGION, sec
   };
 });
 
-const TRANSACTION_HMAC_FIELDS = [
-  "amount_cents",
-  "created_at",
-  "currency",
-  "error_occured",
-  "has_parent_transaction",
-  "id",
-  "integration_id",
-  "is_3d_secure",
-  "is_auth",
-  "is_capture",
-  "is_refunded",
-  "is_standalone_payment",
-  "is_voided",
-  "order_id",
-  "owner",
-  "pending",
-  "source_data.pan",
-  "source_data.sub_type",
-  "source_data.type",
-  "success",
-] as const;
-
-function getNestedValue(value: Record<string, unknown>, path: string): unknown {
-  return path.split(".").reduce<unknown>((current, key) => {
-    if (!current || typeof current !== "object") return undefined;
-    return (current as Record<string, unknown>)[key];
-  }, value);
-}
-
-function verifyPaymobHmac(
-  transaction: Record<string, unknown>,
-  providedHmac: string,
-  secret: string,
-): boolean {
-  if (!providedHmac || !/^[a-f\d]{128}$/i.test(providedHmac)) return false;
-  const order = transaction.order as Record<string, unknown> | undefined;
-  const values = TRANSACTION_HMAC_FIELDS.map((field) => {
-    const path = field === "id" ? "id" : field === "order_id" ? "order.id" : field;
-    const value = getNestedValue(transaction, path);
-    if (value === undefined) return null;
-    return value === null ? "" : String(value);
-  });
-  if (values.some((value) => value === null) || !order) return false;
-
-  const expected = createHmac("sha512", secret)
-    .update(values.join(""), "utf8")
-    .digest();
-  const supplied = Buffer.from(providedHmac, "hex");
-  return expected.length === supplied.length && timingSafeEqual(expected, supplied);
-}
-
 async function finalizeProviderPayment(
   collectionName: "bookingPayments" | "subscriptionPayments",
   paymentId: string,
   transaction: Record<string, unknown>,
-): Promise<void> {
+): Promise<boolean> {
   const paymentRef = db.collection(collectionName).doc(paymentId);
-  await db.runTransaction(async (firestoreTransaction) => {
+  return db.runTransaction(async (firestoreTransaction) => {
     const paymentSnap = await firestoreTransaction.get(paymentRef);
-    if (!paymentSnap.exists) return;
+    if (!paymentSnap.exists) return false;
     const payment = paymentSnap.data() as Record<string, unknown>;
-    if (readString(payment.status) !== "pending") return;
+    if (readString(payment.status) !== "pending") {
+      // A valid provider retry after a committed callback is idempotently acked.
+      return readIdentifier(payment.providerTransactionId) ===
+        readIdentifier(transaction.id);
+    }
 
     const expectedAmount = collectionName === "bookingPayments"
       ? readNumber(payment.grossAmount)
@@ -543,16 +592,30 @@ async function finalizeProviderPayment(
     const callbackAmount = readNumber(transaction.amount_cents);
     const callbackCurrency = readString(transaction.currency);
     const order = transaction.order as Record<string, unknown>;
-    if (
-      callbackAmount !== expectedAmount ||
-      callbackCurrency !== readString(payment.currency) ||
-      readIdentifier(order.id) !== readString(payment.providerOrderId) ||
-      readBoolean(transaction.pending)
-    ) {
-      return;
+    // Paymob returns special_reference as merchant_order_id on the transaction
+    // callback (it is not nested in order).
+    const merchantOrderId = readString(transaction.merchant_order_id);
+    const integrationId = Number(paymobIntegrationId.value());
+    if (!isTrustedPendingCallback({
+      hmacVerified: true,
+      amountMatches: callbackAmount === expectedAmount,
+      currencyMatches: callbackCurrency === readString(payment.currency),
+      orderMatches: readIdentifier(order.id) === readString(payment.providerOrderId),
+      merchantReferenceMatches: merchantOrderId === paymentRef.id,
+      integrationMatches: readIdentifier(transaction.integration_id) === String(integrationId),
+      notPending: !readBoolean(transaction.pending),
+      status: readString(payment.status),
+    })) {
+      return false;
     }
 
     const succeeded = readBoolean(transaction.success);
+    const nextStatus = providerPaymentStatus({
+      callbackTrusted: true,
+      success: succeeded,
+      voided: readBoolean(transaction.is_voided),
+    });
+    if (!nextStatus) return false;
     if (collectionName === "subscriptionPayments" && succeeded) {
       const ownerId = readString(payment.ownerId);
       const planId = readString(payment.planId);
@@ -562,7 +625,7 @@ async function finalizeProviderPayment(
         firestoreTransaction.get(planRef),
         firestoreTransaction.get(subscriptionRef),
       ]);
-      if (!planSnap.exists || !ownerId) return;
+      if (!planSnap.exists || !ownerId) return false;
 
       const interval = readString(planSnap.data()?.interval);
       const now = new Date();
@@ -572,7 +635,7 @@ async function finalizeProviderPayment(
         ? existingEnd
         : now;
       const periodEnd = addSubscriptionInterval(periodStart, interval);
-      if (!periodEnd) return;
+      if (!periodEnd) return false;
 
       firestoreTransaction.set(subscriptionRef, {
         ownerId,
@@ -586,15 +649,59 @@ async function finalizeProviderPayment(
     }
 
     firestoreTransaction.update(paymentRef, {
-      status: succeeded ? "paid" : "failed",
+      status: nextStatus,
       providerTransactionId: readIdentifier(transaction.id),
       paidAt: succeeded ? FieldValue.serverTimestamp() : null,
       updatedAt: FieldValue.serverTimestamp(),
     });
+    return true;
   });
 }
 
-export const paymobWebhook = onRequest({ region: FUNCTIONS_REGION, secrets: paymobSecrets }, async (request, response) => {
+async function enqueuePaymentNotification(
+  firebaseUid: string,
+  collectionName: "bookingPayments" | "subscriptionPayments",
+  paymentId: string,
+  payment: Record<string, unknown> | undefined,
+): Promise<void> {
+  const key = supabaseServiceRoleKey.value().trim();
+  const baseUrl = supabaseUrl.value().trim().replace(/\/$/, "");
+  if (!key || !/^https:\/\/[a-z\d-]+\.supabase\.co$/i.test(baseUrl)) {
+    throw new Error("Supabase payment notification configuration is incomplete.");
+  }
+
+  const userSnap = await db.collection("users").doc(firebaseUid).get();
+  const amountPiasters = collectionName === "bookingPayments"
+    ? readNumber(payment?.grossAmount)
+    : readNumber(payment?.amountPiasters);
+  const localized = paymentNotificationPayload({
+    languageCode: userSnap.data()?.languageCode,
+    collectionName,
+    paymentId,
+    amountPiasters,
+  });
+  const result = await fetch(`${baseUrl}/rest/v1/rpc/enqueue_firebase_payment_notification`, {
+    method: "POST",
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      p_firebase_uid: firebaseUid,
+      p_title: localized.title,
+      p_body: localized.body,
+      p_booking_id: collectionName === "bookingPayments" ? readString(payment?.bookingId) || null : null,
+      p_idempotency_key: localized.idempotencyKey,
+    }),
+  });
+  if (!result.ok) {
+    // Never include response text: provider or infrastructure errors can contain sensitive details.
+    throw new Error(`Supabase payment notification RPC failed (${result.status}).`);
+  }
+}
+
+export const paymobWebhook = onRequest({ region: FUNCTIONS_REGION, secrets: paymentWebhookSecrets }, async (request, response) => {
   if (request.method !== "POST") {
     response.status(405).send("Method not allowed");
     return;
@@ -633,7 +740,34 @@ export const paymobWebhook = onRequest({ region: FUNCTIONS_REGION, secrets: paym
   }
 
   const match = verified[0];
-  await finalizeProviderPayment(match.collection, match.doc.id, transaction);
+  const finalized = await finalizeProviderPayment(match.collection, match.doc.id, transaction);
+  if (!finalized) {
+    response.status(409).send("Transaction does not match payment");
+    return;
+  }
+  if (readBoolean(transaction.success)) {
+    try {
+      const paymentSnap = await match.doc.ref.get();
+      const payment = paymentSnap.data() as Record<string, unknown> | undefined;
+      if (
+        readString(payment?.status) !== "paid" ||
+        readIdentifier(payment?.providerTransactionId) !== readIdentifier(transaction.id)
+      ) {
+        response.status(409).send("Payment is not in a paid state");
+        return;
+      }
+      const firebaseUid = match.collection === "bookingPayments"
+        ? readString(payment?.customerId)
+        : readString(payment?.ownerId);
+      if (firebaseUid) {
+        await enqueuePaymentNotification(firebaseUid, match.collection, match.doc.id, payment);
+      }
+    } catch (error) {
+      console.error("Could not enqueue verified payment notification", error);
+      response.status(503).send("Notification enqueue failed");
+      return;
+    }
+  }
   response.status(200).send("OK");
 });
 
@@ -649,17 +783,35 @@ export const setPayoutDestination = onCall({ region: FUNCTIONS_REGION }, async (
     throw new HttpsError("invalid-argument", "type_invalid");
   }
 
+  const accountHolderName = readString(request.data.accountHolderName);
+  if (!accountHolderName || accountHolderName.length > 100) {
+    throw new HttpsError("invalid-argument", "account_holder_name_invalid");
+  }
+
   const payload: Record<string, unknown> = {
     ownerId: uid,
     type,
-    accountHolderName: readString(request.data.accountHolderName),
+    accountHolderName,
     updatedAt: FieldValue.serverTimestamp(),
   };
 
   if (type === "wallet") {
-    payload.walletMsisdn = readString(request.data.walletMsisdn);
+    const walletMsisdn = readString(request.data.walletMsisdn).replace(/[\s-]/g, "");
+    if (!/^(?:01[0125]\d{8}|(?:\+?20)1[0125]\d{8})$/.test(walletMsisdn)) {
+      throw new HttpsError(
+        "invalid-argument",
+        "wallet_number_must_be_egyptian_mobile",
+      );
+    }
+    payload.walletMsisdn = walletMsisdn;
+    payload.iban = FieldValue.delete();
   } else {
-    payload.iban = readString(request.data.iban);
+    const iban = readString(request.data.iban).replace(/\s/g, "").toUpperCase();
+    if (!isValidEgyptianIban(iban)) {
+      throw new HttpsError("invalid-argument", "iban_invalid");
+    }
+    payload.iban = iban;
+    payload.walletMsisdn = FieldValue.delete();
   }
 
   await db.collection("payoutDestinations").doc(uid).set(payload, { merge: true });

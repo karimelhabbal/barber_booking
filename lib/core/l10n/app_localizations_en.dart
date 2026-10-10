@@ -83,12 +83,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'The verification code has expired. Please request a new code.';
 
   @override
-  String get tooManyRequests =>
-      'Too many attempts. Please wait before trying again.';
+  String get tooManyRequests => 'Too many attempts. Please try again later.';
 
   @override
   String get networkRequestFailed =>
-      'Check your internet connection and try again.';
+      'Unable to connect to the server. Check your internet connection and try again.';
 
   @override
   String get operationNotAllowed =>
@@ -124,7 +123,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logoutFailed => 'Unable to log out. Please try again.';
 
   @override
-  String get genericAuthError => 'Authentication failed. Please try again.';
+  String get genericAuthError =>
+      'An authentication error occurred. Please try again.';
 
   @override
   String get name => 'Name';
@@ -932,4 +932,69 @@ class AppLocalizationsEn extends AppLocalizations {
   String nextWeekday(String weekday) {
     return 'Next $weekday';
   }
+
+  @override
+  String get authWelcome => 'Welcome back';
+
+  @override
+  String get authSubtitle => 'Your next great look starts here.';
+
+  @override
+  String get authOrEmail => 'OR CONTINUE WITH EMAIL';
+
+  @override
+  String get emailAddress => 'Email address';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get invalidEmail => 'Please enter a valid email address.';
+
+  @override
+  String get passwordTooShort => 'Password must be at least 6 characters.';
+
+  @override
+  String get hasAccountAction => 'Already have an account? Sign in';
+
+  @override
+  String get noAccountAction => 'New here? Create an account';
+
+  @override
+  String get barberSignIn => 'Barber staff sign in';
+
+  @override
+  String get invalidCredentials => 'The email or password is incorrect.';
+
+  @override
+  String get accountAlreadyExists =>
+      'This email is already registered. Try signing in instead.';
+
+  @override
+  String get userProfileNotFound => 'Your account profile could not be found.';
+
+  @override
+  String get barberAccessDenied => 'This account does not have barber access.';
+
+  @override
+  String get oauthCancelled => 'Sign in was cancelled.';
+
+  @override
+  String get customerSignIn => 'Customer sign in';
+
+  @override
+  String get emailNotConfirmed =>
+      'Please confirm your email address before signing in.';
+
+  @override
+  String get emailConfirmationRequired =>
+      'Please confirm your email address first.';
+
+  @override
+  String get weakPassword =>
+      'Your password is too weak. Please use a stronger password.';
+
+  @override
+  String get authServiceUnavailable =>
+      'The authentication service is unavailable. Please try again later.';
 }

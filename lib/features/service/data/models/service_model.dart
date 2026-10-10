@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../../domain/entities/service.dart';
 
 class ServiceModel extends Service {
@@ -15,38 +13,30 @@ class ServiceModel extends Service {
     required super.updatedAt,
   });
 
-  factory ServiceModel.fromFirestore(
-    DocumentSnapshot<Map<String, dynamic>> document,
-  ) {
-    final data = document.data();
-
-    if (data == null) {
-      throw StateError('Service document ${document.id} does not exist.');
-    }
-
+  factory ServiceModel.fromJson(Map<String, dynamic> data) {
     return ServiceModel(
-      id: document.id,
-      barberShopId: data['barberShopId'] as String? ?? '',
+      id: data['id'] as String,
+      barberShopId: data['barber_shop_id'] as String? ?? data['barberShopId'] as String? ?? '',
       name: data['name'] as String? ?? '',
       description: data['description'] as String?,
-      durationMinutes: (data['durationMinutes'] as num?)?.toInt() ?? 0,
+      durationMinutes: (data['duration_minutes'] as num?)?.toInt() ?? (data['durationMinutes'] as num?)?.toInt() ?? 0,
       price: (data['price'] as num?)?.toDouble() ?? 0,
-      isActive: data['isActive'] as bool? ?? true,
-      createdAt: _timestampToDateTime(data['createdAt']),
-      updatedAt: _timestampToDateTime(data['updatedAt']),
+      isActive: data['is_active'] as bool? ?? data['isActive'] as bool? ?? true,
+      createdAt: DateTime.parse(data['created_at'] as String),
+      updatedAt: DateTime.parse(data['updated_at'] as String),
     );
   }
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toJson() {
     return {
-      'barberShopId': barberShopId,
+      'barber_shop_id': barberShopId,
       'name': name,
       'description': description,
-      'durationMinutes': durationMinutes,
+      'duration_minutes': durationMinutes,
       'price': price,
-      'isActive': isActive,
-      'createdAt': Timestamp.fromDate(createdAt),
-      'updatedAt': Timestamp.fromDate(updatedAt),
+      'is_active': isActive,
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt.toUtc().toIso8601String(),
     };
   }
 
@@ -64,11 +54,4 @@ class ServiceModel extends Service {
     );
   }
 
-  static DateTime _timestampToDateTime(Object? value) {
-    if (value is Timestamp) {
-      return value.toDate();
-    }
-
-    throw StateError('Expected Firestore Timestamp but received $value.');
-  }
 }

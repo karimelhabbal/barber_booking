@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../../domain/entities/notification.dart';
 
 class NotificationModel extends AppNotification {
@@ -14,49 +12,48 @@ class NotificationModel extends AppNotification {
     super.isRead = false,
   });
 
-  factory NotificationModel.fromFirestore(
-    DocumentSnapshot<Map<String, dynamic>> snapshot,
-  ) {
-    final data = snapshot.data();
-
-    if (data == null) {
-      throw StateError(
-        'Notification document ${snapshot.id} contains no data.',
-      );
+  factory NotificationModel.fromJson(Map<String, dynamic> json) {
+    final createdAtValue = json['created_at'];
+    if (createdAtValue is! String) {
+      throw StateError('Notification ${json['id']} has an invalid created_at.');
     }
 
-    final createdAt = data['createdAt'];
-    if (createdAt is! Timestamp) {
-      throw StateError(
-        'Notification document ${snapshot.id} has an invalid createdAt.',
-      );
+    final createdAt = DateTime.tryParse(createdAtValue);
+    if (createdAt == null) {
+      throw StateError('Notification ${json['id']} has an invalid created_at.');
+    }
+
+    final bookingIdValue = json['booking_id'];
+    if (bookingIdValue != null && bookingIdValue is! String) {
+      throw StateError('Notification ${json['id']} has an invalid booking_id.');
+    }
+
+    final isReadValue = json['is_read'];
+    if (isReadValue is! bool) {
+      throw StateError('Notification ${json['id']} has an invalid is_read.');
     }
 
     return NotificationModel(
-      id: snapshot.id,
-      recipientId: data['recipientId'] as String,
-      type: _notificationTypeFromFirestore(data['type']),
-      title: data['title'] as String,
-      body: data['body'] as String,
-      bookingId: data['bookingId'] as String?,
-      createdAt: createdAt.toDate(),
-      isRead: data['isRead'] as bool? ?? false,
+      id: _requiredString(json, 'id'),
+      recipientId: _requiredString(json, 'recipient_id'),
+      type: _notificationTypeFromDatabase(json['type']),
+      title: _requiredString(json, 'title'),
+      body: _requiredString(json, 'body'),
+      bookingId: bookingIdValue,
+      createdAt: createdAt,
+      isRead: isReadValue,
     );
   }
 
-  Map<String, dynamic> toFirestore() {
-    return {
-      'recipientId': recipientId,
-      'type': _notificationTypeToFirestore(type),
-      'title': title,
-      'body': body,
-      'bookingId': bookingId,
-      'createdAt': Timestamp.fromDate(createdAt),
-      'isRead': isRead,
-    };
+  static String _requiredString(Map<String, dynamic> json, String key) {
+    final value = json[key];
+    if (value is! String) {
+      throw StateError('Notification ${json['id']} has an invalid $key.');
+    }
+    return value;
   }
 
-  static NotificationType _notificationTypeFromFirestore(Object? value) {
+  static NotificationType _notificationTypeFromDatabase(Object? value) {
     switch (value) {
       case 'bookingCreated':
         return NotificationType.bookingCreated;
@@ -74,33 +71,12 @@ class NotificationModel extends AppNotification {
         return NotificationType.appointmentReminder;
       case 'scheduleChanged':
         return NotificationType.scheduleChanged;
+      case 'paymentSuccess':
+        return NotificationType.paymentSuccess;
       case 'general':
         return NotificationType.general;
       default:
         throw StateError('Unknown notification type: $value');
-    }
-  }
-
-  static String _notificationTypeToFirestore(NotificationType type) {
-    switch (type) {
-      case NotificationType.bookingCreated:
-        return 'bookingCreated';
-      case NotificationType.bookingConfirmed:
-        return 'bookingConfirmed';
-      case NotificationType.bookingRejected:
-        return 'bookingRejected';
-      case NotificationType.bookingCancelled:
-        return 'bookingCancelled';
-      case NotificationType.bookingCompleted:
-        return 'bookingCompleted';
-      case NotificationType.bookingNoShow:
-        return 'bookingNoShow';
-      case NotificationType.appointmentReminder:
-        return 'appointmentReminder';
-      case NotificationType.scheduleChanged:
-        return 'scheduleChanged';
-      case NotificationType.general:
-        return 'general';
     }
   }
 }
